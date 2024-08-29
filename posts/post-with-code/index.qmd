@@ -1,0 +1,156 @@
+---
+title: "Making sense of Medstat.dk data"
+author: "Henrik Vitus Bering Laursen"
+date: "2024-06-03"
+categories: 
+  - news
+  - code
+  - analysis
+image: "image.jpg"
+---
+
+## Medstat and drug data
+
+First thing I wanna try is looking at data on drug prescriptions from [medstat.dk](medstat.dk "medstat.dk").
+
+More specifically, the available data from [the download section](https://medstat.dk/da/download). Here you can download it all to more easily manipulate it locally from your computer. For that you could just use the [downloadthemall](https://www.downthemall.net/) extension.
+
+I want to try to download it directly from the source, since I want to use github to store all my work, including data, and github has a 2GB limit on data, which a lot of public data quickly will surpass.
+
+## Loading the data and making sense of it 
+
+Good old trusty `tidyverse` has a lot of what I need, specifically the `readr` package.
+
+```{r}
+library(tidyverse)
+```
+
+
+### Getting the links
+
+Using an extension of your choice (I use [MarkDownload](https://github.com/deathau/markdownload)) or whatever suits your technical level, we can have a list of all the links to the files. I have hidden all the links in this post, for my own use, in a html comment `<!-- -->`.
+
+<!-- All the datafile names
+[1996\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MTk5Nl9hdGNfY29kZV9kYXRhLnR4dA==) [1996\_product\_name\_data.txt](https://medstat.dk/da/download/file/MTk5Nl9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [1997\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MTk5N19hdGNfY29kZV9kYXRhLnR4dA==) [1997\_product\_name\_data.txt](https://medstat.dk/da/download/file/MTk5N19wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [1998\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MTk5OF9hdGNfY29kZV9kYXRhLnR4dA==) [1998\_product\_name\_data.txt](https://medstat.dk/da/download/file/MTk5OF9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [1999\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MTk5OV9hdGNfY29kZV9kYXRhLnR4dA==) [1999\_product\_name\_data.txt](https://medstat.dk/da/download/file/MTk5OV9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2000\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwMF9hdGNfY29kZV9kYXRhLnR4dA==) [2000\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwMF9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2001\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwMV9hdGNfY29kZV9kYXRhLnR4dA==) [2001\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwMV9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2002\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwMl9hdGNfY29kZV9kYXRhLnR4dA==) [2002\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwMl9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2003\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwM19hdGNfY29kZV9kYXRhLnR4dA==) [2003\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwM19wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2004\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwNF9hdGNfY29kZV9kYXRhLnR4dA==) [2004\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwNF9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2005\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwNV9hdGNfY29kZV9kYXRhLnR4dA==) [2005\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwNV9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2006\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwNl9hdGNfY29kZV9kYXRhLnR4dA==) [2006\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwNl9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2007\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwN19hdGNfY29kZV9kYXRhLnR4dA==) [2007\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwN19wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2008\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwOF9hdGNfY29kZV9kYXRhLnR4dA==) [2008\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwOF9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2009\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAwOV9hdGNfY29kZV9kYXRhLnR4dA==) [2009\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAwOV9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2010\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxMF9hdGNfY29kZV9kYXRhLnR4dA==) [2010\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxMF9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2011\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxMV9hdGNfY29kZV9kYXRhLnR4dA==) [2011\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxMV9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2012\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxMl9hdGNfY29kZV9kYXRhLnR4dA==) [2012\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxMl9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2013\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxM19hdGNfY29kZV9kYXRhLnR4dA==) [2013\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxM19wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2014\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxNF9hdGNfY29kZV9kYXRhLnR4dA==) [2014\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxNF9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2015\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxNV9hdGNfY29kZV9kYXRhLnR4dA==) [2015\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxNV9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2016\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxNl9hdGNfY29kZV9kYXRhLnR4dA==) [2016\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxNl9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2017\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxN19hdGNfY29kZV9kYXRhLnR4dA==) [2017\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxN19wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2018\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxOF9hdGNfY29kZV9kYXRhLnR4dA==) [2018\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxOF9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2019\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAxOV9hdGNfY29kZV9kYXRhLnR4dA==) [2019\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAxOV9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2020\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAyMF9hdGNfY29kZV9kYXRhLnR4dA==) [2020\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAyMF9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2021\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAyMV9hdGNfY29kZV9kYXRhLnR4dA==) [2021\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAyMV9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2022\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAyMl9hdGNfY29kZV9kYXRhLnR4dA==) [2022\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAyMl9wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [2023\_atc\_code\_data.txt](https://medstat.dk/da/download/file/MjAyM19hdGNfY29kZV9kYXRhLnR4dA==) [2023\_product\_name\_data.txt](https://medstat.dk/da/download/file/MjAyM19wcm9kdWN0X25hbWVfZGF0YS50eHQ=) [atc\_code\_text.txt](https://medstat.dk/da/download/file/YXRjX2NvZGVfdGV4dC50eHQ=) [groups\_of\_medicines\_data.txt](https://medstat.dk/da/download/file/Z3JvdXBzX29mX21lZGljaW5lc19kYXRhLnR4dA==) [groups\_of\_medicines\_text.txt](https://medstat.dk/da/download/file/Z3JvdXBzX29mX21lZGljaW5lc190ZXh0LnR4dA==) [population\_data.txt](https://medstat.dk/da/download/file/cG9wdWxhdGlvbl9kYXRhLnR4dA==) [product\_name\_per\_sector.txt](https://medstat.dk/da/download/file/cHJvZHVjdF9uYW1lX3Blcl9zZWN0b3IudHh0) [product\_name\_text.txt](https://medstat.dk/da/download/file/cHJvZHVjdF9uYW1lX3RleHQudHh0) 
+-->
+
+Now lets load an example. 
+
+```{r}
+# Define the URL for the dataset ()
+url_atc_2023 <- "https://medstat.dk/da/download/file/MjAyM19hdGNfY29kZV9kYXRhLnR4dA=="
+
+# Read the dataset directly from the URL
+df_atc_2023 <- read_delim(url_atc_2023, delim = ";")  # Assuming the file is tab-delimited
+
+# Print the first few rows of the dataset
+head(df_atc_2023)
+
+```
+
+Ok, this data is without headers. A way to save space probably. 
+
+Thankfully there is a file explaining how its put together. It's on the website and its called [Downloadbeskrivelse medstat](https://medstat.dk/apps/lms/public/dokumentation/Downloadbeskrivelse.pdf). I need to get the column names from this file.
+
+This file tells me that for example any file called `YYYY_atc_code_data_txt` has the following variables (Translated to english): `atc, year, sector, region, sex, agegroup, count_persons, count_persons_per1kpop, turnover, reimbursement, sold_amount, sold_amount_1kpop_day, personreferabledata`.
+
+So we can use `colnames()` to transfer these column names to our dataset
+
+```{r}
+# attach colnames
+colnames(df_atc_2023) <- c("atc","year","sector","region","sex","agegroup","count_persons","count_persons_per1kpop","turnover","reimbursement", "sold_amount", "sold_amount_1kpop_day", "personreferabledata")
+
+# View data
+head(df_atc_2023)
+glimpse(df_atc_2023)
+```
+Missing name for one column that doesnt fit with the "Downloadbeskrivelse medstat". What is it?
+
+```{r}
+# call it something
+colnames(df_atc_2023)[is.na(colnames(df_atc_2023))] <- "missing_name"
+
+# table of content
+table(df_atc_2023$missing_name)
+
+# Ok it has nothing. Maybe just an artefact from the delim file. Removing it.
+df_atc_2023 <- df_atc_2023 |>  select(-missing_name)
+
+```
+
+This makes more sense. Time to give the data the correct values. Lets find out what is there.
+
+```{r}
+# Finding all unique values even though i could just consult "Downloadbeskrivelse medstat"
+unique_values_all_columns <- unique(unlist(sapply(df_atc_2023, function(x) if(is.character(x)) unique(x))))
+print(unique_values_all_columns)
+```
+
+Woops. Forgot that ATC has QUITE a lot of unique values. Lets make a df without the atc value.
+
+```{r}
+df_atc_2023_mini <- df_atc_2023 |>  select(-atc)
+
+glimpse(df_atc_2023_mini)
+
+unique(unlist(sapply(df_atc_2023_mini, function(x) if(is.character(x)) unique(x))))
+```
+
+More manageable amount of unique values. Lets focus on the unique age groups.
+
+This is much easier with `dplyr`.
+
+```{r}
+df_atc_2023_mini |>  select(agegroup) |> distinct()
+```
+
+Is the data correctly aggregated in the age categories? The two summary numbers below should be the same then. Lets use `turnover`.
+
+```{r}
+# 00-17 is easily filtered 
+df_atc_2023_0_17 <- df_atc_2023 |> 
+  filter(agegroup == "00-17") |> 
+  summarize(turnover = sum(turnover, na.rm = TRUE))
+
+# make vector to include in the filter
+numbers <- sprintf("%03d", 0:17)
+
+# Now filter in the same way as above, but for 000 to 017
+df_atc_2023_0_17_2 <- df_atc_2023 |> 
+  filter(agegroup %in% numbers) |> 
+  mutate(agegroup_combined = ifelse(agegroup %in% numbers, "000-017", agegroup)) |> 
+  summarize(turnover = sum(turnover, na.rm = TRUE), .groups = "drop") 
+
+# Summary
+print(df_atc_2023_0_17)
+print(df_atc_2023_0_17_2)
+```
+
+
+
+```{r}
+# correctly specify data
+df_atc_1996 <- df_atc_1996 |> 
+  mutate(
+    case_when(
+      sex == "A" ~ "all",
+      .default = as.factor(sex)
+    )
+  )
+
+```
+
+## Product name files
+
+```{r}
+# Load from online
+df_prod_1996 <- read_delim(paste0(data_directory,"1996_atc_code_data.txt"), delim = ";")
+
+# attach colnames
+colnames(df_prod_1996) <- c("atc","varenummer","paknavn","markedsfoerer","doseringsform","styrke","pakstoer","regstatus","udlevbestemmelse","udlevbestemmelse_skift", "enhed", "note", "tilskudsstatus","substitutionsgruppe","sprog")
+df_prod_1996
+
+# correctly specify data
+
+
+```

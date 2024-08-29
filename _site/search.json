@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Publicly available data - what can we do with it",
+    "section": "",
+    "text": "Making sense of Medstat.dk data\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nJun 3, 2024\n\n\nHenrik Vitus Bering Laursen\n\n\n\n\n\n\n\n\n\n\n\n\nMy first Quarto blog\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nJun 3, 2024\n\n\nHenrik Vitus Bering Laursen\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "posts/post-with-code/index.html",
+    "href": "posts/post-with-code/index.html",
+    "title": "Post With Code",
+    "section": "",
+    "text": "This is a post with executable code.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this blog"
+  },
+  {
+    "objectID": "posts/welcome/index.html",
+    "href": "posts/welcome/index.html",
+    "title": "My first Quarto blog",
+    "section": "",
+    "text": "This will be a blog dedicated to fumbling, bumbling, and wrangling with Danish publicly available data.\nThe main purpose will be to:\n\nShow the process of converting data in (hopefully not too) different formats\nShow what can be done with simple publicly available data\nFreely interpret on what the data mean (within the limits of my statistical and epidemiological knowledge)\nPlay around with R, Quarto, and data analysis in general\n\nI do this because I am thoroughly interested in data analysis and interpretation, and because I love playing detective and figuring stuff out."
+  }
+]

@@ -8,7 +8,7 @@ image: "image.jpg"
 
 ## Purpose
 
-I have studied the use of of antidiabetic drugs, or their utilisation, in Denmark, as part of my Ph.D.
+I have studied the use of antidiabetic drugs, or their utilisation, in Denmark, as part of my Ph.D.
 
 My sources were registry data taken directly from Lægemiddelstyrelsens Medicin DataBase (LMDB), which requires special access not given to just anyone.
 

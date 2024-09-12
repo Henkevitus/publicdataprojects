@@ -26,7 +26,7 @@ library(tidyverse)
 ```
 
 
-### Getting the links
+### Getting the data from links
 
 Using an extension of your choice (I use [MarkDownload](https://github.com/deathau/markdownload)) or whatever suits your technical level, we can have a list of all the links to the files. I have hidden all the links in this post, for my own use, in a html comment `<!-- -->`.
 
@@ -50,15 +50,15 @@ head(df_atc_2023)
 
 Ok, this data is without headers. A way to save space probably. 
 
-Thankfully there is a file explaining how its put together. It's on the website and its called [Downloadbeskrivelse medstat](https://medstat.dk/apps/lms/public/dokumentation/Downloadbeskrivelse.pdf). I need to get the column names from this file.
+**Thankfully** there is a file explaining how its put together. It's on the website and its called [Downloadbeskrivelse medstat](https://medstat.dk/apps/lms/public/dokumentation/Downloadbeskrivelse.pdf). 
 
-This file tells me that for example any file called `YYYY_atc_code_data_txt` has the following variables (Translated to english): `atc, year, sector, region, sex, agegroup, count_persons, count_persons_per1kpop, turnover, reimbursement, sold_amount, sold_amount_1kpop_day, personreferabledata`.
+I need to get the column names from this file. The "Downloadbeskrivelse medstat" file tells me that for example any file called `YYYY_atc_code_data_txt` has the following variables (Translated to english): `atc, year, sector, region, sex, agegroup, count_persons, count_persons_per1kpop, turnover, reimbursement, sold_amount, sold_amount_1kpop_day, personreferabledata`.
 
-So we can use `colnames()` to transfer these column names to our dataset
+So we can use `colnames()` to transfer these column names to our dataset.
 
 ```{r}
 # attach colnames
-colnames(df_atc_2023) <- c("atc","year","sector","region","sex","agegroup","count_persons","count_persons_per1kpop","turnover","reimbursement", "sold_amount", "sold_amount_1kpop_day", "personreferabledata")
+colnames(df_atc_2023) <- c("atc","year","sector","region","sex","agegroup","count_persons","count_persons_per1kpop","turnover","reimbursement", "sold_amount", "sold_amount_1kpop_day", "personreferabledata_perc")
 
 # View data
 head(df_atc_2023)
@@ -73,12 +73,17 @@ colnames(df_atc_2023)[is.na(colnames(df_atc_2023))] <- "missing_name"
 # table of content
 table(df_atc_2023$missing_name)
 
-# Ok it has nothing. Maybe just an artefact from the delim file. Removing it.
-df_atc_2023 <- df_atc_2023 |>  select(-missing_name)
-
 ```
 
-This makes more sense. Time to give the data the correct values. Lets find out what is there.
+Well that IS a table with nothing in it. Maybe just an artifact from the delim file. Lets remove it.
+
+```{r}
+df_atc_2023 <- df_atc_2023 |>  select(-missing_name)
+```
+
+### Wrangling the data to understand it
+
+Time to figure out how this data is structured, and organise the character variables into factors. Factors, as you may know, is a data structure in R, which is akin to a categorisation, ordered or unordered. Since we have age, we probably have at least some age catgegories that are ordered in intervals. Lets find out what the different variables are.
 
 ```{r}
 # Finding all unique values even though i could just consult "Downloadbeskrivelse medstat"
@@ -86,59 +91,112 @@ unique_values_all_columns <- unique(unlist(sapply(df_atc_2023, function(x) if(is
 print(unique_values_all_columns)
 ```
 
-Woops. Forgot that ATC has QUITE a lot of unique values. Lets make a df without the atc value.
+Woops. Forgot that ATC has QUITE a lot of unique values. Lets make a data frame without the atc value.
 
 ```{r}
+# Remove atc
 df_atc_2023_mini <- df_atc_2023 |>  select(-atc)
 
-glimpse(df_atc_2023_mini)
-
+# Go through all variables that could be categories (often stored as characters by default) and display unique values
 unique(unlist(sapply(df_atc_2023_mini, function(x) if(is.character(x)) unique(x))))
+
 ```
 
-More manageable amount of unique values. Lets focus on the unique age groups.
-
-This is much easier with `dplyr`.
+Or, in a little more legible fashion, use some apply functions to first find the ones that are characters with `sapply()`, and then `lapply()` to create a list of all unique values of the character vars.
 
 ```{r}
-df_atc_2023_mini |>  select(agegroup) |> distinct()
+# find character variables
+char_columns <- df_atc_2023_mini[sapply(df_atc_2023_mini, is.character)]
+
+# apply the unique() function to each character variable
+unique_char_values <- lapply(char_columns, unique)
+unique_char_values
+
+# remove the dataframe created for the purpose of creating an overview of the unique values
+rm(df_atc_2023_mini, unique_char_values)
 ```
 
-Is the data correctly aggregated in the age categories? The two summary numbers below should be the same then. Lets use `turnover`.
+More manageable amount of unique values. Although it seems there are multiple age categories within the `agegroup` variable.
+
+Lets focus on the unique age groups. The data for age groups must be duplicated for the ranges 000 to 017, and the age category "00-17". This would not be included if the goal was to save space, as a single variable containing the age from 000 to 95+ could be grouped into intervals with a `mutate()` or `cut()` function.
+
+From here, I will use `dplyr`, as it is easier to read the operations performed on the data.
+
+I will explore the following questions:
+
+1. Are the age range equal to the age intervals? 
+2. What do the sex categories represent?
+3. Exactly to what degree is the dataset full of duplicated data?
+
+#### Age range versus intervals
+
+The two summary numbers below should be the same then. Lets use `turnover` for comparison.
+
+First, lets summarize `turnover` for the age interval "00-17".
 
 ```{r}
 # 00-17 is easily filtered 
-df_atc_2023_0_17 <- df_atc_2023 |> 
+df_atc_2023_0_17_interval <- df_atc_2023 |> 
   filter(agegroup == "00-17") |> 
   summarize(turnover = sum(turnover, na.rm = TRUE))
+```
 
+15.373.244 DKK, in 1000, so 15.373.244.000, or more than 15 billion DKK in 2023. For one age interval. Woav.
+
+Now, lets try to do it for the age range.
+
+
+```{r}
 # make vector to include in the filter
 numbers <- sprintf("%03d", 0:17)
 
 # Now filter in the same way as above, but for 000 to 017
-df_atc_2023_0_17_2 <- df_atc_2023 |> 
+df_atc_2023_0_17_range <- df_atc_2023 |> 
   filter(agegroup %in% numbers) |> 
-  mutate(agegroup_combined = ifelse(agegroup %in% numbers, "000-017", agegroup)) |> 
-  summarize(turnover = sum(turnover, na.rm = TRUE), .groups = "drop") 
-
-# Summary
-print(df_atc_2023_0_17)
-print(df_atc_2023_0_17_2)
+  mutate(
+    agegroup_combined = 
+      ifelse(
+        agegroup %in% numbers, 
+        "000-017", 
+        agegroup)) |> 
+  ungroup() |> 
+  summarize(turnover = sum(turnover, na.rm = TRUE)) #, .groups = "drop")
 ```
 
-
+Now lets compare.
 
 ```{r}
-# correctly specify data
-df_atc_1996 <- df_atc_1996 |> 
-  mutate(
-    case_when(
-      sex == "A" ~ "all",
-      .default = as.factor(sex)
-    )
-  )
+# Summary
+print(df_atc_2023_0_17_interval)
+print(df_atc_2023_0_17_range)
+```
+Okay, these two should be equal. What went wrong?
+
+```{r}
+testint <- df_atc_2023 |> 
+  filter(agegroup == "00-17")
+
+testrange <- df_atc_2023 |> 
+  filter(agegroup %in% numbers) 
+
+# Table of values
+table(testrange$agegroup)
+```
+
+Very strange. I want to compare how the `turnover` distributions look like.
+
+```{r}
+# use basic R functions
+par(mfrow = c(2, 1))
+hist(testint$turnover)
+hist(testrange$turnover)
 
 ```
+
+That reveals nothing, I wonder what other visualisations could be used to compare.
+
+#### Sex categories
+#### How much is duplicate
 
 ## Product name files
 
@@ -154,3 +212,23 @@ df_prod_1996
 
 
 ```
+
+
+<!--- DUMP
+
+
+```{r}
+# correctly specify data
+df_atc_1996 <- df_atc_1996 |> 
+  mutate(
+    case_when(
+      sex == "A" ~ "all",
+      .default = as.factor(sex)
+    )
+  )
+
+```
+
+
+
+-->

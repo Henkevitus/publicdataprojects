@@ -2,8 +2,9 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/post-with-code/index.html",
-      "/posts/welcome/index.html"
+      "/posts/post3-tot_ddd_use/index.html",
+      "/posts/post2-medstat-function/index.html",
+      "/posts/post1-medstatexplore/index.html"
     ]
   }
 ]

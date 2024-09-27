@@ -8,7 +8,7 @@ categories:
   - analysis
   - exploration
   - functions
-image: "image.jpg"
+image: image.PNG
 ---
 
 ## Purpose
@@ -24,6 +24,9 @@ So I am going to condense the code I wrote for the purpose of presenting turnove
 So, I don't need to take all of the code from the previous post, just what I need for the function. I also slim the data down a bit with the [`select()`](https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html) function.
 
 ```{r}
+#| warning: false
+
+
 library(tidyverse)
 
 process_atc_data <- function(year, url) {

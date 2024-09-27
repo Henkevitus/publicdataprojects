@@ -12,8 +12,9 @@ website:
       #   href: https://twitter.com
 format:
   html:
-    theme: solar
+    theme: darkly
     css: styles.css
+    fontsize: 0.9em
 
 editor: source
 

@@ -42,7 +42,7 @@ This leads to the following code necessary to download and import the file:
 url <- "https://www.esundhed.dk/-/media/Files/Publikationer/Emner/Laegemidler/Medicinpriser/2024/lmpriser_eSundhed_240916.ashx"
 
 # Define a path in my local datafolder, used as described in the first post about medstat data
-datapath <- "C:/Users/VV16SU/OneDrive - Aalborg Universitet/Dokumenter/data-publicdataprojects/"
+datapath <- "C:/Users/henri/Documents/data-publicdataprojects"
 
 # Define the path where the ZIP file will be saved
 zip_destfile <- paste0(datapath,"lmpriser_eSundhed_240916.zip")
@@ -72,7 +72,7 @@ Just as the post, I want to focus on drugs used for diabetes. So I keep only the
 ```{r}
 # Cleaning it in one set of operations
 df_ddd_A10 <- df_ddd |> 
-# Filter for just A10A and A10B, and keep just aup per ddd 
+# Filter for just A10A and A10B, and keep just prp per ddd 
   filter(
     str_detect(ATC,("^A10B")) | str_detect(ATC,("^A10A")), 
     Indikator == "AUP_pr_DDD") |> 
@@ -82,17 +82,17 @@ df_ddd_A10 <- df_ddd |>
   pivot_longer(
     cols = starts_with("20"),
     names_to = "Tid",
-    values_to = "aupddd") |> 
+    values_to = "prpddd") |> 
   mutate(
     Tid = ymd(Tid)) |>
   # group_by(tid) |>  DELETE??
   # mutate(
-  #   hip_ddd = max(aupddd), # hip_ddd = maxpris per ddd
-  #   lop_ddd = min(aupddd) # lop_ddd = minpris per ddd
+  #   hip_ddd = max(prpddd), # hip_ddd = maxpris per ddd
+  #   lop_ddd = min(prpddd) # lop_ddd = minpris per ddd
   # ) |> 
   # ungroup() |> 
   filter(
-    !is.na(aupddd)
+    !is.na(prpddd)
   )
 
 # And translate the colnames to english for good measure
@@ -102,27 +102,27 @@ colnames(df_ddd_A10) <- c(
   "compound",
   "product",
   "time",
-  "prpddd"
+  "prpddd" # Pharmacy Retail Price DDD
 )
 head(df_ddd_A10)
 ```
 
-### Current plan
+### Prepping data for plotting
 
-- prøv at lave en graf over dyreste og billigeste lægemiddel
-- anerkend at der skal laves min og max for hver ATC i hver måned, og prøv at lav en graf for den med den dyreste og billigste
-- anerkend at der skal afgrænses til nogle få relevante ATC
-- Vis hvilke produkter der er inden for hver atc
-- Udvælg specifikke produkter at kigge på
-- lav plots på disse
-- Find det dyreste lægemiddel (fra det originale datasæt `df_ddd`) og sæt dets ddd ind som sammenligning med diabetes atc'erne.
-- lav final plots med facetwrap og det dyreste lægemiddel til sammenligning (ddd) hvis det passer
+**Current plan:**
 
-### Making a plot
+-   prøv at lave en graf over dyreste og billigeste lægemiddel
+-   anerkend at der skal laves min og max for hver ATC i hver måned, og prøv at lav en graf for den med den dyreste og billigste
+-   anerkend at der skal afgrænses til nogle få relevante ATC
+-   Vis hvilke produkter der er inden for hver atc
+-   Udvælg specifikke produkter at kigge på
+-   lav plots på disse
+-   Find det dyreste lægemiddel (fra det originale datasæt `df_ddd`) og sæt dets ddd ind som sammenligning med diabetes atc'erne.
+-   lav final plots med facetwrap og det dyreste lægemiddel til sammenligning (ddd) hvis det passer
 
-The resulting dataset is one with all registered Pharmacy Retail Price per Defined Daily Dose (PRP per DDD) from between `{r} min(df_ddd_A10$time)` and `{r} max(df_ddd_A10$time)`, that is, from the past `{r} as.numeric(difftime(max(df_ddd_A10$time), min(df_ddd_A10$time), units = "days")) / 365.25` years.
+The resulting dataset is one with all registered Pharmacy Retail Price per Defined Daily Dose (PRP per DDD) of Drugs in the A10 ATC category, from between `{r} min(df_ddd_A10$time)` and `{r} max(df_ddd_A10$time)`. In other words: from the past `{r} as.numeric(difftime(max(df_ddd_A10$time), min(df_ddd_A10$time), units = "days")) / 365.25` years.
 
-This is basically a measure of how much it costs to treat a person with the medication with a standard dose, each day, and can be used to compare how much each drug costs to use for treatment. This is used because it can be difficult to compare drugs based on redeemed prescriptions or prices, as some drugs are prescribed differently than others. Also, some drugs have absurdly high prices per pill, as some specialised drugs in oncology and opthalmology, compared to very cheap generic pain killers. 
+This is basically a measure of how much it costs to treat a person with the medication with a standard dose, each day, and can be used to compare how much each drug costs to use for treatment. This is used because it can be difficult to compare drugs based on redeemed prescriptions or prices, as some drugs are prescribed differently than others. Also, some drugs have absurdly high prices per pill, as some specialised drugs in oncology and opthalmology, compared to very cheap generic pain killers.
 
 This is exemplified in the code below.
 
@@ -132,11 +132,11 @@ df_ddd_test <- df_ddd |>
   pivot_longer(
     cols = starts_with("20"),
     names_to = "Tid",
-    values_to = "aup"
+    values_to = "prp"
     ) |> 
     summarise(
-    highest_aup = max(aup, na.rm = TRUE),
-    lowest_aup = min(aup, na.rm = TRUE)
+    highest_prp = max(prp, na.rm = TRUE),
+    lowest_prp = min(prp, na.rm = TRUE)
   )
 df_ddd_test
 ```
@@ -145,17 +145,55 @@ I want to present the numbers with inline code, and this can be done easily with
 
 ```{r}
 # Format the numbers in base R
-formatted_highest_aup <- format(df_ddd_test$highest_aup, big.mark = ",", scientific = FALSE)
-formatted_lowest_aup <- format(df_ddd_test$lowest_aup, big.mark = ",", scientific = FALSE)
+formatted_highest_prp <- format(df_ddd_test$highest_prp, big.mark = ",", scientific = FALSE)
+formatted_lowest_prp <- format(df_ddd_test$lowest_prp, big.mark = ",", scientific = FALSE)
 
 # Print the formatted numbers
-cat("Highest AUP:", formatted_highest_aup, "DKK\n")
-cat("Lowest AUP:", formatted_lowest_aup, "DKK\n")
+cat("Highest AUP:", formatted_highest_prp, "DKK\n")
+cat("Lowest AUP:", formatted_lowest_prp, "DKK\n")
 ```
 
-Trying it out: The highest Pharmacy Retail Price is `{r} cat("Highest AUP:", formatted_highest_aup, "DKK\n")`, and the lowest is `{r} cat("Lowest AUP:", formatted_lowest_aup, "DKK\n")`, which is QUITE a difference.
+Below, the numbers are generated with inline code: 
 
-Now, back to the retail price per DDD. Just as a visual aid, lets compare the most expensive to the cheapest, of the diabetes drugs.
+The highest Pharmacy Retail Price is `{r} cat("Highest AUP:", formatted_highest_prp, "DKK\n")`, and the lowest is `{r} cat("Lowest AUP:", formatted_lowest_prp, "DKK\n")`, which is QUITE a difference.
+
+### Making a plot
+
+Now, back to the retail price per DDD of diabetes drugs. Just as a visual aid, lets compare the most expensive to the cheapest, of the diabetes drugs.
+
+But before that, a useful thing I picked up from [Meghan Hall's blog](https://meghan.rbind.io/), is putting a consistent theme on your plots. This can be done as below.
+
+```{r}
+library(gghighlight)
+library(scales)
+library(ggtext)
+library(ggrepel)
+
+hen_theme <- function () { 
+  theme_linedraw(base_size=11) %+replace%  #, base_family="Helvetica"
+    theme(
+      panel.background  = element_blank(),
+      plot.background = element_rect(fill = "transparent", color = NA), 
+      legend.background = element_rect(fill = "transparent", color = NA),
+      legend.key = element_rect(fill = "transparent", color = NA),
+      axis.ticks = element_blank(),
+      panel.grid.major = element_line(color = "grey90", size = 0.3), 
+      panel.grid.minor = element_blank(),
+      plot.title.position = "plot",
+      plot.title = element_text(size = 16, hjust = 0, vjust = 0.5, 
+                                margin = margin(b = 0.2, unit = "cm")),
+      plot.subtitle = element_text(size = 10, hjust = 0, vjust = 0.5, 
+                                   margin = margin(b = 0.4, unit = "cm")),
+      plot.caption = element_text(size = 7, hjust = 1, face = "italic", 
+                                  margin = margin(t = 0.1, unit = "cm")),
+      axis.text.x = element_text(size = 13),
+      axis.text.y = element_text(size = 13)
+    )
+}
+```
+
+The "hen_theme" is then added to future plots, at the end.
+
 
 ```{r}
 # find most expensive 
@@ -173,25 +211,111 @@ df_ddd_A10 |>
   )
 
 # plot
-test <- df_ddd_A10 |> filter(atc == "A10BX16" | atc == "A10BB12")
-ggplot(test, mapping = aes(x=time,y=prpddd, colour = atc)) +
-  geom_point()
+hilo_ddd <- df_ddd_A10 |> 
+  filter(atc == "A10BX16" | atc == "A10BB12") |> 
+  select(compound,time,prpddd)
+  
+ggplot(hilo_ddd, mapping = aes(x=time,y=prpddd, colour = compound)) +
+  geom_point() +
+  labs(
+    title = "Cheapest and most expensive A10 drugs",
+    subtitle = "by Pharmacy Retail Price per DDD",
+    y = "Pharmacy Retail Price per DDD",
+    x = "",
+  ) +
+  hen_theme() + 
+  theme(
+    legend.title = element_blank(),
+    legend.position = c(0.8,0.9),
+    legend.background = element_rect(fill= "white")
+    )
 ```
 
+This plot tells us that the two drug compounds with the highest and lowest PRP per DDD are Glimepiride, of the [sulfonyurea](https://en.wikipedia.org/wiki/Sulfonylurea) class, and Tirzepatide, a [GIP](https://en.wikipedia.org/wiki/Gastric_inhibitory_polypeptide_receptor) and [GLP1](https://en.wikipedia.org/wiki/GLP-1_receptor_agonist) combination.
 
+Now, I wish to visualise how PRP per DDD changes over time. Below, I create the variables for the minimum and maximum values for each compound.
 
 ```{r}
 # Make a new var thats floored to months and find the min for each month
-df_ddd_A10 <- df_ddd_A10 |> 
+df_ddd_A10_minmax <- df_ddd_A10 |> 
   mutate(month = floor_date(time,"month")) |> 
   group_by(month, atc, compound) |> 
   summarise(
-    a_min_aupddd = min(aupddd, na.rm = TRUE), # "a_" is to make it first in the facetwrap later 
-    b_max_aupddd = max(aupddd, na.rm = TRUE)) |> 
+    a_min_prpddd = min(prpddd, na.rm = TRUE), # "a_" is to make it first in the facetwrap later 
+    b_max_prpddd = max(prpddd, na.rm = TRUE)) |> 
   ungroup()
 
-head(df_ddd_A10)
+head(df_ddd_A10_minmax)
 ```
+
+And now for the grand plot I have planned for this post, which will be an overview of the PRP per DDD for the main drug classes in diabetes type 2 treatment.
+
+First, I limit the dataset to only encompass the classes I want to look at.
+
+```{r}
+dfforplot <- df_ddd_A10_minmax |> 
+  filter(
+    str_detect(atc,"^A10BA") |   # met
+      str_detect(atc,"^A10BB") | # sul
+      str_detect(atc,"^A10BK") | # sglt2
+      str_detect(atc,"^A10BJ") | # glp1
+      str_detect(atc,"^A10BH") | # dpp4
+      str_detect(atc,"^A10BX16"))  # tirzepatid, honoured guest
+
+```
+
+Then, I try to make the plots which contain a surmountable amount of information.
+
+```{r}
+# Minimum values plot
+plotmin <- ggplot(dfforplot) +
+  geom_line(aes(x = month, y = a_min_prpddd, colour = compound), linewidth = 0.8) +
+  labs(title = "Minimum PRP per DDD Over Time",
+       x = "",
+       y = "PRP per DDD",
+       colour = "Drug") +
+  hen_theme()
+# Max
+plotmax <- ggplot(dfforplot) +
+  geom_line(aes(x = month, y = b_max_prpddd, colour = compound), linewidth = 0.8) +
+  labs(title = "Maximum PRP per DDD Over Time",
+       x = "",
+       y = "PRP per DDD",
+       colour = "Drug") +
+  hen_theme()
+
+plotmin
+plotmax
+```
+
+Now that is quite the jumble of lines. 
+
+I want to do the following:
+
+-   Create a more meaningful colour representation
+-   Look at the outliers separately from the ones staying below 50 and 100, respectively.
+
+First, meaningful colour representation
+
+```{r}
+
+```
+
+Then, looking at it separately.
+
+
+```{r}
+df_ddd_clean_lite_long <- df_ddd_clean_lite |> 
+  pivot_longer(
+    cols = ends_with("prpddd"),
+    names_to = "ddd",
+    values_to = "minmax"
+  ) |> arrange(minmax)
+```
+
+
+
+```{=html}
 <!--
 # Lav et mindre med kun metformin, sema, og empa
 df_ddd_clean_lite <- df_ddd_clean |> 
@@ -208,25 +332,25 @@ df_ddd_clean_lite_m <- df_ddd_clean |>
 # PLOT ------------------------------------------------------------------------
 #
 # ggplot(df_ddd_clean_lite_m) +
-#   geom_line(aes(x = month, y = amin_aupddd, colour = Indholdsstof)) + # amin is to make it first in the facetwrap later
-#   geom_line(aes(x = month, y = max_aupddd, colour = Indholdsstof))
+#   geom_line(aes(x = month, y = amin_prpddd, colour = Indholdsstof)) + # amin is to make it first in the facetwrap later
+#   geom_line(aes(x = month, y = max_prpddd, colour = Indholdsstof))
 #
 # # one more complex one
 # ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = amin_aupddd, colour = Indholdsstof)) +
-#   geom_line(aes(x = month, y = max_aupddd, colour = Indholdsstof))
+#   geom_line(aes(x = month, y = amin_prpddd, colour = Indholdsstof)) +
+#   geom_line(aes(x = month, y = max_prpddd, colour = Indholdsstof))
 
 # kør dette forbi GPT. Lav to akser.. så man kan kende forskel på min og max
 
 # # Two different
 # plotmin <- ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = min_aupddd, colour = Indholdsstof), linewidth = 0.8) +
+#   geom_line(aes(x = month, y = min_prpddd, colour = Indholdsstof), linewidth = 0.8) +
 #   labs(title = "Minimum AUP per DDD Over Time",
 #        x = "",
 #        y = "AUP per DDD",
 #        colour = "Drug") 
 # plotmax <- ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = max_aupddd, colour = Indholdsstof), linewidth = 0.8) +
+#   geom_line(aes(x = month, y = max_prpddd, colour = Indholdsstof), linewidth = 0.8) +
 #   labs(title = "Maximum AUP per DDD Over Time",
 #        x = "",
 #        y = "",
@@ -240,10 +364,10 @@ df_ddd_clean_lite_m <- df_ddd_clean |>
 
 # a not good alternative to below graph
 ggplot(df_ddd_clean_lite) +
-  geom_line(aes(x = month, y = amin_aupddd, colour = Indholdsstof, linetype = "Min Value"), linewidth = 0.8) +
-  #geom_point(aes(x = month, y = min_aupddd, colour = Indholdsstof), shape = 16, size = 2) +
-  geom_line(aes(x = month, y = max_aupddd, colour = Indholdsstof, linetype = "Max Value"), linewidth = 0.8) +
-  #geom_point(aes(x = month, y = max_aupddd, colour = Indholdsstof), shape = 17, size = 2) +
+  geom_line(aes(x = month, y = amin_prpddd, colour = Indholdsstof, linetype = "Min Value"), linewidth = 0.8) +
+  #geom_point(aes(x = month, y = min_prpddd, colour = Indholdsstof), shape = 16, size = 2) +
+  geom_line(aes(x = month, y = max_prpddd, colour = Indholdsstof, linetype = "Max Value"), linewidth = 0.8) +
+  #geom_point(aes(x = month, y = max_prpddd, colour = Indholdsstof), shape = 17, size = 2) +
   scale_linetype_manual(name = "Value Type", values = c("Min Value" = "solid", "Max Value" = "dashed")) +
   labs(title = "Minimum and Maximum Values Over Time",
        x = "",
@@ -257,7 +381,7 @@ ggplot(df_ddd_clean_lite) +
 # Facet wrap it...
 df_ddd_clean_lite_long <- df_ddd_clean_lite |> 
   pivot_longer(
-    cols = ends_with("aupddd"),
+    cols = ends_with("prpddd"),
     names_to = "ddd",
     values_to = "minmax"
   ) |> arrange(minmax)
@@ -349,3 +473,4 @@ pricedif <- df_ddd_clean_lite_long |>
 print(pricedif, n = 40)
 
 -->
+```

@@ -263,7 +263,8 @@ dfforplot <- df_ddd_A10_minmax |>
       str_detect(atc,"^A10BK") | # sglt2
       str_detect(atc,"^A10BJ") | # glp1
       str_detect(atc,"^A10BH") | # dpp4
-      str_detect(atc,"^A10BX16"))  # tirzepatid, honoured guest
+      str_detect(atc,"^A10BX16") # tirzepatid, honoured guest
+    )  
 
 ```
 
@@ -362,24 +363,13 @@ visually meaningful.
 testplot1 <- ggplot(dfforplot, aes(x = month, y = a_min_prpddd, colour = compound)) +
   geom_line() +
   scale_colour_manual(values = colour_mapping) +
-  # scale_x_date(
-  #   date_breaks = "1 year",
-  #   date_labels = "%Y",
-  #   expand = c(0, 0)
-  # ) +
   scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
                      labels = format(seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"), "%Y")) +
   labs(title = "Minimum Pharmacy Retail Price per DDD, in DKK",
        x = "",
        y = "",
-       colour = "Drug") # +
-  # theme_minimal() +
-  # theme(legend.position = "bottom") + 
-  # theme(strip.text = element_blank()) + 
-  # theme(
-  #   axis.text=element_text(size=15), 
-  #   legend.text = element_text(size=15),
-  #   title = element_text(size=14))
+       colour = "Drug") +
+  hen_theme() 
 
 testplot1
 ```
@@ -390,10 +380,14 @@ the plots for outliers and everything else separately>
 1. Sort the legend according to drug class (atc codes)
 2. Reduce the amount of compounds included
 
-For (1), I will do the following:
+For (1), y'all need to hold on for dear life because this stuff is an amalgamat-
+ion of what I have done in my PhD combined with some new things. I will have to 
+explain each part of the code in great detail to even remember how this works.
+
+I will do the following:
 
 ```{r}
-dfforplot <- dfforplot %>%
+dfforplot <- dfforplot |> 
   mutate(class = case_when(
     substr(atc, 1, 5) == "A10BA" ~ "Metformin",
     substr(atc, 1, 5) == "A10BB" ~ "Sulfonylureas",
@@ -403,16 +397,58 @@ dfforplot <- dfforplot %>%
     substr(atc, 1, 5) == "A10BX" ~ "Tirzepatide",
     TRUE ~ "Other"  # For any other unclassified codes
   ))
+
 class_order <- c("Metformin", "Sulfonylureas", "DPP4", "GLP1", "SGLT2", "Tirzepatide")
-dfforplot <- dfforplot %>%
-  mutate(class = factor(class, levels = class_order)) %>%
-  arrange(class, compound)
+dfforplot <- dfforplot |>
+  mutate(class = factor(class, levels = class_order))  |>
+  arrange(class, compound) |>
+  mutate(compound = factor(compound, levels = unique(compound)))
+
+met_colours  <- colorRampPalette(c("black"))(1)
+su_colours  <- colorRampPalette(c("red","tomato"))(4)
+dpp4_colours   <- colorRampPalette(c("#2ca02c","#1e7f5f"))(5) # NB THIS WORKS BECAUSE THE FIRST 5 ARE DPP4, 6 are GLP1, etc etc.
+glp1_colours   <- colorRampPalette(c("#1f77b4","#4169e1"))(5)
+sglt2_colours  <- colorRampPalette(c("#ffd700","#b8860b"))(4)
+tir_colours  <- colorRampPalette(c("#8b008b"))(1)
+colours_DP <- c(met_colours,
+                su_colours,
+                dpp4_colours,  
+                glp1_colours,
+                sglt2_colours,
+                tir_colours) # combine
+barplot(rep(1,51), col=colours_DP, border = "white", axes = FALSE)
+
 ```
 
 For (2), I will check for underused compounds and remove them, to avoid clutter-
 ing the plot with compounds which dont add that much information about changing 
 treatment trends.
 
+I use [Medstat](https://medstat.dk/) as a source.
+
+```{r}
+
+```
+
+Now, lets make plots for the ones that are not outliers. In practice I will do 
+that by just limiting the y axis.
+
+```{r}
+
+ ggplot(dfforplot, aes(x = month, y = a_min_prpddd, colour = compound)) +
+  geom_line() +
+  scale_colour_manual(values = colours_DP) +
+  scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
+                     labels = format(seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"), "%Y")) +
+  labs(title = "Minimum Pharmacy Retail Price per DDD, in DKK",
+       x = "",
+       y = "",
+       colour = "Drug") +
+  hen_theme() +
+  ylim(0,40) 
+testplot2
+
+```
 
 
 To use `facet_wrap()`, we pivot the dataset before plotting.

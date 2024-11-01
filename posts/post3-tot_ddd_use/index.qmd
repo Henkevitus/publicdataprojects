@@ -24,6 +24,7 @@ library(tidyverse)
 library(readxl)
 library(httr)
 library(stringr)
+library(extrafont)
 # install.packages("ggpubr")
 # library(gridExtra)
 # library(ggpubr)
@@ -170,7 +171,7 @@ library(ggtext)
 library(ggrepel)
 
 hen_theme <- function () { 
-  theme_linedraw(base_size=11) %+replace%  #, base_family="Helvetica"
+  theme_linedraw(base_size=11) %+replace%  
     theme(
       panel.background  = element_blank(),
       plot.background = element_rect(fill = "transparent", color = NA), 
@@ -191,6 +192,8 @@ hen_theme <- function () {
     )
 }
 ```
+
+<!-- fuld linje theme_linedraw(base_size=11, base_family="Calibri") %+replace%. Gider ikke loade en masse fancy fonts. ikke så vigtigt. Det er besværligt men https://towardsdev.com/simple-guide-changing-fonts-in-ggplot2-with-extrafont-8f5100855f4 kan bruges. -->
 
 The "hen_theme" is then added to future plots, at the end.
 
@@ -295,23 +298,137 @@ I want to do the following:
 -   Create a more meaningful colour representation
 -   Look at the outliers separately from the ones staying below 50 and 100, respectively.
 
-First, meaningful colour representation
+First, meaningful colour representation.
+
+The exact amount of different compounds within each class can be found via the code below.
 
 ```{r}
+dfforplot |> group_by(atc) |> distinct(compound)
+```
+
+Now we can setup a vector with colour mapping using the output from above. Copy and paste it into a text editor to convert it to something useful. 
+
+There are probably smarter ways to use that output. 
+
+```{r}
+# prep colour scheme for drugs
+
+colour_mapping <- c(
+  # Unique drug
+  "Metformin"       = "#000000",  # Deep Blue (for uniqueness)
+
+  # Sulfonylureas (reddish colors)
+  "Glibenclamid"    = "#d62728",  # Red
+  "Glipizid"        = "#e37777",  # Light Red
+  "Gliclazid"       = "#c13515",  # Darker Red
+  "Glimepirid"      = "#ff6347",  # Tomato Red
+
+  # DPP-4 inhibitors (greenish colors)
+  "Sitagliptin"     = "#2ca02c",  # Green
+  "Vildagliptin"    = "#98df8a",  # Light Green
+  "Saxagliptin"     = "#34a56f",  # Teal Green
+  "Alogliptin"      = "#57a774",  # Medium Green
+  "Linagliptin"     = "#1e7f5f",  # Dark Green
+
+  # GLP-1 receptor agonists (bluish colors)
+  "Exenatid"        = "#1f77b4",  # Deep Blue
+  "Liraglutid"      = "#5b9bd5",  # Light Blue
+  "Lixisenatid"     = "#6495ed",  # Cornflower Blue
+  "Dulaglutid"      = "#4682b4",  # Steel Blue
+  "Semaglutid"      = "#4169e1",  # Royal Blue
+
+  # SGLT2 inhibitors (yellowish and brownish colors)
+  "Dapagliflozin"   = "#ffd700",  # Gold
+  "Canagliflozin"   = "#e5b33f",  # Dark Yellow
+  "Empagliflozin"   = "#d9a120",  # Mustard
+  "Ertugliflozin"   = "#b8860b",  # Dark Goldenrod
+
+  # Tirzepatide (distinct color)
+  "Tirzepatid"      = "#8b008b"   # Dark Magenta
+)
 
 ```
 
-Then, looking at it separately.
+<!-- 
+Maybe change line shapes, see ggplot index - 
+aes_linetype_size_shape {ggplot2} ..
 
+Then i make geom-lines for each atc group ? -->
+
+Then, looking at the ones who are not outliers separately to see if the graph is
+visually meaningful.
 
 ```{r}
-df_ddd_clean_lite_long <- df_ddd_clean_lite |> 
+testplot1 <- ggplot(dfforplot, aes(x = month, y = a_min_prpddd, colour = compound)) +
+  geom_line() +
+  scale_colour_manual(values = colour_mapping) +
+  # scale_x_date(
+  #   date_breaks = "1 year",
+  #   date_labels = "%Y",
+  #   expand = c(0, 0)
+  # ) +
+  scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
+                     labels = format(seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"), "%Y")) +
+  labs(title = "Minimum Pharmacy Retail Price per DDD, in DKK",
+       x = "",
+       y = "",
+       colour = "Drug") # +
+  # theme_minimal() +
+  # theme(legend.position = "bottom") + 
+  # theme(strip.text = element_blank()) + 
+  # theme(
+  #   axis.text=element_text(size=15), 
+  #   legend.text = element_text(size=15),
+  #   title = element_text(size=14))
+
+testplot1
+```
+
+First of all, this is a mess. I want to add the following things to looking at 
+the plots for outliers and everything else separately>
+
+1. Sort the legend according to drug class (atc codes)
+2. Reduce the amount of compounds included
+
+For (1), I will do the following:
+
+```{r}
+dfforplot <- dfforplot %>%
+  mutate(class = case_when(
+    substr(atc, 1, 5) == "A10BA" ~ "Metformin",
+    substr(atc, 1, 5) == "A10BB" ~ "Sulfonylureas",
+    substr(atc, 1, 5) == "A10BH" ~ "DPP4",
+    substr(atc, 1, 5) == "A10BJ" ~ "GLP1",
+    substr(atc, 1, 5) == "A10BK" ~ "SGLT2",
+    substr(atc, 1, 5) == "A10BX" ~ "Tirzepatide",
+    TRUE ~ "Other"  # For any other unclassified codes
+  ))
+class_order <- c("Metformin", "Sulfonylureas", "DPP4", "GLP1", "SGLT2", "Tirzepatide")
+dfforplot <- dfforplot %>%
+  mutate(class = factor(class, levels = class_order)) %>%
+  arrange(class, compound)
+```
+
+For (2), I will check for underused compounds and remove them, to avoid clutter-
+ing the plot with compounds which dont add that much information about changing 
+treatment trends.
+
+
+
+To use `facet_wrap()`, we pivot the dataset before plotting.
+
+```{r}
+# pivot
+dfforplot_pivot <- dfforplot |> 
   pivot_longer(
     cols = ends_with("prpddd"),
     names_to = "ddd",
     values_to = "minmax"
   ) |> arrange(minmax)
+
+# plot
 ```
+
 
 
 
@@ -327,30 +444,30 @@ df_ddd_clean_lite <- df_ddd_clean |>
 
 # Kun Metformin
 df_ddd_clean_lite_m <- df_ddd_clean |> 
-  filter(str_detect(Indholdsstof,"Metformin"))
+  filter(str_detect(compound,"Metformin"))
 
 # PLOT ------------------------------------------------------------------------
 #
 # ggplot(df_ddd_clean_lite_m) +
-#   geom_line(aes(x = month, y = amin_prpddd, colour = Indholdsstof)) + # amin is to make it first in the facetwrap later
-#   geom_line(aes(x = month, y = max_prpddd, colour = Indholdsstof))
+#   geom_line(aes(x = month, y = amin_prpddd, colour = compound)) + # amin is to make it first in the facetwrap later
+#   geom_line(aes(x = month, y = max_prpddd, colour = compound))
 #
 # # one more complex one
 # ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = amin_prpddd, colour = Indholdsstof)) +
-#   geom_line(aes(x = month, y = max_prpddd, colour = Indholdsstof))
+#   geom_line(aes(x = month, y = amin_prpddd, colour = compound)) +
+#   geom_line(aes(x = month, y = max_prpddd, colour = compound))
 
 # kør dette forbi GPT. Lav to akser.. så man kan kende forskel på min og max
 
 # # Two different
 # plotmin <- ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = min_prpddd, colour = Indholdsstof), linewidth = 0.8) +
+#   geom_line(aes(x = month, y = min_prpddd, colour = compound), linewidth = 0.8) +
 #   labs(title = "Minimum AUP per DDD Over Time",
 #        x = "",
 #        y = "AUP per DDD",
 #        colour = "Drug") 
 # plotmax <- ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = max_prpddd, colour = Indholdsstof), linewidth = 0.8) +
+#   geom_line(aes(x = month, y = max_prpddd, colour = compound), linewidth = 0.8) +
 #   labs(title = "Maximum AUP per DDD Over Time",
 #        x = "",
 #        y = "",
@@ -364,10 +481,10 @@ df_ddd_clean_lite_m <- df_ddd_clean |>
 
 # a not good alternative to below graph
 ggplot(df_ddd_clean_lite) +
-  geom_line(aes(x = month, y = amin_prpddd, colour = Indholdsstof, linetype = "Min Value"), linewidth = 0.8) +
-  #geom_point(aes(x = month, y = min_prpddd, colour = Indholdsstof), shape = 16, size = 2) +
-  geom_line(aes(x = month, y = max_prpddd, colour = Indholdsstof, linetype = "Max Value"), linewidth = 0.8) +
-  #geom_point(aes(x = month, y = max_prpddd, colour = Indholdsstof), shape = 17, size = 2) +
+  geom_line(aes(x = month, y = amin_prpddd, colour = compound, linetype = "Min Value"), linewidth = 0.8) +
+  #geom_point(aes(x = month, y = min_prpddd, colour = compound), shape = 16, size = 2) +
+  geom_line(aes(x = month, y = max_prpddd, colour = compound, linetype = "Max Value"), linewidth = 0.8) +
+  #geom_point(aes(x = month, y = max_prpddd, colour = compound), shape = 17, size = 2) +
   scale_linetype_manual(name = "Value Type", values = c("Min Value" = "solid", "Max Value" = "dashed")) +
   labs(title = "Minimum and Maximum Values Over Time",
        x = "",
@@ -387,53 +504,12 @@ df_ddd_clean_lite_long <- df_ddd_clean_lite |>
   ) |> arrange(minmax)
 df_ddd_clean_lite_long
 
-# prep colour scheme for drugs
 
-# sglt2_drugs <- c("Canagliflozin", "Dapagliflozin", "Empagliflozin", "Ertugliflozin")
-# glp1_drugs <- c("Dulaglutid", "Liraglutid", "Exenatid", "Lixisenatid", "Semaglutid")
-# dpp4_drugs <- c("Linagliptin", "Vildagliptin", "Sitagliptin", "Alogliptin")
-# metformin <- c("Metformin")
-
-color_mapping <- c(
-  # SGLT2 Inhibitors (Oranges)
-  "Canagliflozin" = "orange1",   # Dark Orange
-  "Dapagliflozin" = "orange3",   # Orange
-  "Empagliflozin" = "tan1",   # Light Orange
-  "Ertugliflozin" = "tan4",   # Tomato
-
-  # GLP-1 Receptor Agonists (Blues)
-  # "Dulaglutid" = "red1",
-  # "Exenatid" = "red3",
-  # "Lixisenatid" = "firebrick",
-  # "Liraglutid" = "brown1",
-  # "Semaglutid" = "darkred",
-  "Dulaglutid" = "lightblue",      # Dodger Blue
-  "Exenatid" = "steelblue",        # Sky Blue
-  "Lixisenatid" = "dodgerblue",     # Steel Blue
-  "Liraglutid" = "mediumpurple",      # Deep Sky Blue
-  "Semaglutid" = "purple",      # Royal Blue
-
-  # DPP4
-  "Linagliptin" = "green1",
-  "Vildagliptin" = "green3",
-  "Sitagliptin" = "seagreen",
-  "Alogliptin" = "seagreen2",
-
-  # Metformin
-  "Metformin" = "black"        # Forest Green
-)
-
-# color_mapping <- c(
-#   dpp4_colours   <- colorRampPalette(c("pink","darkred"))(5) # NB THIS WORKS BECAUSE THE FIRST 5 ARE DPP4, 6 are GLP1, etc etc.
-#   glp1_colours   <- colorRampPalette(c("lightblue1","darkblue"))(6)
-#   sglt2_colours  <- colorRampPalette(c("yellow","orange4"))(4)
-#   met_colour  <- c("darkgreen")
-# )
 #demo("colors") for at se alle farverne
 
 # Graph
 # pdf(file="DDDplot_thesis2.pdf")
-ggplot(df_ddd_clean_lite_long, aes(x = month, y = minmax, colour = Indholdsstof)) +
+ggplot(df_ddd_clean_lite_long, aes(x = month, y = minmax, colour = compound)) +
   geom_line() +
   facet_wrap(~ ddd, scales = "free") +
   scale_colour_manual(values = color_mapping) +
@@ -465,7 +541,7 @@ ggsave("DDDplot_thesis.png",
 ## HELP WITH PRICE DIFFERENCE RATIO ------------------------------------------
 
 pricedif <- df_ddd_clean_lite_long |> 
-  group_by(ddd,Indholdsstof) |> 
+  group_by(ddd,compound) |> 
   summarise(min = min(minmax), max = max(minmax)) |> 
   arrange(min, max) |> 
   ungroup() 

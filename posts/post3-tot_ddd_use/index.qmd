@@ -110,17 +110,6 @@ head(df_ddd_A10)
 
 ### Prepping data for plotting
 
-**Current plan:**
-
--   prøv at lave en graf over dyreste og billigeste lægemiddel
--   anerkend at der skal laves min og max for hver ATC i hver måned, og prøv at lav en graf for den med den dyreste og billigste
--   anerkend at der skal afgrænses til nogle få relevante ATC
--   Vis hvilke produkter der er inden for hver atc
--   Udvælg specifikke produkter at kigge på
--   lav plots på disse
--   Find det dyreste lægemiddel (fra det originale datasæt `df_ddd`) og sæt dets ddd ind som sammenligning med diabetes atc'erne.
--   lav final plots med facetwrap og det dyreste lægemiddel til sammenligning (ddd) hvis det passer
-
 The resulting dataset is one with all registered Pharmacy Retail Price per Defined Daily Dose (PRP per DDD) of Drugs in the A10 ATC category, from between `{r} min(df_ddd_A10$time)` and `{r} max(df_ddd_A10$time)`. In other words: from the past `{r} as.numeric(difftime(max(df_ddd_A10$time), min(df_ddd_A10$time), units = "days")) / 365.25` years.
 
 This is basically a measure of how much it costs to treat a person with the medication with a standard dose, each day, and can be used to compare how much each drug costs to use for treatment. This is used because it can be difficult to compare drugs based on redeemed prescriptions or prices, as some drugs are prescribed differently than others. Also, some drugs have absurdly high prices per pill, as some specialised drugs in oncology and opthalmology, compared to very cheap generic pain killers.
@@ -154,7 +143,7 @@ cat("Highest AUP:", formatted_highest_prp, "DKK\n")
 cat("Lowest AUP:", formatted_lowest_prp, "DKK\n")
 ```
 
-Below, the numbers are generated with inline code: 
+Below, the numbers are generated with inline code:
 
 The highest Pharmacy Retail Price is `{r} cat("Highest AUP:", formatted_highest_prp, "DKK\n")`, and the lowest is `{r} cat("Lowest AUP:", formatted_lowest_prp, "DKK\n")`, which is QUITE a difference.
 
@@ -196,7 +185,6 @@ hen_theme <- function () {
 <!-- fuld linje theme_linedraw(base_size=11, base_family="Calibri") %+replace%. Gider ikke loade en masse fancy fonts. ikke så vigtigt. Det er besværligt men https://towardsdev.com/simple-guide-changing-fonts-in-ggplot2-with-extrafont-8f5100855f4 kan bruges. -->
 
 The "hen_theme" is then added to future plots, at the end.
-
 
 ```{r}
 # find most expensive 
@@ -292,7 +280,7 @@ plotmin
 plotmax
 ```
 
-Now that is quite the jumble of lines. 
+Now that is quite the jumble of lines.
 
 I want to do the following:
 
@@ -307,9 +295,7 @@ The exact amount of different compounds within each class can be found via the c
 dfforplot |> group_by(atc) |> distinct(compound)
 ```
 
-Now we can setup a vector with colour mapping using the output from above. Copy and paste it into a text editor to convert it to something useful. 
-
-There are probably smarter ways to use that output. 
+Now we can setup a vector with colour mapping using the output from above. Copy and paste it into a text editor to convert it to something useful. There are probably smarter ways to use that output.
 
 ```{r}
 # prep colour scheme for drugs
@@ -350,17 +336,18 @@ colour_mapping <- c(
 
 ```
 
+```{=html}
 <!-- 
 Maybe change line shapes, see ggplot index - 
 aes_linetype_size_shape {ggplot2} ..
 
 Then i make geom-lines for each atc group ? -->
+```
 
-Then, looking at the ones who are not outliers separately to see if the graph is
-visually meaningful.
+Now to look at the ones who are not outliers separately to see if the graph is visually meaningful.
 
 ```{r}
-testplot1 <- ggplot(dfforplot, aes(x = month, y = a_min_prpddd, colour = compound)) +
+testplot1 <- ggplot(dfforplot |> filter(a_min_prpddd<100), aes(x = month, y = a_min_prpddd, colour = compound)) +
   geom_line() +
   scale_colour_manual(values = colour_mapping) +
   scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
@@ -374,17 +361,18 @@ testplot1 <- ggplot(dfforplot, aes(x = month, y = a_min_prpddd, colour = compoun
 testplot1
 ```
 
-First of all, this is a mess. I want to add the following things to looking at 
-the plots for outliers and everything else separately>
+First of all, this is a mess. In addition to looking at the outliers separately, I want to do the following:
 
-1. Sort the legend according to drug class (atc codes)
-2. Reduce the amount of compounds included
+1.  Sort the legend according to drug class (atc codes)
+2.  Reduce the amount of compounds included
 
-For (1), y'all need to hold on for dear life because this stuff is an amalgamat-
-ion of what I have done in my PhD combined with some new things. I will have to 
-explain each part of the code in great detail to even remember how this works.
+For (1), y'all need to hold on for dear life because this stuff is an amalgamation of what I have done in my PhD combined with some new things. I will have to explain each part of the code in great detail to even remember how this works.
 
-I will do the following:
+*The explanations are maybe mostly for me*.
+
+To achieve that, I will firstly make a variable with a label for each drug class. Then, I will order the compound variable by the class variable. Then I apply cus tom colours to the compound variable.
+
+The first part is relatively simply done using `case_when()` and knowledge of what classes the ATC codes represent.
 
 ```{r}
 dfforplot <- dfforplot |> 
@@ -397,64 +385,118 @@ dfforplot <- dfforplot |>
     substr(atc, 1, 5) == "A10BX" ~ "Tirzepatide",
     TRUE ~ "Other"  # For any other unclassified codes
   ))
+```
 
+For the second part, I set the order I want, turn the `class` variable into a factor, and then `arrange()` the compounds within each class according to this order. Finally, I turn the compound variable into a factor that is ordered by its unique levels, which correspond to the classes, and check that `compound` has the correct order.
+
+```{r}
 class_order <- c("Metformin", "Sulfonylureas", "DPP4", "GLP1", "SGLT2", "Tirzepatide")
 dfforplot <- dfforplot |>
   mutate(class = factor(class, levels = class_order))  |>
   arrange(class, compound) |>
   mutate(compound = factor(compound, levels = unique(compound)))
+print(levels(dfforplot$compound))
+```
 
+The third part is simply remembering the order of classes, and how many compounds are within each class, and then creating a selection of colours via the `colorRampPallette()` function, and then store that in the object `colours_compunds`, to use in the plot.
+
+```{r}
 met_colours  <- colorRampPalette(c("black"))(1)
-su_colours  <- colorRampPalette(c("red","tomato"))(4)
-dpp4_colours   <- colorRampPalette(c("#2ca02c","#1e7f5f"))(5) # NB THIS WORKS BECAUSE THE FIRST 5 ARE DPP4, 6 are GLP1, etc etc.
-glp1_colours   <- colorRampPalette(c("#1f77b4","#4169e1"))(5)
-sglt2_colours  <- colorRampPalette(c("#ffd700","#b8860b"))(4)
+su_colours  <- colorRampPalette(c("pink","darkred"))(4)
+dpp4_colours   <- colorRampPalette(c("green","darkgreen"))(5) # NB THIS WORKS BECAUSE THE FIRST 5 ARE DPP4, 6 are GLP1, etc etc.
+glp1_colours   <- colorRampPalette(c("lightblue","darkblue"))(5)
+sglt2_colours  <- colorRampPalette(c("yellow","#b8860b"))(4)
 tir_colours  <- colorRampPalette(c("#8b008b"))(1)
-colours_DP <- c(met_colours,
+colours_compounds <- c(met_colours,
                 su_colours,
                 dpp4_colours,  
                 glp1_colours,
                 sglt2_colours,
                 tir_colours) # combine
-barplot(rep(1,51), col=colours_DP, border = "white", axes = FALSE)
-
+barplot(rep(1,20), col=colours_compounds, border = "white", axes = FALSE)
 ```
 
-For (2), I will check for underused compounds and remove them, to avoid clutter-
-ing the plot with compounds which dont add that much information about changing 
-treatment trends.
+For (2), I will focus on the three most sold compounds in the latest year and remove the rest to avoid cluttering the plot with information. 
 
-I use [Medstat](https://medstat.dk/) as a source.
+I use [Medstat](https://medstat.dk/) as a source, and what I look for is DDD sold in total across the entire healthcare sector, which is incredible easy to extract from the site. The amounts are from when I viewed the site in October 2024. Below, I store a vector of the most three most used compounds (less if class has less compounds).
 
 ```{r}
-
+kept_compounds <- c(
+  "Metformin", 
+  "Glipizid",
+  "Gliclazid",
+  "Glimepirid",
+  "Sitagliptin",
+  "Vildagliptin",
+  "Linagliptin",
+  "Liraglutid",
+  "Dulaglutid",
+  "Semaglutid",
+  "Dapagliflozin",
+  "Canagliflozin",
+  "Empagliflozin",
+  "Tirzepatid"  
+)
 ```
 
-Now, lets make plots for the ones that are not outliers. In practice I will do 
-that by just limiting the y axis.
+Now, lets make plots for the ones that are not outliers. In practice I will do that by just limiting the y axis.
 
 ```{r}
-
- ggplot(dfforplot, aes(x = month, y = a_min_prpddd, colour = compound)) +
+dfforplot |> 
+  filter(a_min_prpddd<100
+         & compound %in% kept_compounds) |> 
+  ggplot(aes(x = month, y = a_min_prpddd, colour = compound)) +
   geom_line() +
-  scale_colour_manual(values = colours_DP) +
+  scale_colour_manual(values = colours_compounds) +
   scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
                      labels = format(seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"), "%Y")) +
   labs(title = "Minimum Pharmacy Retail Price per DDD, in DKK",
        x = "",
        y = "",
        colour = "Drug") +
-  hen_theme() +
-  ylim(0,40) 
-testplot2
-
+  hen_theme() 
 ```
 
+**Oops**, I messed up. The colours do not fit anymore. Will fit the colours to the new more limited amount of compounds.
+
+```{r}
+met_colours  <- colorRampPalette(c("black"))(1)
+su_colours  <- colorRampPalette(c("pink","darkred"))(3)
+dpp4_colours   <- colorRampPalette(c("green","darkgreen"))(3) # NB THIS WORKS BECAUSE THE FIRST 5 ARE DPP4, 6 are GLP1, etc etc.
+glp1_colours   <- colorRampPalette(c("lightblue","darkblue"))(3)
+sglt2_colours  <- colorRampPalette(c("yellow","#b8860b"))(3)
+tir_colours  <- colorRampPalette(c("#8b008b"))(1)
+colours_compounds <- c(met_colours,
+                su_colours,
+                dpp4_colours,  
+                glp1_colours,
+                sglt2_colours,
+                tir_colours) # combine
+barplot(rep(1,15), col=colours_compounds, border = "white", axes = FALSE)
+```
+Now try again.
+
+```{r}
+dfforplot |> 
+  filter(a_min_prpddd<100
+         & compound %in% kept_compounds) |> 
+  ggplot(aes(x = month, y = a_min_prpddd, colour = compound)) +
+  geom_line() +
+  scale_colour_manual(values = colours_compounds) +
+  scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
+                     labels = format(seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"), "%Y")) +
+  labs(title = "Minimum Pharmacy Retail Price per DDD, in DKK",
+       x = "",
+       y = "",
+       colour = "Drug") +
+  hen_theme() 
+```
+
+Now that looks much better. Now let's make the final graph, using `facet_wrap()` to distinguish between the minimum and maximum PRP per DDD.
 
 To use `facet_wrap()`, we pivot the dataset before plotting.
 
 ```{r}
-# pivot
 dfforplot_pivot <- dfforplot |> 
   pivot_longer(
     cols = ends_with("prpddd"),
@@ -462,127 +504,127 @@ dfforplot_pivot <- dfforplot |>
     values_to = "minmax"
   ) |> arrange(minmax)
 
-# plot
+head(dfforplot_pivot)
 ```
 
+And then make the plot.
 
-
-
-```{=html}
-<!--
-# Lav et mindre med kun metformin, sema, og empa
-df_ddd_clean_lite <- df_ddd_clean |> 
-  filter(
-    str_detect(ATC,"^A10BA") | 
-      str_detect(ATC,"^A10BK") | 
-      str_detect(ATC,"^A10BJ") |
-      str_detect(ATC,"^A10BH"))
-
-# Kun Metformin
-df_ddd_clean_lite_m <- df_ddd_clean |> 
-  filter(str_detect(compound,"Metformin"))
-
-# PLOT ------------------------------------------------------------------------
-#
-# ggplot(df_ddd_clean_lite_m) +
-#   geom_line(aes(x = month, y = amin_prpddd, colour = compound)) + # amin is to make it first in the facetwrap later
-#   geom_line(aes(x = month, y = max_prpddd, colour = compound))
-#
-# # one more complex one
-# ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = amin_prpddd, colour = compound)) +
-#   geom_line(aes(x = month, y = max_prpddd, colour = compound))
-
-# kør dette forbi GPT. Lav to akser.. så man kan kende forskel på min og max
-
-# # Two different
-# plotmin <- ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = min_prpddd, colour = compound), linewidth = 0.8) +
-#   labs(title = "Minimum AUP per DDD Over Time",
-#        x = "",
-#        y = "AUP per DDD",
-#        colour = "Drug") 
-# plotmax <- ggplot(df_ddd_clean_lite) +
-#   geom_line(aes(x = month, y = max_prpddd, colour = compound), linewidth = 0.8) +
-#   labs(title = "Maximum AUP per DDD Over Time",
-#        x = "",
-#        y = "",
-#        colour = "Drug") 
-# legend_b <- get_legend(plotmin + theme(legend.position="bottom"))
-
-# lay <- rbind(c(1,1,1,2,2,2,2),
-#              c(1,1,1,2,2,2,2),
-#              c(1,1,1,2,2,2,2))
-# grid.arrange(plotmin, plotmax, nrow = 2, ncol = 2)
-
-# a not good alternative to below graph
-ggplot(df_ddd_clean_lite) +
-  geom_line(aes(x = month, y = amin_prpddd, colour = compound, linetype = "Min Value"), linewidth = 0.8) +
-  #geom_point(aes(x = month, y = min_prpddd, colour = compound), shape = 16, size = 2) +
-  geom_line(aes(x = month, y = max_prpddd, colour = compound, linetype = "Max Value"), linewidth = 0.8) +
-  #geom_point(aes(x = month, y = max_prpddd, colour = compound), shape = 17, size = 2) +
-  scale_linetype_manual(name = "Value Type", values = c("Min Value" = "solid", "Max Value" = "dashed")) +
-  labs(title = "Minimum and Maximum Values Over Time",
-       x = "",
-       y = "AUP per DDD",
-       colour = "Drug",
-       linetype = "Value Type")
-
-# THIS GRAPH --------------------------------------------------------------
-
-
-# Facet wrap it...
-df_ddd_clean_lite_long <- df_ddd_clean_lite |> 
-  pivot_longer(
-    cols = ends_with("prpddd"),
-    names_to = "ddd",
-    values_to = "minmax"
-  ) |> arrange(minmax)
-df_ddd_clean_lite_long
-
-
-#demo("colors") for at se alle farverne
-
-# Graph
-# pdf(file="DDDplot_thesis2.pdf")
-ggplot(df_ddd_clean_lite_long, aes(x = month, y = minmax, colour = compound)) +
+```{r}
+dfforplot_pivot |> 
+  filter(compound %in% kept_compounds) |> 
+  ggplot(aes(x = month, y = minmax, colour = compound)) +
   geom_line() +
-  facet_wrap(~ ddd, scales = "free") +
-  scale_colour_manual(values = color_mapping) +
-  # scale_x_date(
-  #   date_breaks = "1 year",
-  #   date_labels = "%Y",
-  #   expand = c(0, 0)
-  # ) +
+  facet_wrap(
+    ~ddd, 
+    scales = "free",
+    labeller = labeller(ddd =
+                          c("a_min_prpddd" = "Minimum",
+                            "b_max_prpddd" = "Maximum")
+                        )) +
+  scale_colour_manual(values = colours_compounds) +
   scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
                      labels = format(seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"), "%Y")) +
-  labs(title = "Minimum (left) and Maximum (right) Pharmacy Retail Price per DDD, in DKK",
+  labs(title = "Minimum Pharmacy Retail Price per DDD, in DKK",
        x = "",
        y = "",
        colour = "Drug") +
-  theme_minimal() +
-  theme(legend.position = "bottom") + 
-  theme(strip.text = element_blank()) + 
-  theme(
-    axis.text=element_text(size=15), 
-    legend.text = element_text(size=15),
-    title = element_text(size=14))
-
-# dev.off()
-ggsave("DDDplot_thesis.png",
-       bg="white", 
-       scale =0.5,
-       dpi = 300)
-
-## HELP WITH PRICE DIFFERENCE RATIO ------------------------------------------
-
-pricedif <- df_ddd_clean_lite_long |> 
-  group_by(ddd,compound) |> 
-  summarise(min = min(minmax), max = max(minmax)) |> 
-  arrange(min, max) |> 
-  ungroup() 
-
-print(pricedif, n = 40)
-
--->
+  hen_theme() 
 ```
+
+And the final, more presentable plot.
+
+```{r}
+dfforplot_pivot |> 
+  filter(minmax<100
+         & compound %in% kept_compounds) |> 
+  ggplot(aes(x = month, y = minmax, colour = compound)) +
+  geom_line() +
+  facet_wrap(
+    ~ddd, 
+    scales = "free",
+    labeller = labeller(ddd =
+                          c("a_min_prpddd" = "Minimum",
+                            "b_max_prpddd" = "Maximum")
+                        )) +
+  scale_colour_manual(values = colours_compounds) +
+  scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
+                     labels = format(seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"), "%Y")) +
+  labs(
+    title = "Pharmacy Retail Price per DDD, in DKK",
+    caption = "Outliers: Minimum Tirzepatide prices go from",
+    x = "",
+    y = "",
+    colour = "Drug") +
+  hen_theme() 
+```
+
+I also want to add information about the outliers on the plot.
+
+**JEG HAR GJORT DET MESTE FÆRDIGT OG VIL BARE GERNE SKRIVE DET RENT SENERE**
+
+```{r}
+# Filter the dataset for Semaglutide and Tirzepatide
+subset_df <- dfforplot_pivot %>%
+  filter(compound %in% c("Semaglutid", "Tirzepatid"))
+
+# Summarise the earliest, latest, highest, and lowest values for each compound
+summary_df <- subset_df %>%
+  group_by(compound) %>%
+  summarise(
+    earliest_date = min(month),
+    latest_date = max(month),
+    highest_ddd = max(minmax),
+    lowest_ddd = min(minmax),
+    .groups = 'drop'  # Ungroup after summarising
+  )
+
+# View the resulting dataset
+print(summary_df)
+
+# Create a caption string
+caption_text <- paste(
+  "Outliers were Semaglutide and Tirzepatide. Lowest PRP per DDD for Semaglutide was",
+  "22.6, which increased to 308 in 2024.",
+  "For Tirzepatide, the lowest value was 103, and increased to 522 in September of 2024."
+  )
+
+# Print caption for verification
+print(caption_text)
+```
+
+Doublechecking with my older data.
+
+```{r}
+df_ddd_A10 |> filter(str_detect(compound, "Tirzepatid")) |> summarise(haps = min(prpddd))
+df_ddd_A10 |> filter(str_detect(compound, "Tirzepatid")) |> summarise(haps = max(prpddd))
+df_ddd_A10 |> filter(str_detect(compound, "Semaglutid")) |> summarise(haps = min(prpddd))
+df_ddd_A10 |> filter(str_detect(compound, "Semaglutid")) |> summarise(haps = max(prpddd))
+```
+
+So that makes the final final plot:
+
+```{r}
+dfforplot_pivot |> 
+  filter(minmax<100
+         & compound %in% kept_compounds) |> 
+  ggplot(aes(x = month, y = minmax, colour = compound)) +
+  geom_line() +
+  facet_wrap(
+    ~ddd, 
+    scales = "free",
+    labeller = labeller(ddd =
+                          c("a_min_prpddd" = "Minimum",
+                            "b_max_prpddd" = "Maximum")
+                        )) +
+  scale_colour_manual(values = colours_compounds) +
+  scale_x_continuous(breaks = seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"),
+                     labels = format(seq.Date(as.Date("2020-01-01"), as.Date("2025-12-01"), by = "year"), "%Y")) +
+  labs(
+    title = "Pharmacy Retail Price per DDD, in DKK",
+    caption = caption_text,
+    x = "",
+    y = "",
+    colour = "Drug") +
+  hen_theme() 
+```
+

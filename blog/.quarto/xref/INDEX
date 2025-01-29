@@ -13,5 +13,11 @@
   },
   "posts/post2-medstat-function/index.qmd": {
     "index.html": "33fb0e7f"
+  },
+  "posts/post3-tot_ddd_use/index.knit.md": {
+    "index.knit.html": "1ca28633"
+  },
+  "posts/post4-explanation/index.qmd": {
+    "index.html": "afc67016"
   }
 }

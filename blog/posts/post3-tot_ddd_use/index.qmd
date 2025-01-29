@@ -2,8 +2,13 @@
 title: "Evolution in DDD use of Diabetes Drugs over time"
 author: "Henrik Vitus Bering Laursen"
 date: "2024-09-30" 
-categories: [news, code, analysis]
-#image: "image.jpg"
+categories: 
+  - code
+  - analysis
+  - exploration
+  - cost
+  - drugs
+image: thumbnail.png
 ---
 
 ## Drug utilisation over time
@@ -16,7 +21,7 @@ This is data regarding drug prices, and can be found on The Danish Health Data A
 
 Danish drug prices are by and large renegotiated every 14 days. Therefore, the dataset is updated accordingly. I will use the data from the most [recent update](https://www.esundhed.dk/-/media/Files/Publikationer/Emner/Laegemidler/Medicinpriser/2024/lmpriser_eSundhed_240916.ashx) as of the start of making this post.
 
-I expect to use the following packages:
+Looking at it post hoc, I used the following packages:
 
 ```{r}
 #| warning: false
@@ -36,10 +41,11 @@ I had some initial trouble figuring out how to download the file. What kept me f
 
 Apparently, "The extension .ashx doesn't specify the file format but rather that a server-side handler is being used to serve the content.", as chatGPT puts it. I have no gained the understanding that .ashx is just some sort of framework that serves up the data, not a file type.
 
-This leads to the following code necessary to download and import the file:
+This leads to the following code necessary to download the data. Code is just for show.
 
 ```{r}
-# URL of the .ashx file (which is actually a ZIP file)
+#| eval: false
+# URL of the .ashx file 
 url <- "https://www.esundhed.dk/-/media/Files/Publikationer/Emner/Laegemidler/Medicinpriser/2024/lmpriser_eSundhed_240916.ashx"
 
 # Define a path in my local datafolder, used as described in the first post about medstat data
@@ -59,8 +65,13 @@ list.files(paste0(datapath,"unzipped_files"))
 
 # check which sheet to import from the excel file
 sheet_names <- excel_sheets(paste0(datapath,"unzipped_files/lmpriser_eSundhed_240916.xlsx"))
+```
 
+And then I import the file:
+
+```{r}
 # Read the excel file
+datapath <- "C:/Users/henri/Documents/data-publicdataprojects"
 df_ddd <- read_excel(paste0(datapath,"unzipped_files/lmpriser_eSundhed_240916.xlsx"), sheet = "lmpriser_eSundhed_240916")
 
 head(df_ddd)
@@ -163,9 +174,9 @@ hen_theme <- function () {
   theme_linedraw(base_size=11) %+replace%  
     theme(
       panel.background  = element_blank(),
-      plot.background = element_rect(fill = "transparent", color = NA), 
-      legend.background = element_rect(fill = "transparent", color = NA),
-      legend.key = element_rect(fill = "transparent", color = NA),
+      plot.background = element_rect(fill = "white", color = NA), 
+      legend.background = element_rect(fill = "white", color = NA),
+      legend.key = element_rect(fill = "white", color = NA),
       axis.ticks = element_blank(),
       panel.grid.major = element_line(color = "grey90", size = 0.3), 
       panel.grid.minor = element_blank(),
@@ -626,5 +637,6 @@ dfforplot_pivot |>
     y = "",
     colour = "Drug") +
   hen_theme() 
-```
 
+ggsave("thumbnail.png", plot = last_plot(), width = 6, height = 4) # saved as thumbnail
+```

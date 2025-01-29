@@ -3,11 +3,12 @@ title: "Making sense of Medstat.dk data"
 author: "Henrik Vitus Bering Laursen"
 date: "2024-09-19"
 categories: 
-  - news
   - code
   - analysis
   - exploration
-image: image.PNG
+  - cost
+  - drugs
+image: thumbnail.png
 ---
 
 ## Exploring Medstat data: Drug prescriptions in Denmark
@@ -108,7 +109,6 @@ Time to figure out how this data is structured, and organise the character varia
 
 ```{r}
 #| results: 'hide'
-##| echo: TRUE
 
 # Finding all unique values even though i could just consult "Downloadbeskrivelse medstat"
 unique_values_all_columns <- unique(unlist(sapply(df_atc_2023, function(x) if(is.character(x)) unique(x))))
@@ -273,17 +273,8 @@ Now, I have what I need to create the plots of turnover. I choose to make stacke
 First, I prepare the data, by filtering out all the drug classes I do not wish to focus on, and making the y-axis more readable by dividing it with 1000, thus making it turnover in 1.000.000 of DKK
 
 ```{r}
-# Create vector 
-DCs <- c( # drug classes
-  "A10BJ", # GLP1
-  "A10BK", # SGLT2
-  "A10BH", # DPP4
-  "A10BA", # MET
-  "A10BB", # SU
-  "A10BG", # Thiazo
-  "A10BX", # Others
-  "A10A"   # INSULIN
-  ) 
+# Create vector of drug classes 
+DCs <- c("A10BJ", "A10BK", "A10BH", "A10BA", "A10BB", "A10BG", "A10BX", "A10A") 
 
 # Filter
 df_atc_2023_filtered <- df_atc_2023_filtered |> 
@@ -319,11 +310,14 @@ p1 <- ggplot(df_atc_2023_filtered, aes(x = agegroup, y = turnover1000k, fill = D
 p2 <- ggplot(df_atc_2023_filtered, aes(x = agegroup, y = turnover1000k, fill = DC)) +
   geom_bar(stat = "identity", position = "fill") +
   labs(
+    y = "",
     title = "Proportional turnover by drug class",
     caption = "Source: own calculations based on data from medstat.dk via the Danish Health Data Authority"
     )
 
-p1  
+p1 
+ggsave("thumbnail.png", plot = last_plot(), width = 6, height = 4) # p1 saved as thumbnail
+
 p2  
 
 ```
@@ -332,4 +326,4 @@ Well then.. The turnover for GLP1 in this country is quite impressive, with the 
 
 In the next blog post I aim to show how to redo all that I did, as a function.
 
-**And also be a bit more organised**.
+**And hopefully it will also be a bit more organised**.

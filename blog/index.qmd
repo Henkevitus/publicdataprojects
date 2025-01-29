@@ -1,5 +1,5 @@
 ---
-title: "Publicly available data - playing around and telling stories"
+title: "Playing around and telling stories with publicly available data"
 listing:
   contents: posts
   sort: "date desc"

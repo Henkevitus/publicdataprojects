@@ -3,12 +3,13 @@ title: "Using R functions on medstat data"
 author: "Henrik Vitus Bering Laursen"
 date: "2024-09-20"
 categories: 
-  - news
   - code
   - analysis
   - exploration
   - functions
-image: image.PNG
+  - cost
+  - drugs
+image: thumbnail.png
 ---
 
 ## Purpose
@@ -25,8 +26,6 @@ So, I don't need to take all of the code from the previous post, just what I nee
 
 ```{r}
 #| warning: false
-
-
 library(tidyverse)
 
 process_atc_data <- function(year, url) {
@@ -68,16 +67,6 @@ process_atc_data <- function(year, url) {
       turnover1000k = turnover / 1000  # Turnover in 1000k units
     )
   
-  # # Plot - stacked bar chart for total turnover
-  # p1 <- ggplot(df_atc_filtered, aes(x = agegroup, y = turnover1000k, fill = DC)) +
-  #   geom_bar(stat = "identity")
-  # plot1_name <- paste0("p_total_turnover", year, ".png")
-  # 
-  # # Plot - proportional turnover for each group
-  # p2 <- ggplot(df_atc_filtered, aes(x = agegroup, y = turnover1000k, fill = DC)) +
-  #   geom_bar(stat = "identity", position = "fill")
-  # plot2_name <- paste0("p_proportional_turnover", year, ".png")
-  
   # Assign the names to datasets and plots using the year variable
   df_name <- paste0("df_", year)
   assign(df_name, df_filtered, envir = .GlobalEnv)
@@ -95,21 +84,21 @@ To achieve that, I need to append the datasets I can create with the above funct
 
 Now, I have the list of datasets and their corresponding URLs from the last post. There should be a way to automate fetching the URLs, for example by searching the site and matching the line with the dataset name and the line with the link to download it. 
 
-For now, I just use what I have.
+For now, I just use what I already found.
 
 ```{r}
 # get data from years 2016-2023
-process_atc_data(2016,"https://medstat.dk/da/download/file/MjAxNl9hdGNfY29kZV9kYXRhLnR4dA==") # 2016_atc_code_data.txt
-process_atc_data(2017,"https://medstat.dk/da/download/file/MjAxN19hdGNfY29kZV9kYXRhLnR4dA==") # 2017_atc_code_data.txt
-process_atc_data(2018,"https://medstat.dk/da/download/file/MjAxOF9hdGNfY29kZV9kYXRhLnR4dA==") # 2018_atc_code_data.txt
-process_atc_data(2019,"https://medstat.dk/da/download/file/MjAxOV9hdGNfY29kZV9kYXRhLnR4dA==") # 2019_atc_code_data.txt
-process_atc_data(2020,"https://medstat.dk/da/download/file/MjAyMF9hdGNfY29kZV9kYXRhLnR4dA==") # 2020_atc_code_data.txt
-process_atc_data(2021,"https://medstat.dk/da/download/file/MjAyMV9hdGNfY29kZV9kYXRhLnR4dA==") # 2021_atc_code_data.txt
-process_atc_data(2022,"https://medstat.dk/da/download/file/MjAyMl9hdGNfY29kZV9kYXRhLnR4dA==") # 2022_atc_code_data.txt
-process_atc_data(2023,"https://medstat.dk/da/download/file/MjAyM19hdGNfY29kZV9kYXRhLnR4dA==") # 2023_atc_code_data.txt
+process_atc_data(2016,"https://medstat.dk/da/download/file/MjAxNl9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2017,"https://medstat.dk/da/download/file/MjAxN19hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2018,"https://medstat.dk/da/download/file/MjAxOF9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2019,"https://medstat.dk/da/download/file/MjAxOV9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2020,"https://medstat.dk/da/download/file/MjAyMF9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2021,"https://medstat.dk/da/download/file/MjAyMV9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2022,"https://medstat.dk/da/download/file/MjAyMl9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2023,"https://medstat.dk/da/download/file/MjAyM19hdGNfY29kZV9kYXRhLnR4dA==") 
 ```
 
-Actually, I could just use the [`purr::map()`](https://purrr.tidyverse.org/reference/map.html).
+Actually, I could just use the [`purr::map()`](https://purrr.tidyverse.org/reference/map.html) function.
 
 ```{r message = FALSE, warning = FALSE} 
 # Load the purr library
@@ -223,7 +212,9 @@ p_base_late +
   facet_wrap(~year) + ylim(0,7500)
 p_base_late + 
   geom_bar(stat = "identity", position = "fill") +
-  facet_wrap(~year)
+  facet_wrap(~year) +
+  labs(y = "", x = "")
+ggsave("thumbnail.png", plot = last_plot(), width = 6, height = 4) # saving p_base_late as thumbnail
 ```
 
 ## Commenting on the output

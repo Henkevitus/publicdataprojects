@@ -10,17 +10,13 @@ about:
     - icon: github
       text: Github
       href: https://github.com/Henkevitus
-    # - icon: twitter
-    #   text: Twitter
-    #   href: https://twitter.com
-
 ---
 
 ## About this blog
 
-I have studied the use of antidiabetic drugs, or their utilisation, in Denmark, as part of my Ph.D. My sources were registry data taken directly from Lægemiddelstyrelsens Medicin DataBase (LMDB), which requires special access usually only given for research purposes. 
+I have studied the use of antidiabetic drugs, or their utilisation, in Denmark, as part of my Ph.D. The main sources I worked with during the Ph.D. were registry data from [The Register of Pharmaceutical Sales](https://english.sundhedsdatastyrelsen.dk/health-data-and-registers/national-health-registers#) and [The National Patient Register](https://english.sundhedsdatastyrelsen.dk/health-data-and-registers/national-health-registers#).
 
-This blog is dedicated to showcasing my skills as a data scientist with an understanding of health economics, epidemiolgy and medicine.
+This blog is dedicated to showcasing my skills as a data scientist with an understanding of health economics, epidemiology and medicine.
 
 Using words inspired by the [R for Data Science](https://r4ds.hadley.nz/whole-game), I will do the following:
 

@@ -2,18 +2,18 @@
 title: Untitled
 format:
   modern2-cv-pdf: default
-author: Henrik V. B. Laursen
+author: Henrik Vitus Bering Laursen
 cvfont: gillius #texlive fonts like raleway,fetamont,gillius,comfortaa
 cvcolor: 
   main: 002a65 # the color for some bit of text
   accent: 002a65 # the color for most of the stuff. Currently novo colors lol (001965)
   # se "hex-color-overview.md" for more colors 
-jobtitle: Ph.D. student
+jobtitle: Data Scientist / Health Economist
 sidebar:
   image: cv-noportrait.png
   bullets:
     - "Master in Health Science: Data, Diabetes, Health economics"
-    - "Ph.D. defence 16/12/2024"
+    - "Ph.D. since 16/12/2024"
   sections: 
     - name: Skills
       items:
@@ -63,9 +63,9 @@ sidebar:
         - icon: linkedin
           text: HenrikVBLaursen
           href: https://www.linkedin.com/in/henrikvitusberinglaursen/
-        - icon: blog # Link not yet decided
-          text: publicdataprojects
-          #href: https://www.linkedin.com/in/henrikvitusberinglaursen/
+        - icon: blog 
+          text: the-danish-data-diaries
+          href: https://henkevitus.quarto.pub/the-danish-data-diaries/
     - name: Hobbies
       items:
         - icon: yin-yang
@@ -111,7 +111,7 @@ cvproj <- function(tbl,what,role,items){
 
 # Summary
 
-I am a passionate and inquisitive health data scientist, that loves to combine my expertise in data analysis, medicine and systematic reviewing to translate data into actionable knowledge. I excel at, and enjoy, doing "detective work" to solve problems of any kind. Few things bring me greater joy than helping other people save time on their work by identifying bottlenecks or barriers and removing them, or teaching others how to.
+I am an inquisitive data scientist and health economist who is passionate about health and health data. I love to combine my expertise in data analysis, medicine and systematic reviewing to translate data into actionable knowledge. I excel at, and enjoy, doing "detective work" to solve problems of any kind. Helping others brings me great joy, whether its with a technical issue, helping them save time on their work by identifying bottlenecks or barriers and removing them, or through teaching.
 
 # Experience
 
@@ -130,7 +130,7 @@ institutions <- c(
 )
 
 dates <- c(
-  "04/2020 - Present", 
+  "04/2020 - 12/2024", 
   "01/2019 - 03/2020", 
   "11/2017 - 08/2018"
 )
@@ -157,7 +157,7 @@ tibble::tribble(
 ```
 
 
-# Education and showcasing publications
+# Education and relevant publications
 
 <!-- My education is summarised below, along with a list of publications where I have used and developed my data analysis, statistics, scientific writing and communication skills. 
 
@@ -169,7 +169,7 @@ whats <- c(
   "Bachelor: Medicine With Industrial Specialisation",
   "Review - PharmacoEconomics Journal - 2023",
   "Survival Analysis - Current Drug Safety - 2020",
-  "Cohort study - Bone - 2020",
+  "Cohort study - Bone - 2020"
   #"Cohort study - Diabetic Medicine - 2020" - erstattet med den hvor jeg lavede dataset på 3 dage
 )
 
@@ -178,7 +178,7 @@ roles <- c(
   "Aalborg University 2011 - 2014" ,
   "DOI: 10.1007/s40273-023-01268-5",
   "DOI: 10.2174/1574886315666200819114629",
-  "DOI: 10.1016/j.bone.2019.115083",
+  "DOI: 10.1016/j.bone.2019.115083"
   #"DOI: 10.1111/dme.14251" - prioriterer at vise at jeg har lavet datasæt på kort tid med min bone artikel med abrahamsen
 )  
   
@@ -215,9 +215,9 @@ tibble::tribble(
 #| output: asis
 tibble::tribble(
     ~what, ~role, ~items,
-    "Quarto blog", "Data analysis practice", c("Recently started a Quarto blog where i delve into publicly available data in Denmark to comment on and extract insights","Find the URL under the *Hobbies* section."),
+    "Quarto blog", "Data analysis practice", c("Recently started a Quarto blog where I showcase analytical and programming skills by delving into publicly available Danish data.","LINK is in the Contact section."),
     "Østerport Ejerforening", "Board member", c("Organisation of events and tasks via Trello","coordinating events","communication with apartment owners about their wants and needs","long-term planning regarding apartment complex condition."),
-    "Aalborg Klatreklub", "Climbing instructor", c("Organising events", "teaching climbing safety, technique and equipment use."),
+    "Aalborg Klatreklub", "Climbing instructor", c("Organising events", "teaching climbing safety, technique, and equipment use."),
 ) |>
     cvproj(what = "what", role = "role", items = "items")
 ```

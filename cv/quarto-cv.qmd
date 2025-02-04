@@ -61,7 +61,7 @@ sidebar:
         - icon: envelope
           text: henrikvitus@gmail.com
         - icon: linkedin
-          text: HenrikVBLaursen
+          text: Henrik V. B. Laursen
           href: https://www.linkedin.com/in/henrikvitusberinglaursen/
         - icon: blog 
           text: the-danish-data-diaries
@@ -69,11 +69,11 @@ sidebar:
     - name: Hobbies
       items:
         - icon: yin-yang
-          text: Meditation
+          text: Meditation & yoga
         - icon: mountain
-          text: Rock climbing, movement
+          text: Rock climbing & gardening
         - icon: dice-d20
-          text: Boardgames, D&D
+          text: Boardgames, roleplaying games
 execute: 
   echo: false
 ---
@@ -111,7 +111,7 @@ cvproj <- function(tbl,what,role,items){
 
 # Summary
 
-I am an inquisitive data scientist and health economist who is passionate about health and health data. I love to combine my expertise in data analysis, medicine and systematic reviewing to translate data into actionable knowledge. I excel at, and enjoy, doing "detective work" to solve problems of any kind. Helping others brings me great joy, whether its with a technical issue, helping them save time on their work by identifying bottlenecks or barriers and removing them, or through teaching.
+I am an inquisitive data scientist and health economist who is passionate about gathering insights from health data. I love to combine my expertise in data analysis with my knowledge of medicine to translate data into actionable knowledge. I excel at, and enjoy, doing "detective work" to solve problems of any kind. Being part of a workplace with a clear and meaningful goal brings me great joy, and helping others with technical issues, identifying bottlenecks or barriers and removing them, to be more efficient.
 
 # Experience
 
@@ -136,8 +136,8 @@ dates <- c(
 )
 
 details <- c(
-  "My Ph.D. combines systematically reviewing cost-effectiveness analyses of medications for treating Type 2 Diabetes, with testing assumptions in these decision-analytical models against real-world data, further developing my expertise in epidemiological study design. I have taken courses in biostatistics, advanced epidemiology, time to event analysis, and decision-analytical modelling using R.",
-  "In this position I gained expertise in epidemiological study design, data wrangling, analysis, and presentation. In dialogue with medical doctors, we defined the cohorts necessary to answer research questions regarding treatment and outcomes for patients with Diabetes Mellitus or Osteoporosis.",
+  "My Ph.D. combines systematically reviewing cost-effectiveness analyses of medications for treating type 2 diabetes, with testing assumptions in these decision-analytical models against real-world data, further developing my expertise in epidemiological study design. I have taken courses in biostatistics, advanced epidemiology, time to event analysis, and decision-analytical modelling using R.",
+  "In this position I gained expertise in epidemiological study design, data wrangling, analysis, and presentation. In dialogue with medical doctors, we defined the cohorts necessary to answer research questions regarding treatment and outcomes for patients with Diabetes or Osteoporosis.",
   "I finished my first systematic review and investigated methodological challenges regarding cost-analysis of extremely expensive haematological medications."
 )
 ```
@@ -170,7 +170,6 @@ whats <- c(
   "Review - PharmacoEconomics Journal - 2023",
   "Survival Analysis - Current Drug Safety - 2020",
   "Cohort study - Bone - 2020"
-  #"Cohort study - Diabetic Medicine - 2020" - erstattet med den hvor jeg lavede dataset på 3 dage
 )
 
 roles <- c(
@@ -179,16 +178,14 @@ roles <- c(
   "DOI: 10.1007/s40273-023-01268-5",
   "DOI: 10.2174/1574886315666200819114629",
   "DOI: 10.1016/j.bone.2019.115083"
-  #"DOI: 10.1111/dme.14251" - prioriterer at vise at jeg har lavet datasæt på kort tid med min bone artikel med abrahamsen
 )  
   
 items <- c(
-  "Health conomics, medical market access, quality improvement, big picture and detail-level pragmatic thinking.",
-  "A solid foundation in medicine to understand and utilise health data.",
-  "Gathering large amounts of data and information, and synthesising methodological critiques of state of the art decision-analytical models.",
-  "Setting up a nationwide cohort study using registry data to perform, survival analysis, create baseline tables, kaplan-meier plots and cox proportional hazards models. The study highlights connection between SGLT2s and diabetic ketoacidosis.",
+  "Health conomics, medical market access, quality improvement, uni- and multivariate statistical analysis. Health policy and, patient involvement.",
+  "A solid foundation in medicine providing an understanding of anatomy, physiology, disease mechanisms, pharmacotherapy, and importance of the patients' perspective.",
+  "Gathering large amounts of data and information, and critiquing methodological aspects of decision-analytical models.",
+  "Setting up a nationwide cohort study using registry data to create baseline tables and conduct and interpret kaplan-meier plots and cox proportional hazards models. The study highlights connection between SGLT2s and diabetic ketoacidosis.",
   "Creating a dataset for the purpose of examining hip fractures and quality checking it for publication-ready analyses in less than a week."
-  # "Setting up a case-control study using registry data. Learned a lot of basic data cleaning, wrangling, and statistical programming making for this paper."
 )
 ```
 
@@ -215,8 +212,8 @@ tibble::tribble(
 #| output: asis
 tibble::tribble(
     ~what, ~role, ~items,
-    "Quarto blog", "Data analysis practice", c("Recently started a Quarto blog where I showcase analytical and programming skills by delving into publicly available Danish data.","LINK is in the Contact section."),
-    "Østerport Ejerforening", "Board member", c("Organisation of events and tasks via Trello","coordinating events","communication with apartment owners about their wants and needs","long-term planning regarding apartment complex condition."),
+    "Quarto blog", "Data analysis practice", c("Recently started a Quarto blog where I showcase analytical and programming skills by delving into publicly available Danish data - LINK is in the Contact section."),
+    "Østerport Ejerforening", "Board member", c("Organisation of events and tasks via Trello","coordinating events","communication with apartment owners about their wants and needs","long-term planning regarding apartment complex condition","solicitating and evaluating multiple contractor bids to ensure cost-effective, quality solutions that align with residents' needs and budget constraints."),
     "Aalborg Klatreklub", "Climbing instructor", c("Organising events", "teaching climbing safety, technique, and equipment use."),
 ) |>
     cvproj(what = "what", role = "role", items = "items")

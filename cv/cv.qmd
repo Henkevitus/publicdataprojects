@@ -50,12 +50,13 @@ sidebar:
         - "Coding: VS Code, git"
         - "Data analysis: RStudio, Stata"
         - "Writing: Quarto, Office"
+        - "In general: LLM's/AI"
     - name: Contact
       items: # icons from fontawesome
         - icon: map-marker
           text: Finlandsgade 8, 3.tv
         - icon: map-marker
-          text: 9000 Aalborg, Denmark
+          text: 9000 Aalborg, DK
         - icon: phone
           text: "+45 27851847"
         - icon: envelope
@@ -68,12 +69,10 @@ sidebar:
           href: https://henkevitus.quarto.pub/the-danish-data-diaries/
     - name: Hobbies
       items:
-        - icon: yin-yang
-          text: Meditation & yoga
         - icon: mountain
-          text: Rock climbing & gardening
+          text: Climbing, meditation, yoga
         - icon: dice-d20
-          text: Boardgames, roleplaying games
+          text: Board- and roleplaying games
 execute: 
   echo: false
 ---
@@ -111,7 +110,8 @@ cvproj <- function(tbl,what,role,items){
 
 # Summary
 
-I am an inquisitive data scientist and health economist who is passionate about gathering insights from health data. I love to combine my expertise in data analysis with my knowledge of medicine to translate data into actionable knowledge. I excel at, and enjoy, doing "detective work" to solve problems of any kind. Being part of a workplace with a clear and meaningful goal brings me great joy, and helping others with technical issues, identifying bottlenecks or barriers and removing them, to be more efficient.
+I am an inquisitive data scientist and health economist who is passionate about gathering insights from health data. I love to combine my expertise in data analysis with my knowledge of medicine to translate data into actionable knowledge. I excel at, and enjoy, doing "detective work" to solve problems of any kind, and visualise complex data with plots and tables. Being part of a workplace with a clear and meaningful goal brings me great joy, and helping others with identifying bottlenecks or barriers and removing them, or solving technical issues, to increase efficiency. I have been using AI/LLM's to increase efficiency since 2023.
+  
 
 # Experience
 
@@ -124,8 +124,8 @@ roles <- c(
 )
 
 institutions <- c(
-  "Aalborg University, Steno Diabetes Center North Denmark", 
-  "Steno Diabetes Center North Denmark", 
+  "Aalborg University, Steno Diabetes Center North DK", 
+  "Steno Diabetes Center North DK", 
   "Danish Center for Healthcare Improvements"
 )
 
@@ -136,7 +136,7 @@ dates <- c(
 )
 
 details <- c(
-  "My Ph.D. combines systematically reviewing cost-effectiveness analyses of medications for treating type 2 diabetes, with testing assumptions in these decision-analytical models against real-world data, further developing my expertise in epidemiological study design. I have taken courses in biostatistics, advanced epidemiology, time to event analysis, and decision-analytical modelling using R.",
+  "My Ph.D. combined systematically reviewing cost-effectiveness analyses of medications for treating type 2 diabetes, with testing assumptions in these decision-analytical models against real-world data from Danish patient registers. I have taken courses in biostatistics, advanced epidemiology, time to event analysis, and decision-analytical modelling using R.",
   "In this position I gained expertise in epidemiological study design, data wrangling, analysis, and presentation. In dialogue with medical doctors, we defined the cohorts necessary to answer research questions regarding treatment and outcomes for patients with Diabetes or Osteoporosis.",
   "I finished my first systematic review and investigated methodological challenges regarding cost-analysis of extremely expensive haematological medications."
 )
@@ -181,7 +181,7 @@ roles <- c(
 )  
   
 items <- c(
-  "Health conomics, medical market access, quality improvement, uni- and multivariate statistical analysis. Health policy and, patient involvement.",
+  "Health economics, medical market access, quality improvement, uni- and multivariate statistical analysis. Health policy and, patient involvement.",
   "A solid foundation in medicine providing an understanding of anatomy, physiology, disease mechanisms, pharmacotherapy, and importance of the patients' perspective.",
   "Gathering large amounts of data and information, and critiquing methodological aspects of decision-analytical models.",
   "Setting up a nationwide cohort study using registry data to create baseline tables and conduct and interpret kaplan-meier plots and cox proportional hazards models. The study highlights connection between SGLT2s and diabetic ketoacidosis.",

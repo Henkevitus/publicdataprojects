@@ -17,11 +17,7 @@ sidebar:
   sections: 
     - name: Skills
       items:
-        - text: R
-          exp: 
-            text: "3 yrs"
-            num: 0.3
-        - text: Stata
+        - text: Data wrangling, analysis, output, statistics
           exp: 
             text: "8 yrs"
             num: 0.8
@@ -33,10 +29,6 @@ sidebar:
           exp: 
             text: "10yrs"
             num: 1
-        - text: Data Analysis
-          exp: 
-            text: "8 yrs"
-            num: 0.8
         - text: Epidemiologic study design
           exp: 
             text: "3 yrs"
@@ -48,9 +40,9 @@ sidebar:
     - name: Tools
       items:
         - "Coding: VS Code, git"
-        - "Data analysis: RStudio, Stata"
+        - "Data analysis: R, Stata, Excel"
         - "Writing: Quarto, Office"
-        - "In general: LLM's/AI"
+        - "Other: LLM's/AI"
     - name: Contact
       items: # icons from fontawesome
         - icon: map-marker
@@ -70,7 +62,9 @@ sidebar:
     - name: Hobbies
       items:
         - icon: mountain
-          text: Climbing, meditation, yoga
+          text: Climbing, hiking 
+        - icon: yin-yang
+          text: Meditation, yoga
         - icon: dice-d20
           text: Board- and roleplaying games
 execute: 
@@ -110,7 +104,7 @@ cvproj <- function(tbl,what,role,items){
 
 # Summary
 
-I am an inquisitive data scientist and health economist who is passionate about gathering insights from health data. I love to combine my expertise in data analysis with my knowledge of medicine to translate data into actionable knowledge. I excel at, and enjoy, doing "detective work" to solve problems of any kind, and visualise complex data with plots and tables. Being part of a workplace with a clear and meaningful goal brings me great joy, and helping others with identifying bottlenecks or barriers and removing them, or solving technical issues, to increase efficiency. I have been using AI/LLM's to increase efficiency since 2023.
+I am an inquisitive data scientist and health economist who is passionate about gathering insights from health data. I love to combine my expertise in data analysis with my knowledge of medicine to translate data into actionable knowledge, connecting the dots, and understanding the greater whole. I excel at, and enjoy, doing "detective work" to solve problems of any kind, and visualise complex data with plots and tables. Being part of a team with a clear and meaningful goal brings me great joy, as does helping others with identifying bottlenecks or barriers and removing them, or solving technical issues. I have been incorporating AI (LLM's) in my work since ultimo 2022.
   
 
 # Experience
@@ -137,7 +131,7 @@ dates <- c(
 
 details <- c(
   "My Ph.D. combined systematically reviewing cost-effectiveness analyses of medications for treating type 2 diabetes, with testing assumptions in these decision-analytical models against real-world data from Danish patient registers. I have taken courses in biostatistics, advanced epidemiology, time to event analysis, and decision-analytical modelling using R.",
-  "In this position I gained expertise in epidemiological study design, data wrangling, analysis, and presentation. In dialogue with medical doctors, we defined the cohorts necessary to answer research questions regarding treatment and outcomes for patients with Diabetes or Osteoporosis.",
+  "In this position I gained expertise in epidemiological study design, data wrangling, analysis, and presentation. Involving stakeholders such as medical doctors, we defined the cohorts necessary to answer research questions regarding treatment and outcomes for patients with Diabetes or Osteoporosis.",
   "I finished my first systematic review and investigated methodological challenges regarding cost-analysis of extremely expensive haematological medications."
 )
 ```
@@ -181,9 +175,9 @@ roles <- c(
 )  
   
 items <- c(
-  "Health economics, medical market access, quality improvement, uni- and multivariate statistical analysis. Health policy and, patient involvement.",
-  "A solid foundation in medicine providing an understanding of anatomy, physiology, disease mechanisms, pharmacotherapy, and importance of the patients' perspective.",
-  "Gathering large amounts of data and information, and critiquing methodological aspects of decision-analytical models.",
+  "Health economics, medical market access, quality improvement, uni- and multivariate statistical analysis. Health policy, patient, and stakeholder involvement.",
+  "A solid foundation in medicine providing an understanding of anatomy, physiology, disease mechanisms, pharmacotherapy, the importance of the patients' perspective, and the language/jargon of medicine.",
+  "Collecting large amounts of information and synthesising actionable knowledge leading to a critique of methodological aspects of decision-analytical models.",
   "Setting up a nationwide cohort study using registry data to create baseline tables and conduct and interpret kaplan-meier plots and cox proportional hazards models. The study highlights connection between SGLT2s and diabetic ketoacidosis.",
   "Creating a dataset for the purpose of examining hip fractures and quality checking it for publication-ready analyses in less than a week."
 )
@@ -212,7 +206,7 @@ tibble::tribble(
 #| output: asis
 tibble::tribble(
     ~what, ~role, ~items,
-    "Quarto blog", "Data analysis practice", c("Recently started a Quarto blog where I showcase analytical and programming skills by delving into publicly available Danish data - LINK is in the Contact section."),
+    "Quarto blog", "Data analysis practice", c("Recently started a Quarto blog where I showcase analytical and programming skills by delving into publicly available Danish data (link in the Contact section)."),
     "Østerport Ejerforening", "Board member", c("Organisation of events and tasks via Trello","coordinating events","communication with apartment owners about their wants and needs","long-term planning regarding apartment complex condition","solicitating and evaluating multiple contractor bids to ensure cost-effective, quality solutions that align with residents' needs and budget constraints."),
     "Aalborg Klatreklub", "Climbing instructor", c("Organising events", "teaching climbing safety, technique, and equipment use."),
 ) |>

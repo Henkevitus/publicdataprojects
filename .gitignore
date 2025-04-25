@@ -2,9 +2,14 @@
 .Rhistory
 .RData
 .Ruserdata
-.forme
+# Just a dump that i keep locally on X1 yoga
+.forme 
 
+# Formats 
 *.html
+*.docx
+*.pdf
+*.pptx
 *.log
 *.zip
 

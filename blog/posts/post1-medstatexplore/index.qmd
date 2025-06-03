@@ -9,6 +9,7 @@ categories:
   - cost
   - drugs
 image: thumbnail.png
+freeze: true
 ---
 
 ## Exploring Medstat data: Drug prescriptions in Denmark

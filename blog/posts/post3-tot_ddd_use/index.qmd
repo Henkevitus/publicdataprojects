@@ -9,6 +9,7 @@ categories:
   - cost
   - drugs
 image: thumbnail.png
+freeze: true
 ---
 
 ## Drug utilisation over time

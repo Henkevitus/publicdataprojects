@@ -1,0 +1,72 @@
+---
+title: "Danish diabetes data"
+author: "Henrik Vitus Bering Laursen"
+date: "2025-06-01" 
+categories: 
+  - diabetes
+  - joins
+  - survival analysis
+draft: true
+---
+
+## Purpose
+
+I remember using the `Epi::steno2` datasets when taking a short course on multistate survival analysis with the creator of the package, [Bendix Carstensen](https://bendixcarstensen.com/).
+
+That was quite fun but also daunting to be sitting in a room full of mathematicians and people who actually knew the nitty gritty of survival analysis and the math behind it.
+
+I think I would just want to do something very basic here, though:
+
+- Examine the datasets and visualize the contents
+- Playing around with joining the different datasets
+- Creating a Cox Proportional Hazards model, comparing the risk of cardiovascular event between the two treatment groups in the dataset
+  - Probably also controlling for some important factors
+  
+So lets start looking at the data!
+
+## Load
+
+The datasets can be loaded directly from the `Epi` library, through `data()`
+
+```{r}
+#| label: Loading Libraries
+#| echo: false
+library(Epi)
+library(tidyverse)
+```
+```{r}
+#| label: loading steno2 data
+data("steno2")
+data("st2clin")
+data("st2alb")
+```
+
+Alrighty now that they are loaded lets look at their structure. **Ofcourse, I am completely ignoring the description in the documentation in the `Epi()` package, which describes how the datasets are structured.**
+
+```{r}
+#| label: Structure of datasets
+str(steno2)
+str(st2clin)
+str(st2alb)
+```
+It looks like `steno2` and `st2clin` are one row per person, and `st2alb` is multiple, but that doesnt make sense given the amount of rows. We can see how many id's are present, and if there is one row per subject it should be close to the amount of subjects.
+
+```{r}
+#| label: unique IDs
+
+unique_new <- function(df) {
+  df |> group_by(id) |> summarise(n = sum(id)) |> slice_max(n)
+}
+
+map(list(steno2,st2clin,st2alb),unique_new)
+
+```
+
+
+## Clean
+## Output
+### Table
+### Graph
+### Model
+
+## Summary / cleaned up / refactored 

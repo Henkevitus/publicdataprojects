@@ -3,7 +3,8 @@ title: "Got the PhD"
 author: "Henrik Vitus Bering Laursen"
 date: "2025-01-19" 
 categories: 
-  - explanation
+  - announcement
+freeze: true
 ---
 
 Here with two things:

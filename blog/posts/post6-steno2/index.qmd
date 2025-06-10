@@ -9,31 +9,42 @@ categories:
 draft: true
 ---
 
+## TODO
+
+- KM plot
+- cox ass test
+- log-rank model test for dif
+- 
+
 ## Purpose
 
-I remember using the `Epi::steno2` datasets when taking a short course on multistate survival analysis with the creator of the package, [Bendix Carstensen](https://bendixcarstensen.com/).
+I remember using the `Epi::steno2` data-sets when taking a short course on multistate survival analysis with the creator of the package, [Bendix Carstensen](https://bendixcarstensen.com/).
 
 That was quite fun but also daunting to be sitting in a room full of mathematicians and people who actually knew the nitty gritty of survival analysis and the math behind it.
 
 I think I would just want to do something very basic here, though:
 
-- Examine the datasets and visualize the contents
-- Playing around with joining the different datasets
-- Creating a Cox Proportional Hazards model, comparing the risk of cardiovascular event between the two treatment groups in the dataset
+- A) Playing around with joining the different data-sets
+- B) Examine the data-sets and visualize the contents
+- C) Creating a simple Cox Proportional Hazards model, comparing the risk of cardiovascular event between the two treatment groups in the data-set
   - Probably also controlling for some important factors
+- D) Deliver some sort of conclusion about these data
   
-So lets start looking at the data!
+So lets start looking at it!
 
 ## Load
 
-The datasets can be loaded directly from the `Epi` library, through `data()`
+The data-sets can be loaded directly from the `Epi` library, through `data()`
 
 ```{r}
 #| label: Loading Libraries
 #| echo: false
 library(Epi)
 library(tidyverse)
+library(survival)
+library(survminer)
 ```
+
 ```{r}
 #| label: loading steno2 data
 data("steno2")
@@ -41,32 +52,369 @@ data("st2clin")
 data("st2alb")
 ```
 
-Alrighty now that they are loaded lets look at their structure. **Ofcourse, I am completely ignoring the description in the documentation in the `Epi()` package, which describes how the datasets are structured.**
+Alrighty now that they are loaded lets look at their structure. **Ofcourse, I am completely ignoring the description in the documentation in the `Epi()` package, which describes how the data-sets are structured.**
 
 ```{r}
-#| label: Structure of datasets
+#| label: Structure of data-sets
 str(steno2)
 str(st2clin)
 str(st2alb)
 ```
-It looks like `steno2` and `st2clin` are one row per person, and `st2alb` is multiple, but that doesnt make sense given the amount of rows. We can see how many id's are present, and if there is one row per subject it should be close to the amount of subjects.
+
+It looks like `steno2` and `st2clin` are one row per subject, and `st2alb` is multiple, but that doesnt make sense given the amount of rows. We can see how many id's, the unqiue identifier for each person, are present, and if there is one row per subject it should be close to the amount of subjects.
 
 ```{r}
 #| label: unique IDs
 
-unique_new <- function(df) {
-  df |> group_by(id) |> summarise(n = sum(id)) |> slice_max(n)
-}
+unique_new <- function(df) {df |> group_by(id) |> summarise(n = sum(id)) |> slice_max(n)}
 
 map(list(steno2,st2clin,st2alb),unique_new)
 
 ```
 
+Alright. So it is clear that only `steno2` has one row per subject because the number of id's that occur equal the number of unique id's.
 
-## Clean
+It just looks like `st2clin` is one row per subject because of how it is arranged. 
+
+```{r}
+#| label: st2clin records
+
+st2clin |> arrange(chol) |> head(4)
+```
+
+### A) Joining
+
+Now, first, what would the purpose be of joining these data-sets together?
+
+First of all, the `st2clin` and `st2alb` data-sets do not have the categories for each id from the `steno2` data-set.
+
 ## Output
-### Table
-### Graph
-### Model
+### B) Table
 
-## Summary / cleaned up / refactored 
+Ofcourse, the good old `summary()` function might be worth to do to get a good overview of the three data-sets. First we do `steno2` demographics.
+
+```{r}
+#| label: steno2 demographics
+
+summary(steno2)
+
+```
+But I kinda want to mainly do graphs here.
+
+### B) Graphs
+
+#### Some distributions
+
+Now, I love me some functions, and I feel like seeing the distribution of all the different date variables via histograms.
+
+```{r}
+#| label: first attempt, going over date vars
+plot_histo_spam <- function(df,histovar) {
+out <- ggplot(df) + 
+  geom_histogram(mapping = aes( {{histovar}} ))
+
+  return(out)
+}
+
+plot_histo_spam(steno2,doBth)
+plot_histo_spam(steno2,doDM)
+plot_histo_spam(steno2,doBase)
+
+```
+
+But this should be doable in a smarter way. A `facet_wrap()` over each of the date variables..
+
+```{r}
+#| label: second attempt, going over date vars
+
+plot_histospam_faceted <- function(data, prefix = "do") {
+  data |> 
+    select(starts_with(prefix)) |>             
+    pivot_longer(everything()) |> # everything() turns varnames into a column, and their values into a separate column
+    ggplot(aes(value)) +
+      geom_histogram(colour = "white") +
+      facet_wrap(~ name, scales = "free_x") +   # one panel per variable
+      labs(x = NULL) 
+}
+
+plot_histospam_faceted(steno2)
+plot_histospam_faceted(st2clin)
+plot_histospam_faceted(st2alb)
+
+```
+
+Now those are some fine basic plots! 
+
+For `steno2`, it shows some slight right skewed `doBase`, and left-skewed `doDM` and `doEnd`. for the two `st2*` data-sets, it shows quite a right skew.
+
+**Basically**:
+
+- most of the signups to the trial occurred in the beginning
+- most of the CVD (cardiovascular) and death events occurred evenly-ish
+- most of the diabetes diagnoses occurred late
+- not much ESRD (end-stage renal disease) occurred
+
+#### Distributions by sex
+
+Now I want to figure out how to do it while grouping the histograms by sex.
+
+```{r}
+#| label: histograms, faceted, sex
+
+plot_histospam_faceted_sex <- function(data, prefix = "do") {
+  data |> 
+    select(sex, starts_with(prefix)) |>             
+    pivot_longer(-sex, 
+                 names_to = "name",
+                 values_to = "value") |> 
+    ggplot(aes(value, fill = sex)) +
+      geom_histogram(
+        position = "dodge",
+        colour = "white") +
+      facet_wrap(~ name, scales = "free_x") +   # one panel per variable
+      labs(x = NULL) 
+}
+
+plot_histospam_faceted_sex(steno2)
+```
+
+Ok. Not much of a difference at a glance. 
+
+#### Distributions by treatment groups
+
+Perhaps it would be more relevant to see if there was some kind of difference between the two intervention groups?
+
+```{r}
+#| label: histograms, faceted, allocation group
+
+plot_histospam_faceted_allo <- function(data, prefix = "do") {
+  data |> 
+    select(allo, starts_with(prefix)) |>             
+    pivot_longer(-allo, 
+                 names_to = "name",
+                 values_to = "value") |> 
+    ggplot(aes(value, fill = allo)) +
+      geom_histogram(
+        position = "identity",
+        alpha    = 0.5,
+        colour = "white") +
+      facet_wrap(~ name, scales = "free_x") +   # one panel per variable
+      labs(x = NULL) 
+}
+
+plot_histospam_faceted_allo(steno2)
+```
+
+Ok so already here its possible to see some apparent differences between the two groups.
+
+- the `Conv` allocation group, which must be those allocated to conventional treatment, whatever that was, have more events of CVD, especially of the third CVD event. As well as earlier diabetes mellitus (DM) diagnoses. This is probably an indication of the future results of the survival analysis.
+- `Int` group, likely the intervention group, seems to have less deaths and later DM diagnoses
+
+**Remember, these are two groups of equal number**, which can make it easier to conclude that there is a difference, at least initially and visually.
+
+Now. With the help of some AI, I made the function below which can produce different types of `facet_*` plots , but I choose the `facet_grid`, because its interesting to look at.
+
+```{r}
+#| label: histograms, faceted, complicated
+
+plot_histospam_faceted_allo_comp <- function(
+    data,
+    prefix      = "do",
+    bins        = 30,
+    overlay     = TRUE,     
+    facet_rows  = FALSE      
+) {
+  data |> 
+    select(allo, starts_with(prefix)) |>         
+    pivot_longer(-allo, names_to = "variable",
+                       values_to = "value") |>   
+    ggplot(aes(value, fill = allo)) +
+      geom_histogram(
+        bins      = bins,
+        position  = if (overlay) "identity" else "dodge",
+        alpha     = if (overlay) 0.5 else 1,      # translucent if overlaid
+        colour    = "white"
+      ) +
+      { if (facet_rows)
+          facet_grid(rows = vars(allo), cols = vars(variable),
+                     scales = "free_x")
+        else
+          facet_wrap(~ variable, scales = "free_x")
+      } +
+      labs(x = NULL, fill = "Sex") +
+      theme_minimal()
+}
+
+plot_histospam_faceted_allo_comp(steno2, facet_rows = TRUE)
+
+```
+
+
+### C) Model
+
+To perform a basic Cox Proportional Hazards model, we can use the `survival` package.
+
+I want to do the following, just because that's what I learned in the olden PhD studying days, mainly from the Basic Biostats courses from Aarhus University:
+
+- Survival set the data
+- Visualise follow-up
+- Plot Kaplan Meier survival function
+- Cox model
+  - Estimate
+  - Observed vs fitted survival curves
+  - Testing proportional hazards assumption
+  
+Let's just quickly and without much thinking (thats always good), decide what the start, stop, outcome, and other variables should be. 
+
+- data: `steno2`
+  - comparison: death `doDth` for intervention groups `allo`
+  - start date: `doBase`
+  - censor date: `doEnd`
+  - outcome event: `doDth`
+  - exit of study: earliest of `doEnd` and `doDth`
+
+So, super basic, and does not take anything into account, such as competing events (`doCVD*` or `doESRD`) or baseline differences in risk of CVD (`baseCVD`). 
+
+
+
+#### Survival set the data
+
+First we create the needed variables and check it.
+
+```{r}
+#| label: survival setting
+
+steno2 <- steno2 |> 
+  mutate(
+    doExit = coalesce(doDth, doEnd),
+    time_days = difftime(
+      coalesce(steno2$doDth, steno2$doEnd), 
+      steno2$doBase, 
+      units='days'),
+    time_yrs = as.numeric(time_days / 365.25),
+    event_num = if_else(!is.na(doDth),1,0),
+    event = factor(event_num, levels = c(0, 1), labels = c("Censored", "Dead"))
+  )
+
+glimpse(steno2)
+```
+
+#### Visualise follow-up
+
+Then, because I like it as an overview, a swimmer plot of the follow-up times.
+
+simple first:
+
+```{r}
+#| label: swimplot followup simple
+sp1 <- steno2 |> 
+  mutate(id = fct_reorder(as.factor(id), time_yrs)) |>
+  ggplot(aes(x = doBase, 
+             xend = doExit,
+             y = id)) +
+  geom_segment(color = "grey") +
+  geom_point(aes(x = doExit, shape = event)) +
+  geom_point(aes(x = doDth, shape = event)) 
+sp1
+```
+
+Looks good, but a tiny bit messy with the - although accurate - different starting times.
+
+Lets do one with baseline time set to 0. This makes it easier to compare the follow-up times, which is more interesting for the analysis than calendar times.
+
+The latter would probably be of more interest to an investigator trying to figure out when people signed up, or something.
+
+```{r}
+#| label: swimplot followup simple base is 0
+
+sp2 <- steno2 |> 
+  mutate(
+    id = fct_reorder(as.factor(id), time_yrs),
+    t0 = 0) |>
+  ggplot(aes(x = t0, 
+             xend = time_yrs,
+             y = id)) +
+  geom_segment(color = "grey") +
+  geom_point(aes(x = time_yrs, shape = event, colour = event)) +
+  theme_minimal()
+sp2
+```
+
+Here we have the x-axis in years since baseline.
+
+Now, I have a sense that `doExit` and `doDth` are the same, meaning that plots that use `doExit` end up having two shapes for subjects that died.
+
+How can I make it so that there are different shapes for each event? I can just take the previous plot and add to it.
+
+
+```{r}
+#| label: swimplot different shapes for event
+sp3 <- sp2 +
+  scale_shape_manual(values = c(Censored = 17, Dead = 4)) +
+  scale_colour_manual(values = c(Censored = "black", Dead = "red"))  
+sp3
+```
+Ok that looks fine. Now I want to make the final plot for this and move on.
+
+```{r}
+#| label: swimplot followup final
+
+sp4 <- sp3 +
+  labs(
+    x = NULL, 
+    y = "Subject sorted by follow-up", 
+    title = "Follow-up per subject, years since baseline") +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_blank(),
+    panel.background = element_blank()
+    )
+sp4
+```
+
+A nice little plot showing an overview of the length of follow-up for the subjects in the study.
+
+Not exactly sure how it is useful except for my own sake - I just like to know *visually* what my data looks like.
+
+#### Plot Kaplan Meier survival function
+
+Now, less fiddling around with plots, and more looking at survival analysis.
+
+The Kaplan meier estimator on a plot is wonderful in portraying differences in survival times. Below is a plot showing the differences between intervention groups, 
+But first we have to fit the data.
+
+```{r}
+#| label: surv fit
+
+# Using event_num because the event variable doesnt work
+fit <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
+
+# Summarising, showing just the first 10 years
+summary(fit, times=c(0:10)) 
+```
+
+
+```{r}
+#| label: survplot KM
+surv_p1 <- ggsurvplot(fit,
+           data = steno2,
+           risk.table = TRUE,         # optional: show number at risk
+           conf.int = TRUE,           # optional: confidence interval
+           xlab = NULL, ylab = "Survival Probability",
+           title = "Kaplan Meier Estimator for survival probability, in years")
+```
+
+
+#### Cox model
+
+#### Estimate
+
+#### Observed vs fitted survival curves
+
+#### Testing proportional hazards assumption
+
+## Summary / cleaned up / refactored
+

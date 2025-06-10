@@ -12,5 +12,6 @@
 *.pptx
 *.log
 *.zip
+*.csv
 
 /.quarto/

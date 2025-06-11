@@ -11,7 +11,6 @@ draft: true
 
 ## TODO
 
-- KM plot
 - cox ass test
 - log-rank model test for dif
 - 
@@ -379,42 +378,181 @@ A nice little plot showing an overview of the length of follow-up for the subjec
 
 Not exactly sure how it is useful except for my own sake - I just like to know *visually* what my data looks like.
 
+#### Disclaimer
+
+I am not a statistician, so whatever is correct of below, is due to the wise words and lectures I have remembered from people who actually know what they are talking about. Many statistical results, especially when you wish to talk inference (X causes Y), require careful consideration of subjective priors, demographics, causal effects, and biases such as effect modifiers, confounders, selection bias, etc.
+
+Now - with that out of the way: LETS CLAIM SOME THINGS!
+
 #### Plot Kaplan Meier survival function
 
 Now, less fiddling around with plots, and more looking at survival analysis.
 
-The Kaplan meier estimator on a plot is wonderful in portraying differences in survival times. Below is a plot showing the differences between intervention groups, 
-But first we have to fit the data.
+The Kaplan meier estimator on a plot is wonderful for portraying differences in survival times. First step we have is to fit the data.
 
 ```{r}
 #| label: surv fit
 
-# Using event_num because the event variable doesnt work
-fit <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
+# Null, by treatment allocation, subset into sex
+fit_null <- survfit(Surv(time_yrs, event_num) ~ 1, data = steno2)
+fit_allo <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
+fit_sex <- survfit(Surv(time_yrs, event_num) ~ sex, data = steno2)
+fit_allo_sex <- survfit(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
+
+# steno2_m <- steno2 |> filter(sex == "M") 
+# steno2_f <- steno2 |> filter(sex == "F") 
+# fit_allo_m <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2_m)
+# fit_allo_f <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2_f)
 
 # Summarising, showing just the first 10 years
-summary(fit, times=c(0:10)) 
+summary(fit_null, times=c(0:10)) 
+summary(fit_allo, times=c(0:10)) 
+summary(fit_sex, times=c(0:10)) 
+summary(fit_allo_sex, times=c(0:10)) 
 ```
+Here we can see that after 10 years, there is already a lower survival probability for the conventional treatment group. And for females, it seems. But that highly depends on the intervention group.
 
+But it is much better to visualize it with a kaplan meier plot, to really see the differences, and when - in terms of time since baseline - does the survival differ.
+
+Shown below are plots for each of the different fits mentioned above, showing the null model, differences in survival between intervention groups for both sexes, and ditto, but subset for each sex.
 
 ```{r}
 #| label: survplot KM
-surv_p1 <- ggsurvplot(fit,
-           data = steno2,
-           risk.table = TRUE,         # optional: show number at risk
-           conf.int = TRUE,           # optional: confidence interval
-           xlab = NULL, ylab = "Survival Probability",
-           title = "Kaplan Meier Estimator for survival probability, in years")
+
+# Function to save some space
+survplot_function <- function(fit,data){
+  out <- ggsurvplot(
+    fit, data = data,
+    conf.int = TRUE,
+    risk.table = TRUE,
+    palette = "dark2",
+    xlab = NULL, ylab = "Survival Probability",
+    title = "Kaplan Meier Estimator for survival probability, in years"
+    )
+  
+  return(out)
+}
+
+# Null
+survplot_function(fit_null,steno2)
+
+# allo
+survplot_function(fit_allo,steno2)
+
+# sex
+survplot_function(fit_sex,steno2)
+
+# allo sex
+survplot_function(fit_allo_sex,steno2)
+
+```
+
+Thats a bit rough to look at, but provides plenty of information:
+
+1. intervention group has higher survival probability
+2. female sex seems to indicate having the highest survival probability, at least in intervention group
+3. frequently overlapping confidence intervals, low probability of actual difference atleast in the first 10 years where most of the overlap occurs
+
+For the second point, the lines cross twice, either because of the lower number of females or because of some unknown factor. When the lines cross its difficult to say whether there is any consistent survival difference with certainty.
+
+But let's try to make it pretty - just with the help of the `survminer` package help - accessed in Rstudio via `?ggsurvplot`.
+
+```{r}
+#| label: survplot KM pretty, fewer
+
+# allo
+surv_p_allo_pretty <- ggsurvplot(
+  fit = fit_allo, data = steno2,
+  surv.median.line = "hv", # Add medians survival
+  legend.title = "Allocation group",
+  legend.labs = c("Intervention", "Conventional"),
+  pval = TRUE,
+  conf.int = TRUE,
+
+  risk.table = TRUE,
+  tables.height = 0.2,
+  tables.theme = theme(axis.title.y = element_blank()), 
+  
+  palette = "dark2",
+  ggtheme = theme_bw(),
+  xlab = NULL, ylab = "Survival Probability",
+  title = "Kaplan Meier Estimator for survival probability, in years"
+  )
+
+surv_p_allo_sex_pretty <- ggsurvplot(
+  fit = fit_allo_sex, data = steno2,
+  surv.median.line = "hv", # Add medians survival
+  legend.title = "Allocation group, Sex",
+  legend.labs = c("Int, F", "Int, M", "Conv, F", "Conv, M"),
+  conf.int = TRUE,
+
+  risk.table = TRUE,
+  tables.height = 0.2,
+  tables.theme = theme(axis.title.y = element_blank()), 
+  
+  palette = "dark2",
+  ggtheme = theme_bw(),
+  xlab = NULL, ylab = "Survival Probability",
+  title = "Kaplan Meier Estimator for survival probability, in years"
+  )
+
+surv_p_allo_pretty
+surv_p_allo_sex_pretty
+```
+Now slightly cleaned up, and with some median survival lines - the follow-up time at which 50 has experienced the event - added.
+
+##### Test of differences
+
+One way of testing the differences between two survival curves is the log-rank test. Although, as far as I remember, its not given much weight - especially compared to visual inspection coupled with careful thinking and analysis of the different factors that play into a survival analysis.
+
+```{r}
+#| label: Log-rank test
+survdiff(Surv(time_yrs, event_num) ~ allo, data = steno2)
+survdiff(Surv(time_yrs, event_num) ~ sex, data = steno2)
+```
+Seems there is a statistically significant difference between allocation groups and not sex. Kinda what I expected from the reading of the plots.
+
+I have forgotten how to interpret the log-rank model for a fit with two different binary variables, so I will refrain from attempting that at the moment.
+
+```{r}
+#| label: CHUNK FOR INSPIRATION FROM PHD
+# Log-rank test 
+survdiff(Surv(T_E_Y, EVENT) ~ GROUP, data = df_tte_s_e)
+survdiff(Surv(T_E_Y, EVENT) ~ GROUP, data = df_tte_s_l)
+
+# loglog for proportional hazards
+ggsurvplot(groupsurv_e, data = df_tte_s_e, fun = "cloglog")
+ggsurvplot(groupsurv_l, data = df_tte_s_l, fun = "cloglog")
+
+## Conclusion: Early, the assumption seems to be violated because GLP1 and DPP4 cross.
+## Looks fine for late, except the very end (beginning?) where GLP1 and SGLT2 cross.
+
+# Linearity (GROUP*LATE)?
+  # for og unstratified
+plot(predict(cox_a), residuals(cox_a, type = "martingale"), las = 1)
+lines(smooth.spline(predict(cox_a), residuals(cox_a, type = "martingale")), col = "red")
+  # early
+plot(predict(cox_a_e), residuals(cox_a_e, type = "martingale"), las = 1)
+lines(smooth.spline(predict(cox_a_e), residuals(cox_a_e, type = "martingale")), col = "red")
+  # Late
+plot(predict(cox_a_l), residuals(cox_a_l, type = "martingale"), las = 1)
+lines(smooth.spline(predict(cox_a_l), residuals(cox_a_l, type = "martingale")), col = "red")
+
+# Schoenfeld
+cox.zph(cox_a)
+
+par(mfrow=c(4,2))
+plot(cox.zph(cox_a))
 ```
 
 
 #### Cox model
 
-#### Estimate
+Now we enter the part of survival analysis where we want to 
 
-#### Observed vs fitted survival curves
-
-#### Testing proportional hazards assumption
+##### Estimate
+##### Observed vs fitted survival curves
+##### Testing proportional hazards assumption
 
 ## Summary / cleaned up / refactored
 

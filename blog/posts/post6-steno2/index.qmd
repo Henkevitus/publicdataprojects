@@ -11,9 +11,13 @@ draft: true
 
 ## TODO
 
-- cox ass test
-- log-rank model test for dif
-- 
+- NOW
+  - log-rank model test for dif
+  - cox model
+  - cox ass test
+- WAIT
+  - final words on this thing
+  - summary section
 
 ## Purpose
 
@@ -60,37 +64,76 @@ str(st2clin)
 str(st2alb)
 ```
 
-It looks like `steno2` and `st2clin` are one row per subject, and `st2alb` is multiple, but that doesnt make sense given the amount of rows. We can see how many id's, the unqiue identifier for each person, are present, and if there is one row per subject it should be close to the amount of subjects.
+It looks like `steno2` and `st2clin` are one row per subject, and `st2alb` is multiple, but that doesn't make sense given the amount of rows. We can see how many id's, the unique identifier for each person, are present, and if there is one row per subject it should be close to the amount of subjects.
 
 ```{r}
-#| label: unique IDs
+#| label: unique ID testing further
 
-unique_new <- function(df) {df |> group_by(id) |> summarise(n = sum(id)) |> slice_max(n)}
+# create a 1 for each time there is an ID
+id_test1 <- steno2 |> count(id) 
+head(id_test1)
 
-map(list(steno2,st2clin,st2alb),unique_new)
-
+# different numbers on those counts
+id_test2 <- id_test1 |>  summarize(n=sum(n), idcount = max(id), sum = sum(id))
+id_test2
 ```
 
-Alright. So it is clear that only `steno2` has one row per subject because the number of id's that occur equal the number of unique id's.
+Alright. So it is clear that only `steno2` has one row per subject because the number of id's that occur equal the number of unique rows.
 
-It just looks like `st2clin` is one row per subject because of how it is arranged. 
+Lets see about the others
 
 ```{r}
-#| label: st2clin records
+#| label: unique ID testing further
 
-st2clin |> arrange(chol) |> head(4)
+st2alb |> count(id) |> summarize(n=sum(n), idcount = max(id), sum = sum(id))
+st2clin |> count(id) |> summarize(n=sum(n), idcount = max(id), sum = sum(id))
+```
+
+Ok so the `st2*` datasets have more than one row per subject, but there is a strange lower sum in `st2alb` than the other datasets. 
+
+Could it be that there are missing subjects in that dataset?
+
+```{r}
+#| label: missing in st2alb
+
 ```
 
 ### A) Joining
 
 Now, first, what would the purpose be of joining these data-sets together?
 
-First of all, the `st2clin` and `st2alb` data-sets do not have the categories for each id from the `steno2` data-set.
+There could be many reasons and I will touch upon some of them:
+
+- adding demographic characteristics from one data-set to another to stratify analysis
+- find things that are in one data-set but not in another
+
+For example, the `st2clin` and `st2alb` data-sets do not have the categories for each id from the `steno2` data-set, such as sex and allocation.
+
+Also, continuing from the previous section, were there any missing people in `st2alb`? There was a possible indication of it, which can be explored with a filtering join, more specifically, an anti_join, using the `anti_join()` function. 
+
+  anti_join() return all rows from x without a match in y
+  
+So let's try to see if there are any missing.
+
+```{r}
+#| label: missing from st2alb
+
+anti_join(steno2, st2alb, by = "id")
+```
+
+```{r}
+#| label: hidden. no missing from st2clin
+#| echo: false
+
+anti_join(steno2, st2clin, by = "id")
+```
+
+It seems that id 83, 102, 128, and 150 are missing from `st2alb`. They are not missing from `st2clin` - I checked in a hidden code chunk. Since it's stated in the documentation that it's a data-set about transitions between states of albuminuria, perhaps one could assume that these individuals simply did not transition?
 
 ## Output
 ### B) Table
 
-Ofcourse, the good old `summary()` function might be worth to do to get a good overview of the three data-sets. First we do `steno2` demographics.
+Of course, the good old `summary()` function might be worth to do to get a good overview of the three data-sets. First we do `steno2` demographics.
 
 ```{r}
 #| label: steno2 demographics
@@ -548,7 +591,15 @@ plot(cox.zph(cox_a))
 
 #### Cox model
 
-Now we enter the part of survival analysis where we want to 
+Now we enter the part of survival analysis where we want to see what effect sizes the different predictors have on the outcome. 
+
+Where the survival function derived from the Kaplan Meier Estimator up above could tell us how many people have survived at time $t$, the 
+
+```{r}
+#| label: label
+#| echo: true
+
+```
 
 ##### Estimate
 ##### Observed vs fitted survival curves

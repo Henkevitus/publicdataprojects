@@ -4,20 +4,22 @@ author: "Henrik Vitus Bering Laursen"
 date: "2025-06-01" 
 categories: 
   - diabetes
+  - data exploration
   - joins
   - survival analysis
 draft: true
+format:
+  html:
+    toc: true
+    number-sections: true
+    fig-width: 10
+    fig-height: 4
 ---
 
 ## TODO
-
-- NOW
-  - log-rank model test for dif
-  - cox model
-  - cox ass test
-- WAIT
-  - final words on this thing
-  - summary section
+- print and read through
+- final words on this thing
+- summary section - *with help*
 
 ## Purpose
 
@@ -421,7 +423,7 @@ A nice little plot showing an overview of the length of follow-up for the subjec
 
 Not exactly sure how it is useful except for my own sake - I just like to know *visually* what my data looks like.
 
-#### Disclaimer
+#### Disclaimer {#sec-output-model-disclaimer}
 
 I am not a statistician, so whatever is correct of below, is due to the wise words and lectures I have remembered from people who actually know what they are talking about. Many statistical results, especially when you wish to talk inference (X causes Y), require careful consideration of subjective priors, demographics, causal effects, and biases such as effect modifiers, confounders, selection bias, etc.
 
@@ -436,28 +438,28 @@ The Kaplan meier estimator on a plot is wonderful for portraying differences in 
 ```{r}
 #| label: surv fit
 
-# Null, by treatment allocation, subset into sex
-fit_null <- survfit(Surv(time_yrs, event_num) ~ 1, data = steno2)
-fit_allo <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
-fit_sex <- survfit(Surv(time_yrs, event_num) ~ sex, data = steno2)
-fit_allo_sex <- survfit(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
+# Overall, by treatment allocation, subset into sex
+km_os <- survfit(Surv(time_yrs, event_num) ~ 1, data = steno2)
+km_allo <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
+km_sex <- survfit(Surv(time_yrs, event_num) ~ sex, data = steno2)
+km_allo_sex <- survfit(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
 
 # steno2_m <- steno2 |> filter(sex == "M") 
 # steno2_f <- steno2 |> filter(sex == "F") 
-# fit_allo_m <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2_m)
-# fit_allo_f <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2_f)
+# km_allo_m <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2_m)
+# km_allo_f <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2_f)
 
 # Summarising, showing just the first 10 years
-summary(fit_null, times=c(0:10)) 
-summary(fit_allo, times=c(0:10)) 
-summary(fit_sex, times=c(0:10)) 
-summary(fit_allo_sex, times=c(0:10)) 
+summary(km_os, times=c(0:10)) 
+summary(km_allo, times=c(0:10)) 
+summary(km_sex, times=c(0:10)) 
+summary(km_allo_sex, times=c(0:10)) 
 ```
 Here we can see that after 10 years, there is already a lower survival probability for the conventional treatment group. And for females, it seems. But that highly depends on the intervention group.
 
 But it is much better to visualize it with a kaplan meier plot, to really see the differences, and when - in terms of time since baseline - does the survival differ.
 
-Shown below are plots for each of the different fits mentioned above, showing the null model, differences in survival between intervention groups for both sexes, and ditto, but subset for each sex.
+Shown below are plots for each of the different fits mentioned above, showing the overall survival modelel, differences in survival between intervention groups for both sexes, and ditto, but subset for each sex.
 
 ```{r}
 #| label: survplot KM
@@ -476,8 +478,8 @@ survplot_function <- function(fit,data){
   return(out)
 }
 
-# Null
-survplot_function(fit_null,steno2)
+# Overall
+survplot_function(fit_os,steno2)
 
 # allo
 survplot_function(fit_allo,steno2)
@@ -553,57 +555,119 @@ One way of testing the differences between two survival curves is the log-rank t
 survdiff(Surv(time_yrs, event_num) ~ allo, data = steno2)
 survdiff(Surv(time_yrs, event_num) ~ sex, data = steno2)
 ```
+
 Seems there is a statistically significant difference between allocation groups and not sex. Kinda what I expected from the reading of the plots.
 
 I have forgotten how to interpret the log-rank model for a fit with two different binary variables, so I will refrain from attempting that at the moment.
 
-```{r}
-#| label: CHUNK FOR INSPIRATION FROM PHD
-# Log-rank test 
-survdiff(Surv(T_E_Y, EVENT) ~ GROUP, data = df_tte_s_e)
-survdiff(Surv(T_E_Y, EVENT) ~ GROUP, data = df_tte_s_l)
 
-# loglog for proportional hazards
-ggsurvplot(groupsurv_e, data = df_tte_s_e, fun = "cloglog")
-ggsurvplot(groupsurv_l, data = df_tte_s_l, fun = "cloglog")
-
-## Conclusion: Early, the assumption seems to be violated because GLP1 and DPP4 cross.
-## Looks fine for late, except the very end (beginning?) where GLP1 and SGLT2 cross.
-
-# Linearity (GROUP*LATE)?
-  # for og unstratified
-plot(predict(cox_a), residuals(cox_a, type = "martingale"), las = 1)
-lines(smooth.spline(predict(cox_a), residuals(cox_a, type = "martingale")), col = "red")
-  # early
-plot(predict(cox_a_e), residuals(cox_a_e, type = "martingale"), las = 1)
-lines(smooth.spline(predict(cox_a_e), residuals(cox_a_e, type = "martingale")), col = "red")
-  # Late
-plot(predict(cox_a_l), residuals(cox_a_l, type = "martingale"), las = 1)
-lines(smooth.spline(predict(cox_a_l), residuals(cox_a_l, type = "martingale")), col = "red")
-
-# Schoenfeld
-cox.zph(cox_a)
-
-par(mfrow=c(4,2))
-plot(cox.zph(cox_a))
-```
 
 
 #### Cox model
 
 Now we enter the part of survival analysis where we want to see what effect sizes the different predictors have on the outcome. 
 
-Where the survival function derived from the Kaplan Meier Estimator up above could tell us how many people have survived at time $t$, the 
+As mentioned in @sec-output-model-disclaimer, I am not a statistician, and I do not think the target audience of 0 to 1/3 of a person should be a statistician, so I will not bombard You with all the equations and definitions of survival analysis, such as $S(t) = P(T>t) = etc..etc$.
+
+I will just try to speak in plain terms.
+
+Where the survival function derived from the Kaplan Meier Estimator up above could tell us how many people have survived at time $t$, and the difference between groups, the cox proportional hazards model can describe the relative difference in effect between different predictors, in regards to the risk of the outcome.
+
+Spoken plainly: the cox proportional hazards model can tell us something about how much the risk of the outcome, `doDth`, increases or decreases, for those in one group compared to another group. And then if there are multiple variables in the analysis, its assumed all other variables stay the same.
+
+Let's do the same models as for the survival function.
 
 ```{r}
-#| label: label
-#| echo: true
+#| label: cox models
 
+# Overall, by treatment allocation, subset into sex
+cox_allo <- coxph(Surv(time_yrs, event_num) ~ allo, data = steno2)
+cox_sex <- coxph(Surv(time_yrs, event_num) ~ sex, data = steno2)
+cox_allo_sex <- coxph(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
 ```
 
-##### Estimate
-##### Observed vs fitted survival curves
-##### Testing proportional hazards assumption
+##### Checking models out before interpreting estimates
+
+Before we go ahead and interpret estimates, it is recommended that you see how the data fits with the assumptions that are necessary for the cox model to be interpreted correctly.
+
+In general, I have been taught to test the cox proportional hazards assumption, which can be done in two ways:
+
+- plot observed survival curves in the two groups with estimated survival curves from the model
+- log log plot of two survival curves
+
+```{r}
+#| label: observed versus estimated, loglog plot
+
+plot(km_allo,
+     col=1:2,
+     lty=2,
+     main='Observed and fitted survival')
+lines(survfit(cox_allo, 
+              newdata=data.frame(allo=c('Int','Conv'))),
+      col=1:2)
+legend('bottomleft',
+       lty=rep(1:2,2),col=rep(1:2,each=2),
+       legend=c('Int, fit','Int, obs','Conv, fit','Conv, obs'))
+
+plot(km_allo,
+     col=1:2,
+     fun='cloglog',
+     main='Log-log plot')
+legend('topleft',lty=rep(1,2),col=1:2,legend=levels(steno2$allo))
+```
+
+Hmm. I also wanted to use `ggsurvplot` but for some reason, I can only get the old code, without risk table, from my course long ago in basic biostats to work, so I will use that.
+
+**But more importantly:**
+
+Basically what we can see from the two above plots is that the proportional hazards assumption doesn't hold super well.
+
+If the hazards for the groups being compared are not relatively proportional over time, its estimates do not precisely answer the question of "how much more risk is one group in of the outcome versus the other", since it varies over time. 
+
+It answers a general tendency, which might switch at some point in the data, as can be seen by earlier plots where observed survival curves overlap early.
+
+##### Estimates
+
+But lets still look at the model estimates and interpret them a bit, but bearing in mind that the proportional hazards assumption doesn't hold.
+
+For a more simple output of the models, I use `broom::tidy()`.
+
+```{r}
+#| label: summarising models
+
+# list 
+cox_models <- list(cox_allo,cox_sex,cox_allo_sex)
+names(cox_models) <- paste0("model_", seq_along(cox_models))
+
+# tidy 
+tidy_cox_models <- map_dfr(cox_models, ~broom::tidy(.x, conf.int = TRUE))
+tidy_cox_models
+tidy_cox_models_exp <- map_dfr(cox_models, ~broom::tidy(.x, conf.int = TRUE, exponentiate = TRUE))
+tidy_cox_models_exp
+```
+
+Where the first two rows are the first two models, and row three to four is the model with both variables, so you can see how much of an effect it has if you include them both.
+
+Let's go ahead and do a simple interpretation on the model with both allocation and sex as predictors.
+
+Using `broom::augment`, one can plop the estimates into a table as an overview of what the model estimates mean for each variable. 
+
+```{r}
+#| label: model estimates table
+
+cox_grid_1 <- expand.grid(allo = c("Conv", "Int")) 
+cox_grid_2 <- expand.grid(allo = c("Conv", "Int"), sex = c("M","F")) 
+(broom::augment(cox_allo,newdata = cox_grid_1, type.predict = "risk"))
+(broom::augment(cox_allo_sex,newdata = cox_grid_2, type.predict = "risk"))
+```
+
+Due to the `type.predict` option, the result is exponentiated so it can be interpreted as risk increase.
+
+So, the model output for `cox_allo_sex` can be interpreted in the following way:
+
+Females on intervention treatment are the reference group, and females with conventional treatment have 87% higher risk of death, while males on intervention treatment have 46%, and males on conventional 174% higher risk.
+
 
 ## Summary / cleaned up / refactored
 
+Get some *help* in doing this

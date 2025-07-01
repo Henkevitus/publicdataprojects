@@ -1,25 +1,19 @@
 ---
 title: "Danish diabetes data"
 author: "Henrik Vitus Bering Laursen"
-date: "2025-06-01" 
+date: "2025-06-17" 
 categories: 
   - diabetes
   - data exploration
   - joins
   - survival analysis
-draft: true
 format:
   html:
     toc: true
     number-sections: true
-    fig-width: 10
-    fig-height: 4
+    fig-width: 8
+    fig-height: 6
 ---
-
-## TODO
-- print and read through
-- final words on this thing
-- summary section - *with help*
 
 ## Purpose
 
@@ -44,6 +38,8 @@ The data-sets can be loaded directly from the `Epi` library, through `data()`
 ```{r}
 #| label: Loading Libraries
 #| echo: false
+#| output: false
+
 library(Epi)
 library(tidyverse)
 library(survival)
@@ -69,7 +65,7 @@ str(st2alb)
 It looks like `steno2` and `st2clin` are one row per subject, and `st2alb` is multiple, but that doesn't make sense given the amount of rows. We can see how many id's, the unique identifier for each person, are present, and if there is one row per subject it should be close to the amount of subjects.
 
 ```{r}
-#| label: unique ID testing further
+#| label: unique ID testing further 1
 
 # create a 1 for each time there is an ID
 id_test1 <- steno2 |> count(id) 
@@ -85,7 +81,7 @@ Alright. So it is clear that only `steno2` has one row per subject because the n
 Lets see about the others
 
 ```{r}
-#| label: unique ID testing further
+#| label: unique ID testing further 2
 
 st2alb |> count(id) |> summarize(n=sum(n), idcount = max(id), sum = sum(id))
 st2clin |> count(id) |> summarize(n=sum(n), idcount = max(id), sum = sum(id))
@@ -261,38 +257,21 @@ Now. With the help of some AI, I made the function below which can produce diffe
 ```{r}
 #| label: histograms, faceted, complicated
 
-plot_histospam_faceted_allo_comp <- function(
-    data,
-    prefix      = "do",
-    bins        = 30,
-    overlay     = TRUE,     
-    facet_rows  = FALSE      
-) {
-  data |> 
-    select(allo, starts_with(prefix)) |>         
-    pivot_longer(-allo, names_to = "variable",
-                       values_to = "value") |>   
+steno2 |>
+    select(allo, starts_with("do")) |>
+    pivot_longer(-allo, names_to = "variable", values_to = "value") |>
     ggplot(aes(value, fill = allo)) +
-      geom_histogram(
-        bins      = bins,
-        position  = if (overlay) "identity" else "dodge",
-        alpha     = if (overlay) 0.5 else 1,      # translucent if overlaid
-        colour    = "white"
-      ) +
-      { if (facet_rows)
-          facet_grid(rows = vars(allo), cols = vars(variable),
-                     scales = "free_x")
-        else
-          facet_wrap(~ variable, scales = "free_x")
-      } +
-      labs(x = NULL, fill = "Sex") +
-      theme_minimal()
-}
-
-plot_histospam_faceted_allo_comp(steno2, facet_rows = TRUE)
+    geom_histogram(position = "identity", colour = "white") +
+        facet_grid(rows = vars(allo), cols = vars(variable)) +
+    #scale_x_continuous(breaks = floor(min(value)):ceiling(max(value)),
+    #               labels  = scales::number_format(accuracy = 1)) + 
+    labs(x = NULL, fill = "Allocation") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, vjust = .5, hjust = 1))
 
 ```
 
+This might be information overload to such a degree that not much is gained from it.
 
 ### C) Model
 
@@ -405,7 +384,7 @@ Ok that looks fine. Now I want to make the final plot for this and move on.
 
 sp4 <- sp3 +
   labs(
-    x = NULL, 
+    x = "Follow-up time in years since baseline", 
     y = "Subject sorted by follow-up", 
     title = "Follow-up per subject, years since baseline") +
   theme(
@@ -444,11 +423,6 @@ km_allo <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
 km_sex <- survfit(Surv(time_yrs, event_num) ~ sex, data = steno2)
 km_allo_sex <- survfit(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
 
-# steno2_m <- steno2 |> filter(sex == "M") 
-# steno2_f <- steno2 |> filter(sex == "F") 
-# km_allo_m <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2_m)
-# km_allo_f <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2_f)
-
 # Summarising, showing just the first 10 years
 summary(km_os, times=c(0:10)) 
 summary(km_allo, times=c(0:10)) 
@@ -479,16 +453,16 @@ survplot_function <- function(fit,data){
 }
 
 # Overall
-survplot_function(fit_os,steno2)
+survplot_function(km_os,steno2)
 
 # allo
-survplot_function(fit_allo,steno2)
+survplot_function(km_allo,steno2)
 
 # sex
-survplot_function(fit_sex,steno2)
+survplot_function(km_sex,steno2)
 
 # allo sex
-survplot_function(fit_allo_sex,steno2)
+survplot_function(km_allo_sex,steno2)
 
 ```
 
@@ -507,7 +481,7 @@ But let's try to make it pretty - just with the help of the `survminer` package 
 
 # allo
 surv_p_allo_pretty <- ggsurvplot(
-  fit = fit_allo, data = steno2,
+  fit = km_allo, data = steno2,
   surv.median.line = "hv", # Add medians survival
   legend.title = "Allocation group",
   legend.labs = c("Intervention", "Conventional"),
@@ -525,7 +499,7 @@ surv_p_allo_pretty <- ggsurvplot(
   )
 
 surv_p_allo_sex_pretty <- ggsurvplot(
-  fit = fit_allo_sex, data = steno2,
+  fit = km_allo_sex, data = steno2,
   surv.median.line = "hv", # Add medians survival
   legend.title = "Allocation group, Sex",
   legend.labs = c("Int, F", "Int, M", "Conv, F", "Conv, M"),
@@ -561,15 +535,13 @@ Seems there is a statistically significant difference between allocation groups 
 I have forgotten how to interpret the log-rank model for a fit with two different binary variables, so I will refrain from attempting that at the moment.
 
 
-
-
 #### Cox model
 
 Now we enter the part of survival analysis where we want to see what effect sizes the different predictors have on the outcome. 
 
 As mentioned in @sec-output-model-disclaimer, I am not a statistician, and I do not think the target audience of 0 to 1/3 of a person should be a statistician, so I will not bombard You with all the equations and definitions of survival analysis, such as $S(t) = P(T>t) = etc..etc$.
 
-I will just try to speak in plain terms.
+I will just try to write in plain terms.
 
 Where the survival function derived from the Kaplan Meier Estimator up above could tell us how many people have survived at time $t$, and the difference between groups, the cox proportional hazards model can describe the relative difference in effect between different predictors, in regards to the risk of the outcome.
 
@@ -620,7 +592,7 @@ Hmm. I also wanted to use `ggsurvplot` but for some reason, I can only get the o
 
 **But more importantly:**
 
-Basically what we can see from the two above plots is that the proportional hazards assumption doesn't hold super well.
+Basically what we can see from the two above plots is that the proportional hazards assumption doesn't hold well, due to crossover of survival curves and perhaps a slight possibility of different baseline hazards.
 
 If the hazards for the groups being compared are not relatively proportional over time, its estimates do not precisely answer the question of "how much more risk is one group in of the outcome versus the other", since it varies over time. 
 
@@ -661,7 +633,7 @@ cox_grid_2 <- expand.grid(allo = c("Conv", "Int"), sex = c("M","F"))
 (broom::augment(cox_allo_sex,newdata = cox_grid_2, type.predict = "risk"))
 ```
 
-Due to the `type.predict` option, the result is exponentiated so it can be interpreted as risk increase.
+Due to the `type.predict` option, the result is exponentiated so it can be interpreted as risk increase. 
 
 So, the model output for `cox_allo_sex` can be interpreted in the following way:
 
@@ -670,4 +642,172 @@ Females on intervention treatment are the reference group, and females with conv
 
 ## Summary / cleaned up / refactored
 
-Get some *help* in doing this
+
+
+```{r}
+#| label: summary
+#| echo: false
+
+
+# prep and load -----------------------------------------------------------
+
+library(Epi)
+library(tidyverse)
+library(survival)
+library(survminer)
+
+data(steno2); data(st2clin); data(st2alb)
+
+
+# explore -----------------------------------------------------------------
+
+map(list(steno2, st2clin, st2alb), glimpse)
+
+id_sum <- function(x) x |> count(id) |> summarise(records = n(), max_id = max(id))
+map(list(steno2, st2clin, st2alb), id_sum)
+
+list(st2alb, st2clin) |> map(~anti_join(steno2, .x, by = "id"))
+
+summary(steno2)
+
+
+plot_histospam_faceted_sex <- function(data, var, prefix = "do") {
+  data |> 
+    select({{ var }}, starts_with(prefix)) |>             
+    pivot_longer(- {{ var }}, 
+                 names_to = "name",
+                 values_to = "value") |> 
+    ggplot(aes(value, fill = {{ var }})) +
+    geom_histogram(
+      position = "dodge",
+      colour = "white") +
+    facet_wrap(~ name, scales = "free_x") +   # one panel per variable
+    labs(x = NULL) 
+}
+
+plot_histospam_faceted_sex(steno2, sex)
+plot_histospam_faceted_sex(steno2, allo)
+
+steno2 |>
+    select(allo, starts_with("do")) |>
+    pivot_longer(-allo, names_to = "variable", values_to = "value") |>
+    ggplot(aes(value, fill = allo)) +
+    geom_histogram(position = "identity", colour = "white") +
+        facet_grid(rows = vars(allo), cols = vars(variable)) +
+    #scale_x_continuous(breaks = floor(min(value)):ceiling(max(value)),
+    #               labels  = scales::number_format(accuracy = 1)) + 
+    labs(x = NULL, fill = "Allocation") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, vjust = .5, hjust = 1))
+
+# survival - swimmer and kaplan meier ------------------------------------------
+
+steno2 <- steno2 |>
+  mutate(
+    doExit   = coalesce(doDth, doEnd),
+    time_yrs = as.numeric(difftime(doExit, doBase, units = "days")) / 365.25,
+    event_num = as.integer(!is.na(doDth)),
+    event    = factor(event_num, c(0, 1), c("Censored", "Dead"))
+  )
+
+steno2 |>
+  mutate(id = fct_reorder(as.factor(id), time_yrs)) |>
+  ggplot() +
+  geom_segment(aes(x = doBase, xend = doExit, y = id), colour = "grey") +
+  geom_point(aes(x = doExit, y = id, shape = event))
+
+steno2 |>
+  mutate(id = fct_reorder(as.factor(id), time_yrs)) |>
+  ggplot() +
+  geom_segment(aes(x = 0, xend = time_yrs, y = id), colour = "grey") +
+  geom_point(aes(x = time_yrs, y = id, shape = event, colour = event)) +
+  scale_shape_manual(values = c(Censored = 17, Dead = 4)) +
+  scale_colour_manual(values = c(Censored = "black", Dead = "red"))  +
+    labs(
+    x = NU"Follow-up time in years since baseline", 
+    y = "Subject sorted by follow-up", 
+    title = "Follow-up per subject, years since baseline") +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_blank(),
+    panel.background = element_blank()
+    )
+
+
+km_os <- survfit(Surv(time_yrs, event_num) ~ 1, data = steno2)
+km_allo <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
+km_sex <- survfit(Surv(time_yrs, event_num) ~ sex, data = steno2)
+km_allo_sex <- survfit(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
+
+km_list <- list(km_os, km_allo, km_sex, km_allo_sex)
+imap(km_list, ~print(summary(.x, times = 0:10)))
+
+survplot_function <- function(fit){
+  out <- ggsurvplot(
+    fit, data = steno2,
+    conf.int = TRUE,
+    risk.table = TRUE,
+    palette = "dark2",
+    xlab = NULL, ylab = "Survival Probability",
+    title = "Kaplan Meier Estimator for survival probability, in years"
+  )
+  
+  return(out)
+}
+
+map(km_list, survplot_function)
+
+ggsurvplot(
+  km_list[[2]], steno2,
+  surv.median.line = "hv",
+  legend.title = "Allocation",
+  legend.labs = c("Intervention", "Conventional"),
+  pval = TRUE, conf.int = TRUE,
+  risk.table = TRUE, tables.height = .2,
+  tables.theme = theme(axis.title.y = element_blank()),
+  palette = "dark2", ggtheme = theme_bw()
+)
+
+ggsurvplot(
+  km_list[[4]], steno2,
+  surv.median.line = "hv",
+  legend.title = "Allocation, Sex",
+  legend.labs = c("Int, F", "Int, M", "Conv, F", "Conv, M"),
+  conf.int = TRUE,
+  risk.table = TRUE, tables.height = .2,
+  tables.theme = theme(axis.title.y = element_blank()),
+  palette = "dark2", ggtheme = theme_bw()
+)
+
+survdiff(Surv(time_yrs, event_num) ~ allo, steno2)
+survdiff(Surv(time_yrs, event_num) ~ sex,  steno2)
+
+
+# Cox and assumption checking --------------------------------------------------
+
+cox <- list(
+  allo = coxph(Surv(time_yrs, event_num) ~ allo, steno2),
+  sex  = coxph(Surv(time_yrs, event_num) ~ sex,  steno2),
+  both = coxph(Surv(time_yrs, event_num) ~ allo + sex, steno2)
+)
+
+plot(km_list[[2]], col = 1:2, lty = 2)
+lines(survfit(cox$allo, newdata = tibble(allo = c("Int", "Conv"))), col = 1:2)
+legend("bottomleft", lty = rep(1:2, 2), col = rep(1:2, each = 2),
+       legend = c("Int, fit", "Int, obs", "Conv, fit", "Conv, obs"))
+
+plot(km_list[[2]], col = 1:2, fun = "cloglog")
+legend("topleft", lty = 1, col = 1:2, legend = levels(steno2$allo))
+
+tidy_cox   <- map_dfr(cox, broom::tidy, conf.int = TRUE, .id = "model")
+tidy_coxHR <- map_dfr(cox, \(m) broom::tidy(m, conf.int = TRUE, exponentiate = TRUE), .id = "model")
+
+tidy_cox
+tidy_coxHR
+
+broom::augment(cox$allo, newdata = tibble(allo = c("Conv", "Int")), type.predict = "risk")
+broom::augment(cox$both, newdata = expand.grid(allo = c("Conv", "Int"), sex = c("M", "F")), type.predict = "risk")
+```

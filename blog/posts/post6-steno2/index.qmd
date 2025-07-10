@@ -13,6 +13,7 @@ format:
     number-sections: true
     fig-width: 8
     fig-height: 6
+freeze: true
 ---
 
 ## Purpose
@@ -642,8 +643,6 @@ Females on intervention treatment are the reference group, and females with conv
 
 ## Summary / cleaned up / refactored
 
-
-
 ```{r}
 #| label: summary
 #| echo: false
@@ -724,7 +723,7 @@ steno2 |>
   scale_shape_manual(values = c(Censored = 17, Dead = 4)) +
   scale_colour_manual(values = c(Censored = "black", Dead = "red"))  +
     labs(
-    x = NU"Follow-up time in years since baseline", 
+    x = "Follow-up time in years since baseline", 
     y = "Subject sorted by follow-up", 
     title = "Follow-up per subject, years since baseline") +
   theme(

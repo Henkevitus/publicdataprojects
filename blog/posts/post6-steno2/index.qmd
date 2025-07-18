@@ -14,6 +14,8 @@ format:
     fig-width: 8
     fig-height: 6
 freeze: true
+draft: false
+image: thumbnail.jpg
 ---
 
 ## Purpose
@@ -331,7 +333,7 @@ simple first:
 
 ```{r}
 #| label: swimplot followup simple
-sp1 <- steno2 |> 
+swim_plot_1 <- steno2 |> 
   mutate(id = fct_reorder(as.factor(id), time_yrs)) |>
   ggplot(aes(x = doBase, 
              xend = doExit,
@@ -339,7 +341,7 @@ sp1 <- steno2 |>
   geom_segment(color = "grey") +
   geom_point(aes(x = doExit, shape = event)) +
   geom_point(aes(x = doDth, shape = event)) 
-sp1
+swim_plot_1
 ```
 
 Looks good, but a tiny bit messy with the - although accurate - different starting times.
@@ -351,7 +353,7 @@ The latter would probably be of more interest to an investigator trying to figur
 ```{r}
 #| label: swimplot followup simple base is 0
 
-sp2 <- steno2 |> 
+swim_plot_2 <- steno2 |> 
   mutate(
     id = fct_reorder(as.factor(id), time_yrs),
     t0 = 0) |>
@@ -361,7 +363,7 @@ sp2 <- steno2 |>
   geom_segment(color = "grey") +
   geom_point(aes(x = time_yrs, shape = event, colour = event)) +
   theme_minimal()
-sp2
+swim_plot_2
 ```
 
 Here we have the x-axis in years since baseline.
@@ -373,17 +375,17 @@ How can I make it so that there are different shapes for each event? I can just 
 
 ```{r}
 #| label: swimplot different shapes for event
-sp3 <- sp2 +
+swim_plot_3 <- swim_plot_2 +
   scale_shape_manual(values = c(Censored = 17, Dead = 4)) +
   scale_colour_manual(values = c(Censored = "black", Dead = "red"))  
-sp3
+swim_plot_3
 ```
 Ok that looks fine. Now I want to make the final plot for this and move on.
 
 ```{r}
 #| label: swimplot followup final
 
-sp4 <- sp3 +
+swim_plot_4 <- swim_plot_3 +
   labs(
     x = "Follow-up time in years since baseline", 
     y = "Subject sorted by follow-up", 
@@ -392,11 +394,10 @@ sp4 <- sp3 +
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.grid.major = element_blank(),
-    plot.background = element_blank(),
-    panel.background = element_blank()
+    panel.grid.major = element_blank()
     )
-sp4
+swim_plot_4
+ggsave("thumbnail.jpg", plot = last_plot(), width = 6, height = 4) # saved as thumbnail
 ```
 
 A nice little plot showing an overview of the length of follow-up for the subjects in the study.

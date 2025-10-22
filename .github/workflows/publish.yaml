@@ -1,4 +1,4 @@
-on:
+gon:
   workflow_dispatch:
   push:
     branches: main

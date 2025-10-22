@@ -6,6 +6,7 @@ apps/
 data/
 playground/
 scripts/
+blog_archive/
 renv/
 site/*
 website/

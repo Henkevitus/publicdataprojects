@@ -1,11 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts.html</loc>
+    <lastmod>2025-10-22T17:44:23.303Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/scratchpad.html</loc>
+    <lastmod>2025-10-22T17:44:24.775Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-09-25-rshiny/index.html</loc>
+    <lastmod>2025-10-22T17:44:23.307Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-06-17-steno2/index.html</loc>
+    <lastmod>2025-10-22T17:44:23.304Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-05-31-movingon/index.html</loc>
+    <lastmod>2025-10-22T17:44:23.304Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-20-medstat-function/index.html</loc>
+    <lastmod>2025-10-22T17:44:23.303Z</lastmod>
+  </url>
+  <url>
     <loc>https://Henkevitus.github.io/publicdataprojects/index.html</loc>
-    <lastmod>2025-10-22T12:35:33.481Z</lastmod>
+    <lastmod>2025-10-22T17:44:23.300Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-19-medstatexplore/index.html</loc>
+    <lastmod>2025-10-22T17:44:23.303Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-01-19-explanation/index.html</loc>
+    <lastmod>2025-10-22T17:44:23.303Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-07-10-montecarlo/index.html</loc>
+    <lastmod>2025-10-22T17:44:23.305Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-30-tot_ddd_use/index.html</loc>
+    <lastmod>2025-10-22T17:44:23.303Z</lastmod>
   </url>
   <url>
     <loc>https://Henkevitus.github.io/publicdataprojects/about.html</loc>
-    <lastmod>2025-10-22T12:35:33.475Z</lastmod>
+    <lastmod>2025-10-22T17:44:23.293Z</lastmod>
   </url>
 </urlset>

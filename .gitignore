@@ -14,7 +14,8 @@ _site/
 *.html
 *.docx
 *.pdf
-*.png
+#*.png dont ignore this format.. i use it for thumbnails
+*.jpeg
 *.pptx
 *.log
 *.zip

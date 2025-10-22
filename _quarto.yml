@@ -36,3 +36,8 @@ exclude:
   - drafts/**
   - data/**
   - scripts/**
+  - playground/**
+  - apps/**
+  - blog_archive/**
+  - renv/**
+  - .forme/**

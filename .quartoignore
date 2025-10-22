@@ -9,9 +9,10 @@ scripts/
 blog_archive/
 renv/
 site/*
-website/
-blog-archive/
-.forme/
+
+
 *.Rproj
 .RData
 .Rhistory
+
+.forme/

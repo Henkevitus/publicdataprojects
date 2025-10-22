@@ -1,0 +1,16 @@
+# not ready posts that quarto-pub wont ignore even though they are drafts
+#/posts/post8-cdisc/
+
+# Don’t render these non-site folders
+apps/
+data/
+playground/
+scripts/
+renv/
+site/*
+website/
+blog-archive/
+.forme/
+*.Rproj
+.RData
+.Rhistory

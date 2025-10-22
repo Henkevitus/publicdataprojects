@@ -1,0 +1,4 @@
+---
+title: "Welcome"
+---
+A short intro to your site. Use the navbar to reach the blog and about pages.

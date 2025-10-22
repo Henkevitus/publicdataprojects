@@ -1,0 +1,4 @@
+/.quarto/
+
+# not ready posts that quarto-pub wont ignore even though they are drafts
+/posts/post8-cdisc/

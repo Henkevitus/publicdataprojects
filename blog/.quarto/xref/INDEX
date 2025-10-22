@@ -1,0 +1,44 @@
+{
+  "posts/post3-tot_ddd_use/index.qmd": {
+    "index.html": "1fd41bb1"
+  },
+  "about.qmd": {
+    "about.html": "cc1a8ef6"
+  },
+  "index.qmd": {
+    "index.html": "9197355c"
+  },
+  "posts/post1-medstatexplore/index.qmd": {
+    "index.html": "9c4f5603"
+  },
+  "posts/post2-medstat-function/index.qmd": {
+    "index.html": "33fb0e7f"
+  },
+  "posts/post3-tot_ddd_use/index.knit.md": {
+    "index.knit.html": "1ca28633"
+  },
+  "posts/post4-explanation/index.qmd": {
+    "index.html": "afc67016"
+  },
+  "posts/post5-demographics/index.qmd": {
+    "index.html": "80194fd2"
+  },
+  "posts/post6-steno2/index.qmd": {
+    "index.html": "ca81d098"
+  },
+  "posts/post5-movingon/index.qmd": {
+    "index.html": "e18019e8"
+  },
+  "posts/post7-montecarlo/index.qmd": {
+    "index.html": "8d359213"
+  },
+  "posts/post8-cdisc/index.qmd": {
+    "index.html": "e93e90e7"
+  },
+  "posts/post10-rshiny/index.qmd": {
+    "index.html": "daebb8dd"
+  },
+  "posts/post9-realise-small/index.qmd": {
+    "index.html": "876ca700"
+  }
+}

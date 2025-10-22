@@ -1,0 +1,729 @@
+---
+title: "R shiny"
+author: "Henrik Vitus Bering Laursen"
+date: "2025-09-25" 
+categories: 
+  - hospital usage
+  - r shiny dashboard
+format:
+  html:
+    toc: true
+    number-sections: true
+    fig-width: 8
+    fig-height: 6
+    code-fold: true
+    code-summary: "Show the code"
+draft: false
+freeze: false
+#image: thumbnail.jpg # remember to find one and ggsave like in post3
+---
+
+## Purpose
+
+I wanted to walk through how to use `R shiny` and put in some Danish publicly available statistics.
+
+I want to do the following:
+
+- Establish how to get the data necessary
+- Get the data
+- Step-by-step how to use `R shiny` in the simplest possible way
+  - one outcome, one group, over time
+- Stop it there and then explore more in another post
+
+So here we go.
+
+
+## The Process 
+
+### Analysis plan
+
+First I sign in to Statistics Denmark website, after creating a user (necessary for bigger downloads).
+
+Then, I pick out a type of data I want to look at. There are so many. Because of my interest in healthcare I look at the table for hospital utilization, [SBR04](https://www.statistikbanken.dk/statbank5a/SelectVarVal/Define.asp?Maintable=SBR04&PLanguage=0).
+
+**From** that table I **select** all variables. I will probably only use very few, but I do it just in case I use more of it in the future.
+
+I will then:
+
+- Explore the data to find what I find interesting
+- Try to structure the `R shiny` around what would be interesting to look at given the data
+- Build the `R shiny` app. Probably actually publish it online, while remembering to cite Statistics Denmark as the source
+
+### Load
+
+#### Libraries
+
+```{r}
+#| label: source functions
+#| echo: true
+#| output: false
+
+source("~/publicdataprojects/blog/source.R")
+
+```
+
+```{r}
+#| label: Loading tidyverse
+#| echo: true
+
+library(tidyverse)
+
+
+```
+#### Data
+
+The process of finding data from Statistics Denmark currently comes in these steps:
+
+- Find [overview of tables](https://www.statistikbanken.dk/statbank5a/SelectTable/Omrade0.asp?PLanguage=0)
+- Select a subtable
+- Select variables from that table, then click "vis tabel"
+- Click on the selection of different export formats (Matrix [*.csv] is the type i'm used to)
+- Import the downloaded file, remembering to account for Danish locale
+
+```{r}
+#| label: Load entire table
+#| echo: true
+#| error: TRUE
+
+file_path <- c("C:/Users/henri/Downloads/2025917133644569067073SBR0449248987343.csv")
+
+df <- read_csv(file_path)
+
+```
+
+Odd. I didnt expect that error. Let's see whats up.
+
+```{r}
+#| label: Load entire table 2
+#| echo: true
+
+read_all <- read_lines(file_path)
+head(read_all)
+
+```
+Ok this may need a different reading function.
+
+```{r}
+#| label: Load entire table 3
+#| echo: true
+
+df <- read_delim(file_path,
+           delim = ";",
+           locale = locale(encoding = "ISO-8859-1"),
+           col_names = FALSE
+           )
+head(df)
+```
+
+Alright. I expected comma, but it was semicolons. And some googling revealed "ISO-8859-1" as the danish encoding.
+
+### Clean
+
+**Now**, the structure seems to need some cleaning, with several repeating values. The columns seem to be "supercolumns" with each column from the left to the right being "beneath" in the level of grouping of the previous.
+
+First, let's replace those `X` column names with their corresponding actual names.
+
+```{r}
+#| label: Name the columns
+#| echo: true
+
+# Rename descriptor columns
+df2 <- df |> rename(sex = X1, age = X2, sector = X3, measure = X4)
+
+# Rename year columns
+year_labels <- c("2017","2018","2019","2020","2021","2022","2023","2024")
+names(df2)[5:12] <- year_labels
+
+head(df2)
+```
+
+#### Filtering
+
+The first column, `Sex`, is "Køn i alt" which is both sexes. I want to see the difference in sexes so I will remove, or filter out, those columns. Also, I want age ranges, and not total. Finally, I want it to be divided into somatic and psychiatric. All of these will be filtered out below.
+
+
+```{r}
+#| label: Remove Allsex
+#| echo: true
+
+df3 <- df2 |> 
+  filter(sex != "Køn i alt",
+         age != "Alder i alt",
+         sector != "Uanset sygehusvæsen")  
+head(df3)
+```
+
+This leaves a dataset divided into the following groupings:
+
+- Men and women
+- Age ranges
+- Somatic contact
+- Psychiatric contact
+- Both Somatic Psychiatric
+
+And then subvariables for each of the above for:
+
+```{r}
+#| label: Distinct measures in df2
+#| echo: true
+
+df3 |> distinct(measure)
+
+```
+
+#### Modifying language
+
+And, because it is there, and I do not miss out on any learning by translating the data to english via GPT, I'm gonna put in and example dataset and ask GPT to translate all values in Danish, to English. And ofcourse just do it by hand the few places where simple letters can be changed.
+
+```{r}
+#| label: Translate from DK to ENG
+#| echo: true
+
+# Hand translate the easy ones
+
+df4 <- df3 |> 
+  mutate(sex = str_replace_all(sex,"Mænd","Men"),
+         sex = str_replace_all(sex,"Kvinder","Women"),
+         age = str_replace_all(age,"år","years"),
+         age = str_replace_all(age,"og derover",""),
+         age = str_replace_all(age,"60 years","60+ years"),
+         sector = str_replace_all(sector,"Somatik","Somatic"),
+         sector = str_replace_all(sector,"Psykiatri","Psychiatry"),
+         sector = str_replace_all(sector,"Både somatik og psykiatri","Both somatic and psychiatry")
+         ) 
+
+# GPT aided translation of the measure
+  # clean text
+df5 <- df4 |>
+  mutate(
+    measure = str_squish(measure)              # trim & collapse whitespace
+  )
+
+  # Define a named lookup (DA -> EN)
+da_en <- c(
+  "Personer med ophold (antal)"                          = "Persons with stays (number)",
+  "Personer med ophold (pct.)"                           = "Persons with stays (percent)",
+  "Ophold per person (antal)"                            = "Stays per person (number)",
+  "Personer med ophold på under 12 timer (antal)"        = "Persons with stays under 12 hours (number)",
+  "Personer med ophold på under 12 timer (pct.)"         = "Persons with stays under 12 hours (percent)",
+  "Ophold på under 12 timer per person (antal)"          = "Stays under 12 hours per person (number)",
+  "Personer med ophold på 12 timer eller derover (antal)"= "Persons with stays of 12 hours or more (number)",
+  "Personer med ophold på 12 timer eller derover (pct.)" = "Persons with stays of 12 hours or more (percent)",
+  "Ophold på 12 timer eller derover per person (antal)"  = "Stays of 12 hours or more per person (number)"
+)
+
+  # Translate (keep originals that don’t match)
+df6 <- df5  |> 
+  mutate(measure = recode(measure, !!!da_en, .default = measure))
+
+```
+
+I had a hard time understanding the `!!!` thingy. Its [reference page](https://rlang.r-lib.org/reference/topic-inject.html) is helpful. 
+
+In plain terms, that I can understand, it injects, or *splices*, x into y, where x is a list and y is something else. Possibly a list, too. In the above example, the "lookup" object called `da_en`, is injected into the `recode()` function. So basically it tells `recode()` that for its chosen variable, X4, it can take the list as a series of operations it must go through. 
+
+Another way, which I am used to and learned before using AI, is just using [`case_when()`](https://dplyr.tidyverse.org/reference/case_when.html). I like that one a lot since it is super easy to understand. When *i* is the case, set a chosen variable, *j* to *k*. It is perhaps better explained as a vectorized if-else statement.
+
+#### Pivoting
+
+Additionally, I will need to reshape / pivot the data.
+
+```{r}
+#| label: Pivoting
+#| echo: true
+
+df7 <- df6 |> 
+  pivot_longer(
+    cols = 5:12,
+    names_to = "year",
+    values_to = "value"
+    ) |> 
+  mutate(year = as.integer(year),
+         across(where(is.character), as.factor)
+  )
+
+head(df7)
+```
+
+So - Now we have a dataset with the following:
+
+- Supercategories
+  - Sex
+  - Age intervals
+  - Sector
+- Output measure categories and their values
+- All summarised within each year of registration
+
+That should be clean enough to start putting into an R shiny app.
+
+### Output
+
+#### Initial plots
+
+Let's see what some of the data looks like before creating a dashboard. We can work with the bigger and simpler numbers first - The amount of people who have stayed in the hospital, by each year.
+
+```{r}
+#| label: Plot - stays by year
+#| echo: true
+
+df7 |> filter(measure == "Persons with stays (number)") |> 
+  mutate(value2 = value / 1000) |> 
+  ggplot(aes(year, value2, color = age)) +
+  geom_line() +
+  facet_grid(
+    rows = vars(sex),
+    cols = vars(sector)) +
+  labs(x = NULL, y = "Count in 1000s")
+```
+
+It doesn't make much sense to compare the different sectors visually, so lets look at the sectors by themselves to start with, and focus on Sex.
+
+```{r}
+#| label: Plot - stays by year and sector somatic
+#| echo: true
+
+df7 |> filter(
+  measure == "Persons with stays (number)",
+  sector == "Somatic" ) |> 
+  mutate(value2 = value / 1000) |> 
+  ggplot(aes(year, value2, color = age)) +
+  geom_line() +
+  facet_grid(
+    cols = vars(sex)
+    ) +
+  labs(x = NULL, y = "Count in 1000s")
+
+```
+
+```{r}
+#| label: Plot - stays by year and sector psych
+#| echo: true
+
+df7 |> filter(
+  measure == "Persons with stays (number)",
+  sector == "Psychiatry" ) |> 
+  mutate(value2 = value / 1000) |> 
+  ggplot(aes(year, value2, color = age)) +
+  geom_line() +
+  facet_grid(
+    cols = vars(sex)
+    ) +
+  labs(x = NULL, y = "Count in 1000s")
+
+```
+
+```{r}
+#| label: Plot - stays by year and sector somatic and psych
+#| echo: true
+
+df7 |> filter(
+  measure == "Persons with stays (number)",
+  sector == "Both somatic and psychiatry" ) |> 
+  mutate(value2 = value / 1000) |> 
+  ggplot(aes(year, value2, color = age)) +
+  geom_line() +
+  facet_wrap( ~ sex) +
+  labs(x = NULL, y = "Count in 1000s")
+
+```
+
+These graphs are very interesting for displaying differences between the sexes, in terms of stays in hospital.
+
+**Notable results**:
+
+- More of the female sex stay in hospitals, except for: 
+  - Males aged 0-17 somatic
+  - Males aged 0-17 psychiatry
+- Remarkably similar results for men and women aged 30 to 60+ with both somatic and psychiatric stays
+
+And this is only the counts. What about all the other `measures`?:
+
+- Persons with stays (percent)
+- Persons with stays of 12 hours or more (number)
+- Persons with stays of 12 hours or more (percent)
+- Persons with stays under 12 hours (number)
+- Persons with stays under 12 hours (percent)
+- Stays of 12 hours or more per person (number)
+- Stays per person (number)
+- Stays under 12 hours per person (number)
+
+In my estimation, a lot of info can be gleaned just from setting up a dashboard that lets you pick between these different measures, with the three plots I made above.
+
+#### R shiny basics
+
+```{r}
+#| label: R shiny packages
+#| echo: true
+
+packages <- c("shiny", "bslib")
+ipak(packages)
+
+```
+
+With the R shiny packages loaded ([`bslib`](https://rstudio.github.io/bslib/) just lets you customize the R shiny dashboard more), it is time to start setting up the dashboard.
+
+It seems like the example that is structured in the [`bslib` github](https://rstudio.github.io/bslib/articles/dashboards/index.html) fits what I want to create as an initial dashboard: 
+
+- Three separate plots
+- One for each sector
+- Containing a measure
+- Coloured by age groups 
+- Facet wrapped by sex
+
+So let's go. With R shiny you can make dashboards which update based on your input. Shiny code, producing a dashboard, [basically](https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/) consists of:
+
+- A User interface (UI) *object*
+  - controls how it looks
+- A Server function
+  - controls how the app is built
+- The ShinyApp() function call
+  - creates shiny app objects from UI/server pair
+
+You can host the dashboard locally or by connecting with it on [Shiny apps website](www.shinyapps.io), which requires a user.
+
+I will try to make it here, and make it available on that website, or here in the blogpost if that is possible.
+
+First, I take code that fits, from the bslib github mentioned above that fits what I want:
+
+```{r}
+#| label: bslib example shiny dashboard 
+#| echo: true
+#| output: false
+
+data(penguins, package = "palmerpenguins")
+
+ui <- page_sidebar(
+  title = "Penguins dashboard",
+  sidebar = sidebar(
+    title = "Histogram controls",
+    varSelectInput(
+      "var", "Select variable",
+      dplyr::select_if(penguins, is.numeric)
+    ),
+    numericInput("bins", "Number of bins", 30)
+  ),
+  card(
+    card_header("Histogram"),
+    plotOutput("p")
+  )
+)
+
+server <- function(input, output) {
+  output$p <- renderPlot({
+    ggplot(penguins) +
+      geom_histogram(aes(!!input$var), bins = input$bins) +
+      theme_bw(base_size = 20)
+  })
+}
+
+shinyApp(ui, server)
+
+```
+
+Alright. That actually just works! It seems to have opened in R studio, so must be hosted locally.
+
+Now, I have to adapt it to my needs:
+
+- Input my own data, which should be cleaned for use
+- Make the three cards, for each of the three plots 
+- Make my own dashboard with the ui+server+shinyapp() trifecta
+
+Here we go.
+
+```{r}
+#| label: Shiny dashboard data and cards
+#| echo: true
+
+# Cards
+
+cards <- list(
+  card(
+    full_screen = TRUE,
+    card_header("Somatic sector"),
+    plotOutput("soma")
+  ),
+  card(
+    full_screen = TRUE,
+    card_header("Psychiatric sector"),
+    plotOutput("psych")
+  ),
+  card(
+    full_screen = TRUE,
+    card_header("Both sectors"),
+    plotOutput("somapsych")
+  )
+)
+
+measure <- selectInput(
+  "measure", "Measure",
+  choices = sort(unique(df7$measure))
+)
+
+
+```
+
+And then the dashboard.
+
+```{r}
+#| label: Dashboard created with help - not complex
+#| echo: true
+
+plot_sector <- function(data, sector_label) {
+  data_sector <- data |> filter(sector == sector_label)
+  req(nrow(data_sector) > 0)  # show nothing if that sector isn't present
+
+  ggplot(data_sector, aes(x = year, y = value, color = age)) +
+    geom_line() +
+    geom_point() +
+    facet_wrap(~ sex, nrow = 2) +
+    theme(
+      plot.title = element_blank(),
+      legend.position = "bottom",
+    ) +
+    labs(
+      title = sector_label,
+      x = NULL, color = "Age",
+      y = NULL
+    ) +
+    theme_bw(base_size = 12) 
+}
+
+measures <- df7 |>
+  distinct(measure) |>
+  arrange(measure) |>
+  pull(measure)
+
+ui <- page_sidebar(
+  title = "Hospital stays — dashboard",
+  sidebar = tagList(
+    selectInput("measure", "Measure", choices = measures, selected = measures[1]),
+    helpText("All plots update to the selected measure."),
+    helpText("Lines = time"),
+    helpText("Color = age"),
+    helpText("Facets = sex"),
+    helpText("Data has been supplied by Statistics Denmark (table SBR04), which contains aggregate data on hospital usage in Denmark between 2017-2024.")
+  ),
+  # 3 cards side-by-side (wraps on narrow screens)
+  layout_columns(width = 1,
+     card(
+       full_screen = TRUE,
+       card_header("Somatic"),
+       plotOutput("plot_somatic", height = 300)
+     ),
+     card(
+       full_screen = TRUE,
+       card_header("Psychiatric"),
+       plotOutput("plot_psychiatric", height = 300)
+     ),
+     card(
+       full_screen = TRUE,
+       card_header("Both"),
+       plotOutput("plot_both", height = 300)
+     )
+  )
+)
+
+server <- function(input, output, session) {
+  # Filter once by measure; reuse for all sectors
+  dat_measure <- reactive({
+    req(input$measure)
+    df7 |> filter(measure == input$measure)
+  })
+
+  output$plot_somatic     <- renderPlot(plot_sector(dat_measure(), sector_label = "Somatic"))
+  output$plot_psychiatric <- renderPlot(plot_sector(dat_measure(), sector_label = "Psychiatry"))
+  output$plot_both        <- renderPlot(plot_sector(dat_measure(), sector_label = "Both somatic and psychiatry"))
+
+}
+
+shinyApp(ui, server)
+
+
+```
+Fantastic!!! It is now created. But how will it be viewed on the blog? The guide on shinyapps.io details that we need to install rsconnect, authorize account, and then deploy. See the [Getting Started page of shinyapps.io](https://www.shinyapps.io/admin/#/dashboard) when you login. Or if using Rstudio, it can just be deployed with the "publish" button.
+
+But I am confused about how an app will be displayed on this blog. 
+
+**The simplest solution seems to be a link within the blog post to the shiny dashboard, hosted on the shinyapps.io servers.**
+
+**Below is the link to the resulting dashboard. Purpose complete!**
+
+
+::: {.callout-important icon=false}
+
+## Link to post
+
+[Click here to get to my resulting R shiny Dashboard](https://ceuiyr-henrik-laursen.shinyapps.io/post10/)
+
+:::
+
+
+## Summary / cleaned up / refactored 
+
+
+```
+#| label: Summary chunk
+#| echo: true
+#| output: false
+
+# Packages
+ipak <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+ipak_list <- c("tidyverse", "here", "shiny", "bslib")
+ipak(ipak_list)
+
+# Load data
+df <- read_delim("insert file name",
+           delim = ";",
+           locale = locale(encoding = "ISO-8859-1"),
+           col_names = FALSE
+           ) |> 
+  rename(sex = X1, age = X2, sector = X3, measure = X4)
+
+# Prepping for long data cleaning chain 
+year_labels <- c("2017","2018","2019","2020","2021","2022","2023","2024")
+names(df)[5:12] <- year_labels
+da_en <- c(
+  "Personer med ophold (antal)"                          = "Persons with stays (number)",
+  "Personer med ophold (pct.)"                           = "Persons with stays (percent)",
+  "Ophold per person (antal)"                            = "Stays per person (number)",
+  "Personer med ophold på under 12 timer (antal)"        = "Persons with stays under 12 hours (number)",
+  "Personer med ophold på under 12 timer (pct.)"         = "Persons with stays under 12 hours (percent)",
+  "Ophold på under 12 timer per person (antal)"          = "Stays under 12 hours per person (number)",
+  "Personer med ophold på 12 timer eller derover (antal)"= "Persons with stays of 12 hours or more (number)",
+  "Personer med ophold på 12 timer eller derover (pct.)" = "Persons with stays of 12 hours or more (percent)",
+  "Ophold på 12 timer eller derover per person (antal)"  = "Stays of 12 hours or more per person (number)"
+)
+
+# Data cleaning chain
+df <- df |> 
+  filter(sex != "Køn i alt",
+         age != "Alder i alt",
+         sector != "Uanset sygehusvæsen") |> 
+  mutate(sex = str_replace_all(sex,"Mænd","Men"),
+         sex = str_replace_all(sex,"Kvinder","Women"),
+         age = str_replace_all(age,"år","years"),
+         age = str_replace_all(age,"og derover",""),
+         age = str_replace_all(age,"60 years","60+ years"),
+         sector = str_replace_all(sector,"Somatik","Somatic"),
+         sector = str_replace_all(sector,"Psykiatri","Psychiatry"),
+         sector = str_replace_all(sector,"Både somatik og psykiatri","Both somatic and psychiatry")
+         ) |> 
+  mutate(across(where(is.character), as.factor),
+         measure = str_squish(measure),
+         measure = recode(measure, !!!da_en, .default = measure),
+         value2 = value / 1000 
+         ) 
+
+# Pilot Plot 
+df |> filter(
+  measure == "Persons with stays (number)",
+  sector == "Both somatic and psychiatry" ) |> 
+  ggplot(aes(year, value2, color = age)) +
+  geom_line() +
+  facet_wrap( ~ sex) +
+  labs(x = NULL, y = "Count in 1000s")
+
+# Shiny app
+
+cards <- list(
+  card(
+    full_screen = TRUE,
+    card_header("Somatic sector"),
+    plotOutput("soma")
+  ),
+  card(
+    full_screen = TRUE,
+    card_header("Psychiatric sector"),
+    plotOutput("psych")
+  ),
+  card(
+    full_screen = TRUE,
+    card_header("Both sectors"),
+    plotOutput("somapsych")
+  )
+)
+
+measure <- varSelectInput(
+  "measure", "Measure",
+  distinct(df$measure),
+  selected = NULL
+)
+
+plot_sector <- function(data, sector_label) {
+  data_sector <- data |> filter(sector == sector_label)
+  req(nrow(data_sector) > 0)  # show nothing if that sector isn't present
+
+  ggplot(data_sector, aes(x = year, y = value, color = age)) +
+    geom_line() +
+    geom_point() +
+    facet_wrap(~ sex, nrow = 2) +
+    theme(
+      plot.title = element_blank(),
+      legend.position = "bottom",
+    ) +
+    labs(
+      title = sector_label,
+      x = NULL, color = "Age",
+      y = NULL
+    ) +
+    theme_bw(base_size = 12) 
+}
+
+measures <- df |>
+  distinct(measure) |>
+  arrange(measure) |>
+  pull(measure)
+
+ui <- page_sidebar(
+  title = "Hospital stays — dashboard",
+  sidebar = tagList(
+    selectInput("measure", "Measure", choices = measures, selected = measures[1]),
+    helpText("All plots update to the selected measure."),
+    helpText("Lines = time"),
+    helpText("Color = age"),
+    helpText("Facets = sex"),
+    helpText("Data has been supplied by Statistics Denmark (table SBR04), which contains aggregate data on hospital usage in Denmark between 2017-2024.")
+  ),
+  # 3 cards side-by-side (wraps on narrow screens)
+  layout_columns(width = 1,
+     card(
+       full_screen = TRUE,
+       card_header("Somatic"),
+       plotOutput("plot_somatic", height = 300)
+     ),
+     card(
+       full_screen = TRUE,
+       card_header("Psychiatric"),
+       plotOutput("plot_psychiatric", height = 300)
+     ),
+     card(
+       full_screen = TRUE,
+       card_header("Both"),
+       plotOutput("plot_both", height = 300)
+     )
+  )
+)
+
+server <- function(input, output, session) {
+  # Filter once by measure; reuse for all sectors
+  dat_measure <- reactive({
+    req(input$measure)
+    df |> filter(measure == input$measure)
+  })
+
+  output$plot_somatic     <- renderPlot(plot_sector(dat_measure(), sector_label = "Somatic"))
+  output$plot_psychiatric <- renderPlot(plot_sector(dat_measure(), sector_label = "Psychiatry"))
+  output$plot_both        <- renderPlot(plot_sector(dat_measure(), sector_label = "Both somatic and psychiatry"))
+
+}
+
+shinyApp(ui, server)
+
+```
+

@@ -17,6 +17,8 @@ format:
 
 ## About this blog
 
+CAKE
+
 I have studied the use of antidiabetic drugs, or their utilisation, in Denmark, as part of my Ph.D. The main sources I worked with during the Ph.D. were registry data from [The Register of Pharmaceutical Sales](https://english.sundhedsdatastyrelsen.dk/health-data-and-registers/national-health-registers#) and [The National Patient Register](https://english.sundhedsdatastyrelsen.dk/health-data-and-registers/national-health-registers#).
 
 This blog is dedicated to showcasing my skills as a data scientist with an understanding of health economics, epidemiology and medicine.

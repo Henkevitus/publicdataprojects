@@ -15,8 +15,6 @@ format:
     toc: false
 ---
 
-## About this blog
-
 This blog is dedicated to showcasing my skills as a data scientist with an understanding of health economics, epidemiology and medicine.
 
 ::: {.callout}

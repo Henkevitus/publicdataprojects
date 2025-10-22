@@ -1,0 +1,10 @@
+hgd                     Asynchronous HTTP server graphics device.
+hgd_browse              Open httpgd URL in the browser.
+hgd_close               Close httpgd device.
+hgd_details             httpgd device status.
+hgd_generate_token      Generate random alphanumeric token.
+hgd_url                 httpgd URL.
+hgd_view                Open httpgd URL in the IDE.
+hgd_watch               Watch for changes in code files and refresh
+                        plots automatically.
+httpgd-package          httpgd: HTTP server graphics device

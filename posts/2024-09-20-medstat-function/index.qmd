@@ -1,0 +1,229 @@
+---
+title: "Using R functions on medstat data"
+author: "Henrik Vitus Bering Laursen"
+date: "2024-09-20"
+categories: 
+  - code
+  - analysis
+  - exploration
+  - functions
+  - cost
+  - drugs
+image: thumbnail.png
+freeze: true
+---
+
+## Purpose
+
+I want to follow up the previous post, and the promise of showing how to put it all in to a function.
+
+As has been written before [here](https://x.com/drob/status/928447584712253440?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E928447584712253440%7Ctwgr%5Efce88d861cd9de805481a26a56bb6e7100e8dbb3%7Ctwcon%5Es1_c10&ref_url=http%3A%2F%2Fvarianceexplained.org%2Fr%2Fstart-blog%2F), if you do something several times in R, you might as well write a function.
+
+So I am going to condense the code I wrote for the purpose of presenting turnover for some diabetes drug classes in the previous post, and turn it in to a function.
+
+## Turning it into a function
+
+So, I don't need to take all of the code from the previous post, just what I need for the function. I also slim the data down a bit with the [`select()`](https://dplyr.tidyverse.org/reference/dplyr_tidy_select.html) function.
+
+```{r}
+#| warning: false
+library(tidyverse)
+
+process_atc_data <- function(year, url) {
+  # Read the dataset directly from the URL
+  df <- read_delim(url, delim = ";")  # Assuming the file is semicolon-delimited
+  
+  # Attach column names
+  colnames(df) <- c("atc","year","sector","region","sex","agegroup","count_persons",
+                        "count_persons_per1kpop","turnover","reimbursement", 
+                        "sold_amount", "sold_amount_1kpop_day", "personreferabledata_perc")
+  
+  # the column with missing values messes stuff up
+  colnames(df)[is.na(colnames(df))] <- "missing_name"
+  df <- df |>  select(-missing_name)
+  
+  # Filter the dataset to get only what I need
+  df_filtered <- df %>%
+    filter(str_detect(agegroup, "-") & str_starts(atc, "A10")) |> 
+    select(atc,year,agegroup,turnover)
+  
+  # Define drug classes
+  DCs <- c("A10BJ", "A10BK", "A10BH", "A10BA", "A10BB", "A10BG", "A10BX", "A10A")
+  
+  # Further filter and add a new drug class variable
+  df_filtered <- df_filtered %>%
+    filter(atc %in% DCs) %>%
+    mutate(
+      DC = case_when(
+        atc == "A10BJ" ~ "GLP1",
+        atc == "A10BK" ~ "SGLT2",
+        atc == "A10BH" ~ "DPP4",
+        atc == "A10BA" ~ "Metformin",
+        atc == "A10BB" ~ "SU",
+        atc == "A10BG" ~ "Thiazo",
+        atc == "A10BX" ~ "Others",
+        atc == "A10A"  ~ "INSULIN",
+        TRUE ~ NA_character_
+      ),
+      turnover1000k = turnover / 1000  # Turnover in 1000k units
+    )
+  
+  # Assign the names to datasets and plots using the year variable
+  df_name <- paste0("df_", year)
+  assign(df_name, df_filtered, envir = .GlobalEnv)
+  
+  # Return the processed data and the plots
+  return(list(data = df_filtered)) #, total_turnover_plot = p1, proportional_turnover_plot = p2
+}
+```
+
+I have not brought over the code for making the plots, because I aim to use the [`facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html) from [`ggplot2`](https://ggplot2.tidyverse.org/index.html) to make some plots where its easier to see how the turnover has developed over the years.
+
+To achieve that, I need to append the datasets I can create with the above function.
+
+## Creating the datasets for the plots
+
+Now, I have the list of datasets and their corresponding URLs from the last post. There should be a way to automate fetching the URLs, for example by searching the site and matching the line with the dataset name and the line with the link to download it. 
+
+For now, I just use what I already found.
+
+```{r}
+# get data from years 2016-2023
+process_atc_data(2016,"https://medstat.dk/da/download/file/MjAxNl9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2017,"https://medstat.dk/da/download/file/MjAxN19hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2018,"https://medstat.dk/da/download/file/MjAxOF9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2019,"https://medstat.dk/da/download/file/MjAxOV9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2020,"https://medstat.dk/da/download/file/MjAyMF9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2021,"https://medstat.dk/da/download/file/MjAyMV9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2022,"https://medstat.dk/da/download/file/MjAyMl9hdGNfY29kZV9kYXRhLnR4dA==") 
+process_atc_data(2023,"https://medstat.dk/da/download/file/MjAyM19hdGNfY29kZV9kYXRhLnR4dA==") 
+```
+
+Actually, I could just use the [`purr::map()`](https://purrr.tidyverse.org/reference/map.html) function.
+
+```{r message = FALSE, warning = FALSE} 
+# Load the purr library
+library(purrr)
+
+# Define a list of URLs corresponding to each year (2016 to 2023)
+urls <- list(
+  "2016" = "https://medstat.dk/da/download/file/MjAxNl9hdGNfY29kZV9kYXRhLnR4dA==",
+  "2017" = "https://medstat.dk/da/download/file/MjAxN19hdGNfY29kZV9kYXRhLnR4dA==",
+  "2018" = "https://medstat.dk/da/download/file/MjAxOF9hdGNfY29kZV9kYXRhLnR4dA==",
+  "2019" = "https://medstat.dk/da/download/file/MjAxOV9hdGNfY29kZV9kYXRhLnR4dA==",
+  "2020" = "https://medstat.dk/da/download/file/MjAyMF9hdGNfY29kZV9kYXRhLnR4dA==",
+  "2021" = "https://medstat.dk/da/download/file/MjAyMV9hdGNfY29kZV9kYXRhLnR4dA==",
+  "2022" = "https://medstat.dk/da/download/file/MjAyMl9hdGNfY29kZV9kYXRhLnR4dA==",
+  "2023" = "https://medstat.dk/da/download/file/MjAyM19hdGNfY29kZV9kYXRhLnR4dA=="
+)
+
+# Vector of years you want to process
+years <- 2016:2023
+
+# Use map to iterate over years and URLs
+df_allyears <- map2(years, urls, process_atc_data)
+
+# Example: Access the result for a specific year
+df_2023 <- df_allyears[[1]] # The first year of the bunch, 2016
+
+# Combine all the datasets into one - and avoiding getting "$" in all the the variable names while doing it
+df_allyears <- bind_rows(df_allyears)
+df_allyears <- map(df_allyears, as_tibble)
+df_allyears <- bind_rows(df_allyears)
+```
+
+This is using even less space (if you look past the part about defining a list of URLs). *I swear, I do not know why i need to repeat the bind rows function for it to work*.
+
+## Making the plots
+
+Now that we have a combined dataset, `df_allyears`, with all the data to recreate the plots from the last post, we can try to make a plot. Let's see if `facet_wrap()` makes a reasonable graph with all eight years.
+
+```{r}
+# Making the base graph to add unto 
+p_base <- ggplot(df_allyears, aes(x = agegroup, y = turnover1000k, fill = DC)) + 
+  labs(caption = "Source: own calculations based on data from medstat.dk via the Danish Health Data Authority")
+
+# Just seeing how it looks with ALL data summarised over the years
+p_base + geom_bar(stat = "identity")
+p_base + geom_bar(stat = "identity", position = "fill")
+
+# Testing facet_wrap on the total turnover
+p_base + 
+  geom_bar(stat = "identity") +
+  facet_wrap(~year)
+p_base + 
+  geom_bar(stat = "identity", position = "fill") +
+  facet_wrap(~year)
+  
+```
+
+Now, that is a LOT of information squeezed down on little space. So lets subset it and do the `facetwrap()` on four years at a time.
+
+```{r}
+# Subset the data
+df_early <- df_allyears |> 
+  filter(year < 2020)
+df_late <- df_allyears |> 
+  filter(year >= 2020)
+
+# Now for the graphs
+  # New bases
+p_base_early <- ggplot(df_early, aes(x = agegroup, y = turnover1000k, fill = DC)) + 
+  labs(caption = "Source: own calculations based on data from medstat.dk via the Danish Health Data Authority")
+p_base_late <- ggplot(df_late, aes(x = agegroup, y = turnover1000k, fill = DC)) + 
+  labs(caption = "Source: own calculations based on data from medstat.dk via the Danish Health Data Authority")
+
+  # New graphs
+    # Early
+p_base_early + 
+  geom_bar(stat = "identity") +
+  facet_wrap(~year)
+p_base_early + 
+  geom_bar(stat = "identity", position = "fill") +
+  facet_wrap(~year)
+    # Late
+p_base_late + 
+  geom_bar(stat = "identity") +
+  facet_wrap(~year)
+p_base_late + 
+  geom_bar(stat = "identity", position = "fill") +
+  facet_wrap(~year)
+
+```
+
+Ok, but we can do this better, making it more easily comparable by having the same y-axis on both the early and late dataset.
+
+```{r}
+p_base_early <- ggplot(df_early, aes(x = agegroup, y = turnover1000k, fill = DC)) + 
+  labs(caption = "Source: own calculations based on data from medstat.dk via the Danish Health Data Authority") 
+p_base_late <- ggplot(df_late, aes(x = agegroup, y = turnover1000k, fill = DC)) + 
+  labs(caption = "Source: own calculations based on data from medstat.dk via the Danish Health Data Authority") 
+
+  # New graphs
+    # Early
+p_base_early + 
+  geom_bar(stat = "identity") +
+  facet_wrap(~year) + ylim(0,7500)
+p_base_early + 
+  geom_bar(stat = "identity", position = "fill") +
+  facet_wrap(~year) 
+    # Late
+p_base_late + 
+  geom_bar(stat = "identity") +
+  facet_wrap(~year) + ylim(0,7500)
+p_base_late + 
+  geom_bar(stat = "identity", position = "fill") +
+  facet_wrap(~year) +
+  labs(y = "", x = "")
+ggsave("thumbnail.png", plot = last_plot(), width = 6, height = 4) # saving p_base_late as thumbnail
+```
+
+## Commenting on the output
+
+So, the graphs overwhelmingly show a tremendous increase in the spending on GLP1.
+
+Where insulin in the early period of 2016-2019 rivaled or was higher than GLP1, in the late period, GLP1 completely overshadows all other drugs within the chosen classes.
+
+Between 2022 and 2023 there seem to be a doubling of the turnover. Turnover typically represents the overall revenue generated in the pharmacy sector. 
+
+This can mean both increased spending, and increased prices. We will look at that in the next post.

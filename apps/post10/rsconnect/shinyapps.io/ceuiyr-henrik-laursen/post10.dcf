@@ -1,0 +1,12 @@
+name: post10
+title:
+username: ceuiyr-henrik-laursen
+account: ceuiyr-henrik-laursen
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15554955
+bundleId: 10949293
+url: https://ceuiyr-henrik-laursen.shinyapps.io/post10/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

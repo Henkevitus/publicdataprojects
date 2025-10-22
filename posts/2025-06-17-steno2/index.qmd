@@ -1,0 +1,813 @@
+---
+title: "Danish diabetes data"
+author: "Henrik Vitus Bering Laursen"
+date: "2025-06-17" 
+categories: 
+  - diabetes
+  - data exploration
+  - joins
+  - survival analysis
+format:
+  html:
+    toc: true
+    number-sections: true
+    fig-width: 8
+    fig-height: 6
+freeze: true
+draft: false
+image: thumbnail.jpg
+---
+
+## Purpose
+
+I remember using the `Epi::steno2` data-sets when taking a short course on multistate survival analysis with the creator of the package, [Bendix Carstensen](https://bendixcarstensen.com/).
+
+That was quite fun but also daunting to be sitting in a room full of mathematicians and people who actually knew the nitty gritty of survival analysis and the math behind it.
+
+I think I would just want to do something very basic here, though:
+
+- A) Playing around with joining the different data-sets
+- B) Examine the data-sets and visualize the contents
+- C) Creating a simple Cox Proportional Hazards model, comparing the risk of cardiovascular event between the two treatment groups in the data-set
+  - Probably also controlling for some important factors
+- D) Deliver some sort of conclusion about these data
+  
+So lets start looking at it!
+
+## Load
+
+The data-sets can be loaded directly from the `Epi` library, through `data()`
+
+```{r}
+#| label: Loading Libraries
+#| echo: false
+#| output: false
+
+library(Epi)
+library(tidyverse)
+library(survival)
+library(survminer)
+```
+
+```{r}
+#| label: loading steno2 data
+data("steno2")
+data("st2clin")
+data("st2alb")
+```
+
+Alrighty now that they are loaded lets look at their structure. **Ofcourse, I am completely ignoring the description in the documentation in the `Epi()` package, which describes how the data-sets are structured.**
+
+```{r}
+#| label: Structure of data-sets
+str(steno2)
+str(st2clin)
+str(st2alb)
+```
+
+It looks like `steno2` and `st2clin` are one row per subject, and `st2alb` is multiple, but that doesn't make sense given the amount of rows. We can see how many id's, the unique identifier for each person, are present, and if there is one row per subject it should be close to the amount of subjects.
+
+```{r}
+#| label: unique ID testing further 1
+
+# create a 1 for each time there is an ID
+id_test1 <- steno2 |> count(id) 
+head(id_test1)
+
+# different numbers on those counts
+id_test2 <- id_test1 |>  summarize(n=sum(n), idcount = max(id), sum = sum(id))
+id_test2
+```
+
+Alright. So it is clear that only `steno2` has one row per subject because the number of id's that occur equal the number of unique rows.
+
+Lets see about the others
+
+```{r}
+#| label: unique ID testing further 2
+
+st2alb |> count(id) |> summarize(n=sum(n), idcount = max(id), sum = sum(id))
+st2clin |> count(id) |> summarize(n=sum(n), idcount = max(id), sum = sum(id))
+```
+
+Ok so the `st2*` datasets have more than one row per subject, but there is a strange lower sum in `st2alb` than the other datasets. 
+
+Could it be that there are missing subjects in that dataset?
+
+```{r}
+#| label: missing in st2alb
+
+```
+
+### A) Joining
+
+Now, first, what would the purpose be of joining these data-sets together?
+
+There could be many reasons and I will touch upon some of them:
+
+- adding demographic characteristics from one data-set to another to stratify analysis
+- find things that are in one data-set but not in another
+
+For example, the `st2clin` and `st2alb` data-sets do not have the categories for each id from the `steno2` data-set, such as sex and allocation.
+
+Also, continuing from the previous section, were there any missing people in `st2alb`? There was a possible indication of it, which can be explored with a filtering join, more specifically, an anti_join, using the `anti_join()` function. 
+
+  anti_join() return all rows from x without a match in y
+  
+So let's try to see if there are any missing.
+
+```{r}
+#| label: missing from st2alb
+
+anti_join(steno2, st2alb, by = "id")
+```
+
+```{r}
+#| label: hidden. no missing from st2clin
+#| echo: false
+
+anti_join(steno2, st2clin, by = "id")
+```
+
+It seems that id 83, 102, 128, and 150 are missing from `st2alb`. They are not missing from `st2clin` - I checked in a hidden code chunk. Since it's stated in the documentation that it's a data-set about transitions between states of albuminuria, perhaps one could assume that these individuals simply did not transition?
+
+## Output
+### B) Table
+
+Of course, the good old `summary()` function might be worth to do to get a good overview of the three data-sets. First we do `steno2` demographics.
+
+```{r}
+#| label: steno2 demographics
+
+summary(steno2)
+
+```
+But I kinda want to mainly do graphs here.
+
+### B) Graphs
+
+#### Some distributions
+
+Now, I love me some functions, and I feel like seeing the distribution of all the different date variables via histograms.
+
+```{r}
+#| label: first attempt, going over date vars
+plot_histo_spam <- function(df,histovar) {
+out <- ggplot(df) + 
+  geom_histogram(mapping = aes( {{histovar}} ))
+
+  return(out)
+}
+
+plot_histo_spam(steno2,doBth)
+plot_histo_spam(steno2,doDM)
+plot_histo_spam(steno2,doBase)
+
+```
+
+But this should be doable in a smarter way. A `facet_wrap()` over each of the date variables..
+
+```{r}
+#| label: second attempt, going over date vars
+
+plot_histospam_faceted <- function(data, prefix = "do") {
+  data |> 
+    select(starts_with(prefix)) |>             
+    pivot_longer(everything()) |> # everything() turns varnames into a column, and their values into a separate column
+    ggplot(aes(value)) +
+      geom_histogram(colour = "white") +
+      facet_wrap(~ name, scales = "free_x") +   # one panel per variable
+      labs(x = NULL) 
+}
+
+plot_histospam_faceted(steno2)
+plot_histospam_faceted(st2clin)
+plot_histospam_faceted(st2alb)
+
+```
+
+Now those are some fine basic plots! 
+
+For `steno2`, it shows some slight right skewed `doBase`, and left-skewed `doDM` and `doEnd`. for the two `st2*` data-sets, it shows quite a right skew.
+
+**Basically**:
+
+- most of the signups to the trial occurred in the beginning
+- most of the CVD (cardiovascular) and death events occurred evenly-ish
+- most of the diabetes diagnoses occurred late
+- not much ESRD (end-stage renal disease) occurred
+
+#### Distributions by sex
+
+Now I want to figure out how to do it while grouping the histograms by sex.
+
+```{r}
+#| label: histograms, faceted, sex
+
+plot_histospam_faceted_sex <- function(data, prefix = "do") {
+  data |> 
+    select(sex, starts_with(prefix)) |>             
+    pivot_longer(-sex, 
+                 names_to = "name",
+                 values_to = "value") |> 
+    ggplot(aes(value, fill = sex)) +
+      geom_histogram(
+        position = "dodge",
+        colour = "white") +
+      facet_wrap(~ name, scales = "free_x") +   # one panel per variable
+      labs(x = NULL) 
+}
+
+plot_histospam_faceted_sex(steno2)
+```
+
+Ok. Not much of a difference at a glance. 
+
+#### Distributions by treatment groups
+
+Perhaps it would be more relevant to see if there was some kind of difference between the two intervention groups?
+
+```{r}
+#| label: histograms, faceted, allocation group
+
+plot_histospam_faceted_allo <- function(data, prefix = "do") {
+  data |> 
+    select(allo, starts_with(prefix)) |>             
+    pivot_longer(-allo, 
+                 names_to = "name",
+                 values_to = "value") |> 
+    ggplot(aes(value, fill = allo)) +
+      geom_histogram(
+        position = "identity",
+        alpha    = 0.5,
+        colour = "white") +
+      facet_wrap(~ name, scales = "free_x") +   # one panel per variable
+      labs(x = NULL) 
+}
+
+plot_histospam_faceted_allo(steno2)
+```
+
+Ok so already here its possible to see some apparent differences between the two groups.
+
+- the `Conv` allocation group, which must be those allocated to conventional treatment, whatever that was, have more events of CVD, especially of the third CVD event. As well as earlier diabetes mellitus (DM) diagnoses. This is probably an indication of the future results of the survival analysis.
+- `Int` group, likely the intervention group, seems to have less deaths and later DM diagnoses
+
+**Remember, these are two groups of equal number**, which can make it easier to conclude that there is a difference, at least initially and visually.
+
+Now. With the help of some AI, I made the function below which can produce different types of `facet_*` plots , but I choose the `facet_grid`, because its interesting to look at.
+
+```{r}
+#| label: histograms, faceted, complicated
+
+steno2 |>
+    select(allo, starts_with("do")) |>
+    pivot_longer(-allo, names_to = "variable", values_to = "value") |>
+    ggplot(aes(value, fill = allo)) +
+    geom_histogram(position = "identity", colour = "white") +
+        facet_grid(rows = vars(allo), cols = vars(variable)) +
+    #scale_x_continuous(breaks = floor(min(value)):ceiling(max(value)),
+    #               labels  = scales::number_format(accuracy = 1)) + 
+    labs(x = NULL, fill = "Allocation") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, vjust = .5, hjust = 1))
+
+```
+
+This might be information overload to such a degree that not much is gained from it.
+
+### C) Model
+
+To perform a basic Cox Proportional Hazards model, we can use the `survival` package.
+
+I want to do the following, just because that's what I learned in the olden PhD studying days, mainly from the Basic Biostats courses from Aarhus University:
+
+- Survival set the data
+- Visualise follow-up
+- Plot Kaplan Meier survival function
+- Cox model
+  - Estimate
+  - Observed vs fitted survival curves
+  - Testing proportional hazards assumption
+  
+Let's just quickly and without much thinking (thats always good), decide what the start, stop, outcome, and other variables should be. 
+
+- data: `steno2`
+  - comparison: death `doDth` for intervention groups `allo`
+  - start date: `doBase`
+  - censor date: `doEnd`
+  - outcome event: `doDth`
+  - exit of study: earliest of `doEnd` and `doDth`
+
+So, super basic, and does not take anything into account, such as competing events (`doCVD*` or `doESRD`) or baseline differences in risk of CVD (`baseCVD`). 
+
+
+
+#### Survival set the data
+
+First we create the needed variables and check it.
+
+```{r}
+#| label: survival setting
+
+steno2 <- steno2 |> 
+  mutate(
+    doExit = coalesce(doDth, doEnd),
+    time_days = difftime(
+      coalesce(steno2$doDth, steno2$doEnd), 
+      steno2$doBase, 
+      units='days'),
+    time_yrs = as.numeric(time_days / 365.25),
+    event_num = if_else(!is.na(doDth),1,0),
+    event = factor(event_num, levels = c(0, 1), labels = c("Censored", "Dead"))
+  )
+
+glimpse(steno2)
+```
+
+#### Visualise follow-up
+
+Then, because I like it as an overview, a swimmer plot of the follow-up times.
+
+simple first:
+
+```{r}
+#| label: swimplot followup simple
+swim_plot_1 <- steno2 |> 
+  mutate(id = fct_reorder(as.factor(id), time_yrs)) |>
+  ggplot(aes(x = doBase, 
+             xend = doExit,
+             y = id)) +
+  geom_segment(color = "grey") +
+  geom_point(aes(x = doExit, shape = event)) +
+  geom_point(aes(x = doDth, shape = event)) 
+swim_plot_1
+```
+
+Looks good, but a tiny bit messy with the - although accurate - different starting times.
+
+Lets do one with baseline time set to 0. This makes it easier to compare the follow-up times, which is more interesting for the analysis than calendar times.
+
+The latter would probably be of more interest to an investigator trying to figure out when people signed up, or something.
+
+```{r}
+#| label: swimplot followup simple base is 0
+
+swim_plot_2 <- steno2 |> 
+  mutate(
+    id = fct_reorder(as.factor(id), time_yrs),
+    t0 = 0) |>
+  ggplot(aes(x = t0, 
+             xend = time_yrs,
+             y = id)) +
+  geom_segment(color = "grey") +
+  geom_point(aes(x = time_yrs, shape = event, colour = event)) +
+  theme_minimal()
+swim_plot_2
+```
+
+Here we have the x-axis in years since baseline.
+
+Now, I have a sense that `doExit` and `doDth` are the same, meaning that plots that use `doExit` end up having two shapes for subjects that died.
+
+How can I make it so that there are different shapes for each event? I can just take the previous plot and add to it.
+
+
+```{r}
+#| label: swimplot different shapes for event
+swim_plot_3 <- swim_plot_2 +
+  scale_shape_manual(values = c(Censored = 17, Dead = 4)) +
+  scale_colour_manual(values = c(Censored = "black", Dead = "red"))  
+swim_plot_3
+```
+Ok that looks fine. Now I want to make the final plot for this and move on.
+
+```{r}
+#| label: swimplot followup final
+
+swim_plot_4 <- swim_plot_3 +
+  labs(
+    x = "Follow-up time in years since baseline", 
+    y = "Subject sorted by follow-up", 
+    title = "Follow-up per subject, years since baseline") +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
+    )
+swim_plot_4
+ggsave("thumbnail.jpg", plot = last_plot(), width = 6, height = 4) # saved as thumbnail
+```
+
+A nice little plot showing an overview of the length of follow-up for the subjects in the study.
+
+Not exactly sure how it is useful except for my own sake - I just like to know *visually* what my data looks like.
+
+#### Disclaimer {#sec-output-model-disclaimer}
+
+I am not a statistician, so whatever is correct of below, is due to the wise words and lectures I have remembered from people who actually know what they are talking about. Many statistical results, especially when you wish to talk inference (X causes Y), require careful consideration of subjective priors, demographics, causal effects, and biases such as effect modifiers, confounders, selection bias, etc.
+
+Now - with that out of the way: LETS CLAIM SOME THINGS!
+
+#### Plot Kaplan Meier survival function
+
+Now, less fiddling around with plots, and more looking at survival analysis.
+
+The Kaplan meier estimator on a plot is wonderful for portraying differences in survival times. First step we have is to fit the data.
+
+```{r}
+#| label: surv fit
+
+# Overall, by treatment allocation, subset into sex
+km_os <- survfit(Surv(time_yrs, event_num) ~ 1, data = steno2)
+km_allo <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
+km_sex <- survfit(Surv(time_yrs, event_num) ~ sex, data = steno2)
+km_allo_sex <- survfit(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
+
+# Summarising, showing just the first 10 years
+summary(km_os, times=c(0:10)) 
+summary(km_allo, times=c(0:10)) 
+summary(km_sex, times=c(0:10)) 
+summary(km_allo_sex, times=c(0:10)) 
+```
+Here we can see that after 10 years, there is already a lower survival probability for the conventional treatment group. And for females, it seems. But that highly depends on the intervention group.
+
+But it is much better to visualize it with a kaplan meier plot, to really see the differences, and when - in terms of time since baseline - does the survival differ.
+
+Shown below are plots for each of the different fits mentioned above, showing the overall survival modelel, differences in survival between intervention groups for both sexes, and ditto, but subset for each sex.
+
+```{r}
+#| label: survplot KM
+
+# Function to save some space
+survplot_function <- function(fit,data){
+  out <- ggsurvplot(
+    fit, data = data,
+    conf.int = TRUE,
+    risk.table = TRUE,
+    palette = "dark2",
+    xlab = NULL, ylab = "Survival Probability",
+    title = "Kaplan Meier Estimator for survival probability, in years"
+    )
+  
+  return(out)
+}
+
+# Overall
+survplot_function(km_os,steno2)
+
+# allo
+survplot_function(km_allo,steno2)
+
+# sex
+survplot_function(km_sex,steno2)
+
+# allo sex
+survplot_function(km_allo_sex,steno2)
+
+```
+
+Thats a bit rough to look at, but provides plenty of information:
+
+1. intervention group has higher survival probability
+2. female sex seems to indicate having the highest survival probability, at least in intervention group
+3. frequently overlapping confidence intervals, low probability of actual difference atleast in the first 10 years where most of the overlap occurs
+
+For the second point, the lines cross twice, either because of the lower number of females or because of some unknown factor. When the lines cross its difficult to say whether there is any consistent survival difference with certainty.
+
+But let's try to make it pretty - just with the help of the `survminer` package help - accessed in Rstudio via `?ggsurvplot`.
+
+```{r}
+#| label: survplot KM pretty, fewer
+
+# allo
+surv_p_allo_pretty <- ggsurvplot(
+  fit = km_allo, data = steno2,
+  surv.median.line = "hv", # Add medians survival
+  legend.title = "Allocation group",
+  legend.labs = c("Intervention", "Conventional"),
+  pval = TRUE,
+  conf.int = TRUE,
+
+  risk.table = TRUE,
+  tables.height = 0.2,
+  tables.theme = theme(axis.title.y = element_blank()), 
+  
+  palette = "dark2",
+  ggtheme = theme_bw(),
+  xlab = NULL, ylab = "Survival Probability",
+  title = "Kaplan Meier Estimator for survival probability, in years"
+  )
+
+surv_p_allo_sex_pretty <- ggsurvplot(
+  fit = km_allo_sex, data = steno2,
+  surv.median.line = "hv", # Add medians survival
+  legend.title = "Allocation group, Sex",
+  legend.labs = c("Int, F", "Int, M", "Conv, F", "Conv, M"),
+  conf.int = TRUE,
+
+  risk.table = TRUE,
+  tables.height = 0.2,
+  tables.theme = theme(axis.title.y = element_blank()), 
+  
+  palette = "dark2",
+  ggtheme = theme_bw(),
+  xlab = NULL, ylab = "Survival Probability",
+  title = "Kaplan Meier Estimator for survival probability, in years"
+  )
+
+surv_p_allo_pretty
+surv_p_allo_sex_pretty
+```
+Now slightly cleaned up, and with some median survival lines - the follow-up time at which 50 has experienced the event - added.
+
+##### Test of differences
+
+One way of testing the differences between two survival curves is the log-rank test. Although, as far as I remember, its not given much weight - especially compared to visual inspection coupled with careful thinking and analysis of the different factors that play into a survival analysis.
+
+```{r}
+#| label: Log-rank test
+survdiff(Surv(time_yrs, event_num) ~ allo, data = steno2)
+survdiff(Surv(time_yrs, event_num) ~ sex, data = steno2)
+```
+
+Seems there is a statistically significant difference between allocation groups and not sex. Kinda what I expected from the reading of the plots.
+
+I have forgotten how to interpret the log-rank model for a fit with two different binary variables, so I will refrain from attempting that at the moment.
+
+
+#### Cox model
+
+Now we enter the part of survival analysis where we want to see what effect sizes the different predictors have on the outcome. 
+
+As mentioned in @sec-output-model-disclaimer, I am not a statistician, and I do not think the target audience of 0 to 1/3 of a person should be a statistician, so I will not bombard You with all the equations and definitions of survival analysis, such as $S(t) = P(T>t) = etc..etc$.
+
+I will just try to write in plain terms.
+
+Where the survival function derived from the Kaplan Meier Estimator up above could tell us how many people have survived at time $t$, and the difference between groups, the cox proportional hazards model can describe the relative difference in effect between different predictors, in regards to the risk of the outcome.
+
+Spoken plainly: the cox proportional hazards model can tell us something about how much the risk of the outcome, `doDth`, increases or decreases, for those in one group compared to another group. And then if there are multiple variables in the analysis, its assumed all other variables stay the same.
+
+Let's do the same models as for the survival function.
+
+```{r}
+#| label: cox models
+
+# Overall, by treatment allocation, subset into sex
+cox_allo <- coxph(Surv(time_yrs, event_num) ~ allo, data = steno2)
+cox_sex <- coxph(Surv(time_yrs, event_num) ~ sex, data = steno2)
+cox_allo_sex <- coxph(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
+```
+
+##### Checking models out before interpreting estimates
+
+Before we go ahead and interpret estimates, it is recommended that you see how the data fits with the assumptions that are necessary for the cox model to be interpreted correctly.
+
+In general, I have been taught to test the cox proportional hazards assumption, which can be done in two ways:
+
+- plot observed survival curves in the two groups with estimated survival curves from the model
+- log log plot of two survival curves
+
+```{r}
+#| label: observed versus estimated, loglog plot
+
+plot(km_allo,
+     col=1:2,
+     lty=2,
+     main='Observed and fitted survival')
+lines(survfit(cox_allo, 
+              newdata=data.frame(allo=c('Int','Conv'))),
+      col=1:2)
+legend('bottomleft',
+       lty=rep(1:2,2),col=rep(1:2,each=2),
+       legend=c('Int, fit','Int, obs','Conv, fit','Conv, obs'))
+
+plot(km_allo,
+     col=1:2,
+     fun='cloglog',
+     main='Log-log plot')
+legend('topleft',lty=rep(1,2),col=1:2,legend=levels(steno2$allo))
+```
+
+Hmm. I also wanted to use `ggsurvplot` but for some reason, I can only get the old code, without risk table, from my course long ago in basic biostats to work, so I will use that.
+
+**But more importantly:**
+
+Basically what we can see from the two above plots is that the proportional hazards assumption doesn't hold well, due to crossover of survival curves and perhaps a slight possibility of different baseline hazards.
+
+If the hazards for the groups being compared are not relatively proportional over time, its estimates do not precisely answer the question of "how much more risk is one group in of the outcome versus the other", since it varies over time. 
+
+It answers a general tendency, which might switch at some point in the data, as can be seen by earlier plots where observed survival curves overlap early.
+
+##### Estimates
+
+But lets still look at the model estimates and interpret them a bit, but bearing in mind that the proportional hazards assumption doesn't hold.
+
+For a more simple output of the models, I use `broom::tidy()`.
+
+```{r}
+#| label: summarising models
+
+# list 
+cox_models <- list(cox_allo,cox_sex,cox_allo_sex)
+names(cox_models) <- paste0("model_", seq_along(cox_models))
+
+# tidy 
+tidy_cox_models <- map_dfr(cox_models, ~broom::tidy(.x, conf.int = TRUE))
+tidy_cox_models
+tidy_cox_models_exp <- map_dfr(cox_models, ~broom::tidy(.x, conf.int = TRUE, exponentiate = TRUE))
+tidy_cox_models_exp
+```
+
+Where the first two rows are the first two models, and row three to four is the model with both variables, so you can see how much of an effect it has if you include them both.
+
+Let's go ahead and do a simple interpretation on the model with both allocation and sex as predictors.
+
+Using `broom::augment`, one can plop the estimates into a table as an overview of what the model estimates mean for each variable. 
+
+```{r}
+#| label: model estimates table
+
+cox_grid_1 <- expand.grid(allo = c("Conv", "Int")) 
+cox_grid_2 <- expand.grid(allo = c("Conv", "Int"), sex = c("M","F")) 
+(broom::augment(cox_allo,newdata = cox_grid_1, type.predict = "risk"))
+(broom::augment(cox_allo_sex,newdata = cox_grid_2, type.predict = "risk"))
+```
+
+Due to the `type.predict` option, the result is exponentiated so it can be interpreted as risk increase. 
+
+So, the model output for `cox_allo_sex` can be interpreted in the following way:
+
+Females on intervention treatment are the reference group, and females with conventional treatment have 87% higher risk of death, while males on intervention treatment have 46%, and males on conventional 174% higher risk.
+
+
+## Summary / cleaned up / refactored
+
+```{r}
+#| label: summary
+#| echo: false
+
+
+# prep and load -----------------------------------------------------------
+
+library(Epi)
+library(tidyverse)
+library(survival)
+library(survminer)
+
+data(steno2); data(st2clin); data(st2alb)
+
+
+# explore -----------------------------------------------------------------
+
+map(list(steno2, st2clin, st2alb), glimpse)
+
+id_sum <- function(x) x |> count(id) |> summarise(records = n(), max_id = max(id))
+map(list(steno2, st2clin, st2alb), id_sum)
+
+list(st2alb, st2clin) |> map(~anti_join(steno2, .x, by = "id"))
+
+summary(steno2)
+
+
+plot_histospam_faceted_sex <- function(data, var, prefix = "do") {
+  data |> 
+    select({{ var }}, starts_with(prefix)) |>             
+    pivot_longer(- {{ var }}, 
+                 names_to = "name",
+                 values_to = "value") |> 
+    ggplot(aes(value, fill = {{ var }})) +
+    geom_histogram(
+      position = "dodge",
+      colour = "white") +
+    facet_wrap(~ name, scales = "free_x") +   # one panel per variable
+    labs(x = NULL) 
+}
+
+plot_histospam_faceted_sex(steno2, sex)
+plot_histospam_faceted_sex(steno2, allo)
+
+steno2 |>
+    select(allo, starts_with("do")) |>
+    pivot_longer(-allo, names_to = "variable", values_to = "value") |>
+    ggplot(aes(value, fill = allo)) +
+    geom_histogram(position = "identity", colour = "white") +
+        facet_grid(rows = vars(allo), cols = vars(variable)) +
+    #scale_x_continuous(breaks = floor(min(value)):ceiling(max(value)),
+    #               labels  = scales::number_format(accuracy = 1)) + 
+    labs(x = NULL, fill = "Allocation") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, vjust = .5, hjust = 1))
+
+# survival - swimmer and kaplan meier ------------------------------------------
+
+steno2 <- steno2 |>
+  mutate(
+    doExit   = coalesce(doDth, doEnd),
+    time_yrs = as.numeric(difftime(doExit, doBase, units = "days")) / 365.25,
+    event_num = as.integer(!is.na(doDth)),
+    event    = factor(event_num, c(0, 1), c("Censored", "Dead"))
+  )
+
+steno2 |>
+  mutate(id = fct_reorder(as.factor(id), time_yrs)) |>
+  ggplot() +
+  geom_segment(aes(x = doBase, xend = doExit, y = id), colour = "grey") +
+  geom_point(aes(x = doExit, y = id, shape = event))
+
+steno2 |>
+  mutate(id = fct_reorder(as.factor(id), time_yrs)) |>
+  ggplot() +
+  geom_segment(aes(x = 0, xend = time_yrs, y = id), colour = "grey") +
+  geom_point(aes(x = time_yrs, y = id, shape = event, colour = event)) +
+  scale_shape_manual(values = c(Censored = 17, Dead = 4)) +
+  scale_colour_manual(values = c(Censored = "black", Dead = "red"))  +
+    labs(
+    x = "Follow-up time in years since baseline", 
+    y = "Subject sorted by follow-up", 
+    title = "Follow-up per subject, years since baseline") +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_blank(),
+    panel.background = element_blank()
+    )
+
+
+km_os <- survfit(Surv(time_yrs, event_num) ~ 1, data = steno2)
+km_allo <- survfit(Surv(time_yrs, event_num) ~ allo, data = steno2)
+km_sex <- survfit(Surv(time_yrs, event_num) ~ sex, data = steno2)
+km_allo_sex <- survfit(Surv(time_yrs, event_num) ~ allo + sex, data = steno2)
+
+km_list <- list(km_os, km_allo, km_sex, km_allo_sex)
+imap(km_list, ~print(summary(.x, times = 0:10)))
+
+survplot_function <- function(fit){
+  out <- ggsurvplot(
+    fit, data = steno2,
+    conf.int = TRUE,
+    risk.table = TRUE,
+    palette = "dark2",
+    xlab = NULL, ylab = "Survival Probability",
+    title = "Kaplan Meier Estimator for survival probability, in years"
+  )
+  
+  return(out)
+}
+
+map(km_list, survplot_function)
+
+ggsurvplot(
+  km_list[[2]], steno2,
+  surv.median.line = "hv",
+  legend.title = "Allocation",
+  legend.labs = c("Intervention", "Conventional"),
+  pval = TRUE, conf.int = TRUE,
+  risk.table = TRUE, tables.height = .2,
+  tables.theme = theme(axis.title.y = element_blank()),
+  palette = "dark2", ggtheme = theme_bw()
+)
+
+ggsurvplot(
+  km_list[[4]], steno2,
+  surv.median.line = "hv",
+  legend.title = "Allocation, Sex",
+  legend.labs = c("Int, F", "Int, M", "Conv, F", "Conv, M"),
+  conf.int = TRUE,
+  risk.table = TRUE, tables.height = .2,
+  tables.theme = theme(axis.title.y = element_blank()),
+  palette = "dark2", ggtheme = theme_bw()
+)
+
+survdiff(Surv(time_yrs, event_num) ~ allo, steno2)
+survdiff(Surv(time_yrs, event_num) ~ sex,  steno2)
+
+
+# Cox and assumption checking --------------------------------------------------
+
+cox <- list(
+  allo = coxph(Surv(time_yrs, event_num) ~ allo, steno2),
+  sex  = coxph(Surv(time_yrs, event_num) ~ sex,  steno2),
+  both = coxph(Surv(time_yrs, event_num) ~ allo + sex, steno2)
+)
+
+plot(km_list[[2]], col = 1:2, lty = 2)
+lines(survfit(cox$allo, newdata = tibble(allo = c("Int", "Conv"))), col = 1:2)
+legend("bottomleft", lty = rep(1:2, 2), col = rep(1:2, each = 2),
+       legend = c("Int, fit", "Int, obs", "Conv, fit", "Conv, obs"))
+
+plot(km_list[[2]], col = 1:2, fun = "cloglog")
+legend("topleft", lty = 1, col = 1:2, legend = levels(steno2$allo))
+
+tidy_cox   <- map_dfr(cox, broom::tidy, conf.int = TRUE, .id = "model")
+tidy_coxHR <- map_dfr(cox, \(m) broom::tidy(m, conf.int = TRUE, exponentiate = TRUE), .id = "model")
+
+tidy_cox
+tidy_coxHR
+
+broom::augment(cox$allo, newdata = tibble(allo = c("Conv", "Int")), type.predict = "risk")
+broom::augment(cox$both, newdata = expand.grid(allo = c("Conv", "Int"), sex = c("M", "F")), type.predict = "risk")
+```

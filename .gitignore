@@ -1,0 +1,25 @@
+# R stuff
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Rendered site
+_site/
+
+# Just a dump that i keep locally on X1 yoga
+.forme
+
+# Formats
+*.html
+*.docx
+*.pdf
+*.png
+*.pptx
+*.log
+*.zip
+*.csv
+
+/.quarto/
+
+**/*.quarto_ipynb

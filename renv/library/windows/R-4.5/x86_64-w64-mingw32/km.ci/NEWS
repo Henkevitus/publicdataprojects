@@ -1,0 +1,8 @@
+0.5-6
+  o define built-in lookup tables critical.value.hall.90, critical.value.hall.95,
+    critical.value.hall.99, critical.value.nair.90, critical.value.nair.95 and
+    critical.value.nair.99 in R/critical.value.R and export
+  o move help pages to roxygen2
+  o miscellaneous fixes to comply with R package checker
+0.5-3
+  o fix in epband.fun by Ed Claassens

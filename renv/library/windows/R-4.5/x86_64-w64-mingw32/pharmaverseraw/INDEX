@@ -1,0 +1,5 @@
+ae_raw                  Adverse Events Raw Dataset
+dm_raw                  Demographics Raw Dataset
+ds_raw                  Subject Disposition Raw Dataset
+ec_raw                  Exposure as Collected Raw Dataset
+vs_raw                  Vital Signs Raw Dataset

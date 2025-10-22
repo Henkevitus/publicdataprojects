@@ -19,7 +19,13 @@ format:
 
 This blog is dedicated to showcasing my skills as a data scientist with an understanding of health economics, epidemiology and medicine.
 
-Qualifications:
+::: {.callout}
+
+Currently in testing phase!
+
+:::
+
+**Qualifications**:
 
 - Ph.D. in diabetes epidemiology and health economics
   - Studied the use of antidiabetic drugs and their utilisation in Denmark, and economic model assumptions used in their comparisons in cost-effectiveness analyses using decision analytical models
@@ -31,18 +37,3 @@ Qualifications:
   - other work
   - Another one
   - take links from CV
-
-
-Using words inspired by the [R for Data Science](https://r4ds.hadley.nz/whole-game), I will do the following:
-
-1.  Import datasets from different sources
-2.  Transforming/wrangling data
-3.  Visualise the data
-4.  Make basic statistical models
-5.  Interpret and communicate the results
-
-Hopefully, and perhaps most importantly, perform these things with scientific rigour and examining hypothesis and assumptions underlying the data
-
-All of this using the lovely tool made available by the Quarto toolbox funded by [Posit](https://quarto.org/about.html). I do this because I am thoroughly interested in data analysis and interpretation, and because I love playing detective and figuring stuff out.
-
-

@@ -4,18 +4,17 @@ project:
     - about.qmd
     - index.qmd
     - posts/post1-medstatexplore/**
-    #- posts/post2-medstat-function/**
-    #- posts/post3-tot_ddd_use/**
-    #- posts/post4-explanation/**
-    #- posts/post5-movingon/**
-    #- posts/post6-steno2/**
-    #- posts/post7-montecarlo/**
-    #- posts/post9-realise-small/**
-    #- posts/post10-rshiny/**
-    #- posts/post8-cdisc
+    - posts/post2-medstat-function/**
+    - posts/post3-tot_ddd_use/**
+    - posts/post4-explanation/**
+    - posts/post5-movingon/**
+    - posts/post6-steno2/**
+    - posts/post7-montecarlo/**
+    - posts/post9-realise-small/**
+    - posts/post10-rshiny/**
 
 website:
-  title: "Your Site Title"
+  title: "Testing"
   navbar:
     background: primary
     left:

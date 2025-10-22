@@ -21,8 +21,8 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - text: Blog posts
-        href: posts.qmd
+      - href: posts
+        text: Blog posts
       - about.qmd
 
 format:

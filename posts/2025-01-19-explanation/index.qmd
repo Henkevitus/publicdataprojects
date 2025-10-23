@@ -1,10 +1,9 @@
 ---
 title: "Got the PhD"
 author: "Henrik Vitus Bering Laursen"
-date: "2025-01-19" 
-categories: 
+date: "2025-01-19"
+categories:
   - announcement
-freeze: true
 ---
 
 Here with two things:
@@ -12,13 +11,13 @@ Here with two things:
 1. Explanation of why I haven't posted in a while
 2. A promise to myself and whoever reads this blog that I shall be as concise and as clear in my writing as possible
 
-## Explanation Hiatus - Got the PhD! 
+## Explanation Hiatus - Got the PhD!
 
 Not all blog posts are created equal. Some, like this one, are just me writing and explaining.
 
 In this case, I'm just here to explain that I've been busy preparing for my PhD defence which occurred the 16th of December 2024, and which went well above my expectations.
 
-I am now a Doctor of Philosophy (PhD, DPhil; Latin: philosophiae doctor or doctor in philosophia) [^phd]: [wiki](https://en.wikipedia.org/wiki/Doctor_of_Philosophy#cite_note-1).  
+I am now a Doctor of Philosophy (PhD, DPhil; Latin: philosophiae doctor or doctor in philosophia) [^phd]: [wiki](https://en.wikipedia.org/wiki/Doctor_of_Philosophy#cite_note-1).
 
 The space between the Ph.D. defence and now has been spent taking some well-deserved time off and being with family. Got to have that sweet sweet meaningful family time once in a while. Especially after getting a PhD.
 

@@ -10,7 +10,6 @@ categories:
   - cost
   - drugs
 image: thumbnail.jpg
-freeze: true
 ---
 
 ## Purpose

@@ -1,27 +1,26 @@
 ---
 title: "Moving on"
 author: "Henrik Vitus Bering Laursen"
-date: "2025-05-31" 
-categories: 
+date: "2025-05-31"
+categories:
   - announcement
-freeze: true
 ---
 
 I'm BACK!
 
-After dabbling in an internship in an SMO and spending some time on other 
+After dabbling in an internship in an SMO and spending some time on other
 activities I am back to blogging, and here is what I want to look at the coming
 posts:
 
 - Finding some Danish Data where I can play around with `join()` and its variants, probably the good old `Epi::steno2`, and its corresponding `st2clin`, and `st2alb` datasets.
 - Exploring what kinds of demographics data I can get from Statistics Denmark
 - Recreation of the "increase in piracy due to increase in watermelon sales" example of a correlation =!= causation, but with Danish data from Statistics Denmark
-- Playing around with the `safetyData()` package and understanding how a CDISC-formatted clinical trial dataset can look like 
+- Playing around with the `safetyData()` package and understanding how a CDISC-formatted clinical trial dataset can look like
   - This will be marked as an outlier from the usual focus on Danish data
 - Comparison of demographic characteristics of those who use the 5 most expensive drugs (in DDD)
 - Making a `revealjs` presentation of one of the blog posts
 
-And this post will also hold a promise to myself to better label the elements of 
+And this post will also hold a promise to myself to better label the elements of
 the quarto document, for easier navigation and better output, by:
 
   - labeling, and using other chunk options
@@ -30,7 +29,6 @@ the quarto document, for easier navigation and better output, by:
   - learning from other Quarto-bloggers and definitely linking to them when I learn
   - attempting to use `visual studio code` to produce the blog instead of Rstudio
   - add a refactored or abbreviated chunk with all the important code in the bottom
-  
+
 There is SO much to do!
 
-  

@@ -21,6 +21,8 @@ This blog is dedicated to showcasing my skills as a data scientist with an under
 
 Currently in testing phase!
 
+- [ ] testing deployment: rerendering all posts to get thumbnails right
+
 :::
 
 **Qualifications**:

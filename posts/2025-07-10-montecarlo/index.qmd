@@ -1,8 +1,8 @@
 ---
 title: "Monte Carlo, Life paths, and AI"
 author: "Henrik Vitus Bering Laursen"
-date: "2025-07-10" 
-categories: 
+date: "2025-07-10"
+categories:
   - forecasting
   - monte carlo simulation
   - life path
@@ -16,13 +16,12 @@ format:
     number-sections: true
     fig-width: 8
     fig-height: 6
-freeze: TRUE
 draft: false
 image: thumbnail.jpg
 ---
 
 ::: {.callout-warning}
-This blogpost was concieved as a short look at monte carlo simulation, but turned into both musings on some health economic decision principles, and discussion of the advantages and drawbacks of using AI. 
+This blogpost was concieved as a short look at monte carlo simulation, but turned into both musings on some health economic decision principles, and discussion of the advantages and drawbacks of using AI.
 :::
 
 ## Purpose
@@ -31,17 +30,17 @@ This blogpost was concieved as a short look at monte carlo simulation, but turne
 
 Inspired by [Fooled by Randomness]() by [Nassim Taleb](wiki site), I decided to try doing some [Monte Carlo](wiki site) simulations of different potential life paths ahead of me.
 
-Monte Carlo simulations are not foreign to me, as they are frequently used in health economic models to take uncertainty into account when presenting a comparison between different health interventions or strategies. 
+Monte Carlo simulations are not foreign to me, as they are frequently used in health economic models to take uncertainty into account when presenting a comparison between different health interventions or strategies.
 
 The way that is usually done is by having point estimates and confidence intervals - or [credibility intervals](wiki) if you are bayesian, which those types of analyses mostly are - for certain outcomes, both in terms of their costs and effects, associated with each option being considered.
 
-These estimates and intervals are then sampled randomly in simulations around at least 1000 times, to provide estimates of which option is better than the other, in **probability clouds**. 
+These estimates and intervals are then sampled randomly in simulations around at least 1000 times, to provide estimates of which option is better than the other, in **probability clouds**.
 
 These **probability clouds** represent the spread of the different possible outcomes, given the uncertainty associated with the confidence intervals.
 
 Imagine two dots on a plot, each representing the cost and effects of the interventions. One seems to be in better place than the other. *Is the intervention with seemingly the best cost/effect ratio compared to the other always the better choice?* **Not necessarily**.
 
-With the monte carlo simulation, you can see thousands of dots of the two different colours. The clouds may overlap, or the cloud representing the seemingly worse intervention might have more estimates that seem to be in more advantagous spots. 
+With the monte carlo simulation, you can see thousands of dots of the two different colours. The clouds may overlap, or the cloud representing the seemingly worse intervention might have more estimates that seem to be in more advantagous spots.
 
 Advantageous how? Well, more of the estimates may be in the "much higher effect, at a sligthly higher cost" than the single point estimate mentioned earlier. Visualising how the possible estimates spread out, in many different "worlds" or scenarios, can help decision-makers determine what is likely to be the best option, at least much better than a single point estimate, and a range of uncertainty with two numbers.
 
@@ -72,7 +71,7 @@ Because the tool is available and I would be insane not to use it, I use GPT to 
 
 Also, I learn how it works, preferably by both searching for different ways of doing it online.
 
-## Process 
+## Process
 
 No need to load and clean data, as I will generate it myself.
 
@@ -100,13 +99,13 @@ n_sim <- 1000
 
 # decisions/choices
 decisions <- tibble(
-  decision = c("Private", "Public", "Startup"), 
-  startup_prob_success = c(NA, NA, 0.30), 
-  # all moneys in 1000 DKK/year 
-  startup_income_success = c(NA, NA, 6000), 
-  base_income = c(600, 400, 50), 
+  decision = c("Private", "Public", "Startup"),
+  startup_prob_success = c(NA, NA, 0.30),
+  # all moneys in 1000 DKK/year
+  startup_income_success = c(NA, NA, 6000),
+  base_income = c(600, 400, 50),
   growth_rate_income = c(0.02, 0.02, 0.03),
-  std_dev_income = c(10, 5, 300), 
+  std_dev_income = c(10, 5, 300),
   base_content = c(3.2, 3.5, 3.0),
   content_sd = c(0.4, 0.3, 0.9),
   burnout_prob = c(0.10, 0.05, 0.25),
@@ -151,30 +150,30 @@ simulate_one_life <- function(decision_row, sim_id) {
   # Yearly chance events
   health_shock <- rbinom(n_years, 1, decision_row$health_shock_prob)
   burnout <- rbinom(n_years, 1, decision_row$burnout_prob)
-  
+
   # Parenting - which affects the contentness
-    # First child: already present (baseline) - dont consider 
+    # First child: already present (baseline) - dont consider
     # Second child: guaranteed to arrive within first 5 years
     kid2_year <- sample(2:6, 1)
-    
+
     # Parenting flag for the second
     parenting2 <- ifelse((1:n_years) >= kid2_year, 1, 0)
-  
+
   # Contentness
   content <- rnorm(n_years, decision_row$base_content, decision_row$content_sd) -
     0.4 * burnout - 0.6 * health_shock + 0.3 * parenting2
-  
+
   # Scale must be between 1 (very not content), to 5 (very content)
   content <- pmin(5, pmax(1, content))
-  
+
   # Savings of 10% each year, minus healthshock prob * its cost
   savings <- cumsum(income * 0.1 - 5 * health_shock) # health schock cost in 1000's too
-  
+
   # Standardising a total hapiness score. each one contributes 20-40% to it
   # happiness <- 0.4 * scale(income)[, 1] +
   #              0.4 * scale(content)[, 1] +
   #              0.2 * scale(savings)[, 1]
-  
+
   # make tibble for output
   tibble(
     year = 1:n_years,
@@ -202,7 +201,7 @@ For each decision, we simulate 1000 iterations of what would happen over 20 year
 results <- map(1:nrow(decisions), function(i) {
   decision_row <- decisions[i, ]
 
-  map(1:n_sim, ~simulate_one_life(decision_row, .x)) |> 
+  map(1:n_sim, ~simulate_one_life(decision_row, .x)) |>
     list_rbind()
 }) |> list_rbind()
 ```
@@ -211,7 +210,7 @@ It literally only takes seconds to simulate three diferent life paths (20 years)
 
 Now, to get some point estimates for each decision, we can summarise the results by grouping the simulations results by simulation number, and decision and calculating some averages, and the last of the savings.
 
-Then, we group by each decision, and then just take the mean of each value, to get a point estimate for each decision. 
+Then, we group by each decision, and then just take the mean of each value, to get a point estimate for each decision.
 
 The mean of all simulations for each decision. Mean of mean of the possible values, if you will.
 
@@ -219,8 +218,8 @@ The mean of all simulations for each decision. Mean of mean of the possible valu
 #| label: Summarize simulations
 #| echo: true
 
-summary <- results |> 
-  group_by(sim, decision) |> 
+summary <- results |>
+  group_by(sim, decision) |>
   summarise(
     avg_income = mean(income),
     avg_content = mean(content),
@@ -228,9 +227,9 @@ summary <- results |>
     health_event_rate = mean(health_shock),
     end_savings = last(savings),
     .groups = "drop"
-  ) |> 
+  ) |>
   select(-sim) |>  # <- remove sim so it's not re-summarized
-  group_by(decision) |> 
+  group_by(decision) |>
   summarise(across(everything(), list(mean = mean, sd = sd)), .groups = "drop")
 
 print(summary)
@@ -244,19 +243,19 @@ Now for perhaps the most helpful part of this: the raw visualisation of the poss
 #| label: Density plot
 #| echo: true
 
-results |> 
+results |>
   ggplot(aes(x = income, fill = decision)) +
-  geom_density(alpha = 0.4) + 
+  geom_density(alpha = 0.4) +
   labs(
-    title = "Life Income Distribution by Decision Path", 
-    x = "Total Income in 1000 DKK over 30 Years", y = "Density") + 
+    title = "Life Income Distribution by Decision Path",
+    x = "Total Income in 1000 DKK over 30 Years", y = "Density") +
   theme_minimal()
-results |> 
+results |>
   ggplot(aes(x = content, fill = decision)) +
-  geom_density(alpha = 0.4) + 
+  geom_density(alpha = 0.4) +
   labs(
-    title = "Life Income Distribution by Decision Path", 
-    x = "Total Income in 1000 DKK over 30 Years", y = "Density") + 
+    title = "Life Income Distribution by Decision Path",
+    x = "Total Income in 1000 DKK over 30 Years", y = "Density") +
   theme_minimal()
 ```
 
@@ -265,9 +264,9 @@ results |>
 #| label: cloud with points
 #| echo: true
 
-results |> 
+results |>
   ggplot(aes(x = income, y = content, color = decision)) +
-  geom_point(alpha = 0.2) + 
+  geom_point(alpha = 0.2) +
   geom_point(
     data = summary,
     aes(x = avg_income_mean, y = avg_content_mean, group = decision),
@@ -280,8 +279,8 @@ results |>
     inherit.aes = FALSE
   ) +
   labs(
-    title = "Life Income Distribution by Decision Path - Point Estimates Added", 
-    x = "Total Income in 1000 DKK over 30 Years") + 
+    title = "Life Income Distribution by Decision Path - Point Estimates Added",
+    x = "Total Income in 1000 DKK over 30 Years") +
   theme_minimal()
 
 ggsave("thumbnail.jpg", plot = last_plot(), width = 6, height = 4) # saved as thumbnail
@@ -305,9 +304,9 @@ What is more important to visualise is the effects besides the income and conten
 #| label: other effects - burnout, health shocks
 #| echo: true
 
-results |> 
-  group_by(decision, year) |> 
-  summarise(burnout_rate = mean(burnout), .groups = "drop") |> 
+results |>
+  group_by(decision, year) |>
+  summarise(burnout_rate = mean(burnout), .groups = "drop") |>
   ggplot(aes(x = year, y = burnout_rate, color = decision)) +
   geom_line(linewidth = 1) +
   labs(
@@ -317,9 +316,9 @@ results |>
   ) +
   theme_minimal()
 
-results |> 
-  group_by(decision, year) |> 
-  summarise(shock_rate = mean(health_shock), .groups = "drop") |> 
+results |>
+  group_by(decision, year) |>
+  summarise(shock_rate = mean(health_shock), .groups = "drop") |>
   ggplot(aes(x = year, y = shock_rate, color = decision)) +
   geom_line(linewidth = 1) +
   labs(
@@ -335,9 +334,9 @@ Around twice the burnout rate and three times the health shock rate for the Star
 
 So the simulations accurately represents (because the inputs accurately represents), the high risk high reward style of starting a company.
 
-## Summary / cleaned up / refactored 
+## Summary / cleaned up / refactored
 
-So, to summarise. 
+So, to summarise.
 
 I created three imaginary life paths that I could take and assumed that I would stick to the path chosen for the simulation period.
 
@@ -345,9 +344,9 @@ Then I defined some different base values and uncertanties in the form of standa
 
 These were then put into a simulation function that defined what would occur for each simulation, with differences for each path.
 
-Then the simulation function was applied to the life path dataframe, for each decision, for 20 years, 1000 times. 
+Then the simulation function was applied to the life path dataframe, for each decision, for 20 years, 1000 times.
 
-And the results were visualised with density plots, scatter plots for content. With these arbitrary inputs, not much can be gleaned from such a simulation, other than the fact that uncertainty plays a huge role and one can have a lot of different outcomes. Perhaps based on this one could decide whether one felt 
+And the results were visualised with density plots, scatter plots for content. With these arbitrary inputs, not much can be gleaned from such a simulation, other than the fact that uncertainty plays a huge role and one can have a lot of different outcomes. Perhaps based on this one could decide whether one felt
 
 ### A Note on AI
 
@@ -356,9 +355,9 @@ AI (ChatGPT) played a role in this blog in the following ways:
 1. Carrying my idea into practice (writing the main code)
 2. Changing the code
 
-The amount of time I saved from thinking my way through this is enormous. Which leads to the critical question asked often these days:  
+The amount of time I saved from thinking my way through this is enormous. Which leads to the critical question asked often these days:
 
-> What have I lost in terms of learning, with the short term gain in efficiency from using AI? 
+> What have I lost in terms of learning, with the short term gain in efficiency from using AI?
 
 This applies to both point 1 and 2 above.
 
@@ -394,7 +393,7 @@ An AI mentor can in large part provide the same, where, I believe, the following
   - A real expert will know exactly how much a person knows, and when to prompt different levels or stages of knowledge
 - Tracking of progress is fine until AI hallucinations occur
 - Much weaker transfer of tacit knowledge
-- Weaker motivation 
+- Weaker motivation
   - The text version of "You've got it!" does not hit nearly the same way as the real life, honest, and enthusiastic version
 - No recommendation and trust
 - AI can't abuse you (bad mentor)
@@ -414,9 +413,9 @@ df1 <- data.frame(
   b = as.numeric(rnorm(1000, 100, 25))
 )
 
-ggplot(data = df1) + 
+ggplot(data = df1) +
   geom_density(aes(x=a), color = "red") +
-  geom_density(aes(x=b), color = "blue") + 
+  geom_density(aes(x=b), color = "blue") +
   labs(x = NULL,y = NULL) + theme_minimal()
 
 ```
@@ -426,7 +425,7 @@ That is, I believe:
 
 1. It will be a good tool to gain access to knowledge for people who were either too lazy to access it or were prevented in some way before
 2. There are some who will overly rely on it and suffer the consequences of losing some of their ability to think for themselves
-3. There are some who will recognise its potential and downsides, and use it when it is appropriate, soring about others 
+3. There are some who will recognise its potential and downsides, and use it when it is appropriate, soring about others
 
 The last group is likely the ones who are least likely, at least in the white-collar jobs, to be replaced by AI.
 
@@ -439,7 +438,7 @@ Up until AI is more ["Agentic"](https://en.wikipedia.org/wiki/Agentic_AI), ofcou
 I used the following prompt, which worked fine although it actually made some errors that made me have to remake some of it.
 
     First, please take out all chunks, and refactor them in the following way:
-    
+
     - make code more concise, with functions for repeating lines or plots
     - remove comments
     - remove unecessary code
@@ -455,13 +454,13 @@ n_years <- 20
 n_sim   <- 1000
 
 decisions <- tibble(
-	decision = c("Private", "Public", "Startup"), 
-	startup_prob_success = c(NA, NA, 0.30), 
-	# all moneys in 1000 DKK/year 
-	startup_income_success = c(NA, NA, 6000), 
-	base_income = c(600, 400, 50), 
+	decision = c("Private", "Public", "Startup"),
+	startup_prob_success = c(NA, NA, 0.30),
+	# all moneys in 1000 DKK/year
+	startup_income_success = c(NA, NA, 6000),
+	base_income = c(600, 400, 50),
 	growth_rate_income = c(0.02, 0.02, 0.03),
-	std_dev_income = c(10, 5, 300), 
+	std_dev_income = c(10, 5, 300),
   base_content = c(3.2, 3.5, 3.0),
   content_sd = c(0.4, 0.3, 0.9),
 	burnout_prob = c(0.10, 0.05, 0.25),
@@ -489,13 +488,13 @@ simulate_one_life <- function(decision_row, sim_id) {
   burnout <- rbinom(n_years, 1, decision_row$burnout_prob)
   kid2_year <- sample(2:6, 1)
   parenting2 <- ifelse((1:n_years) >= kid2_year, 1, 0)
-  
+
   content <- rnorm(n_years, decision_row$base_content, decision_row$content_sd) -
     0.4 * burnout - 0.6 * health_shock + 0.3 * parenting2
-  
+
   content <- pmin(5, pmax(1, content))
-  savings <- cumsum(income * 0.1 - 5 * health_shock) 
-  
+  savings <- cumsum(income * 0.1 - 5 * health_shock)
+
   tibble(
     year = 1:n_years,
     sim = sim_id,
@@ -516,8 +515,8 @@ run_decision <- function(row, reps) {
 results <- map(seq_len(nrow(decisions)),
                ~run_decision(decisions[.x, ], n_sim)) |> list_rbind()
 
-summary <- results |> 
-    group_by(sim, decision) |> 
+summary <- results |>
+    group_by(sim, decision) |>
     summarise(
       avg_income   = mean(income),
       avg_content  = mean(content),

@@ -15,7 +15,7 @@ project:
     # - posts/post10-rshiny/**
 
 website:
-  title: "Testing"
+  title: "Vitus Bering exploring the Danish Data seas"
   navbar:
     background: primary
     left:

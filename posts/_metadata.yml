@@ -14,6 +14,7 @@ format:
     toc-title: "On this page"
     toc-depth: 4
     self-contained: true
+    theme: darkly
 
 # my author info ----
 author:

@@ -17,6 +17,8 @@ draft: false
 image: thumbnail.jpg # make via: ggsave("thumbnail.jpg", plot = last_plot(), width = 6, height = 4)
 ---
 
+## TESTING TESTING
+
 ## Purpose
 
 I wanted to walk through how to use `R shiny` and put in some publicly available Danish statistics as the basis for a dashboard.

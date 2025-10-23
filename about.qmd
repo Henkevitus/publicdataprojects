@@ -21,7 +21,8 @@ This blog is dedicated to showcasing my skills as a data scientist with an under
 
 Currently in testing phase!
 
-- [ ] testing deployment: rerendering all posts to get thumbnails right
+- [x] testing deployment: rerendering all posts to get thumbnails right
+- [ ] testing deployment: test to see if i can do dark theme first, and only change about.qmd and _quarto.yml and then push changes - it should work
 
 :::
 

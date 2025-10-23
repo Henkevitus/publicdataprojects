@@ -1,5 +1,6 @@
 project:
   type: website
+  output-dir: _site
   #render: # have to use this because quarto publish quarto-pub publishes drafts otherwise
     # - about.qmd
     # - index.qmd

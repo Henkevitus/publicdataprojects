@@ -39,12 +39,10 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-ab4f20ed77383a8669a76f4ae024066e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-775a110890cd2809d7d2668d56a8818f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-9b80f68f3e398bca18ebae74784ec24e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -134,167 +132,7 @@ window.Quarto = {
 
 </head>
 
-<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
-    const toggleBodyColorMode = (bsSheetEl) => {
-      const mode = bsSheetEl.getAttribute("data-mode");
-      const bodyEl = window.document.querySelector("body");
-      if (mode === "dark") {
-        bodyEl.classList.add("quarto-dark");
-        bodyEl.classList.remove("quarto-light");
-      } else {
-        bodyEl.classList.add("quarto-light");
-        bodyEl.classList.remove("quarto-dark");
-      }
-    }
-    const toggleBodyColorPrimary = () => {
-      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
-      if (bsSheetEl) {
-        toggleBodyColorMode(bsSheetEl);
-      }
-    }
-    const setColorSchemeToggle = (alternate) => {
-      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-      for (let i=0; i < toggles.length; i++) {
-        const toggle = toggles[i];
-        if (toggle) {
-          if (alternate) {
-            toggle.classList.add("alternate");
-          } else {
-            toggle.classList.remove("alternate");
-          }
-        }
-      }
-    };
-    const toggleColorMode = (alternate) => {
-      // Switch the stylesheets
-      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
-      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-      manageTransitions('#quarto-margin-sidebar .nav-link', false);
-      if (alternate) {
-        // note: dark is layered on light, we don't disable primary!
-        enableStylesheet(alternateStylesheets);
-        for (const sheetNode of alternateStylesheets) {
-          if (sheetNode.id === "quarto-bootstrap") {
-            toggleBodyColorMode(sheetNode);
-          }
-        }
-      } else {
-        disableStylesheet(alternateStylesheets);
-        enableStylesheet(primaryStylesheets)
-        toggleBodyColorPrimary();
-      }
-      manageTransitions('#quarto-margin-sidebar .nav-link', true);
-      // Switch the toggles
-      setColorSchemeToggle(alternate)
-      // Hack to workaround the fact that safari doesn't
-      // properly recolor the scrollbar when toggling (#1455)
-      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-        manageTransitions("body", false);
-        window.scrollTo(0, 1);
-        setTimeout(() => {
-          window.scrollTo(0, 0);
-          manageTransitions("body", true);
-        }, 40);
-      }
-    }
-    const disableStylesheet = (stylesheets) => {
-      for (let i=0; i < stylesheets.length; i++) {
-        const stylesheet = stylesheets[i];
-        stylesheet.rel = 'disabled-stylesheet';
-      }
-    }
-    const enableStylesheet = (stylesheets) => {
-      for (let i=0; i < stylesheets.length; i++) {
-        const stylesheet = stylesheets[i];
-        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
-          stylesheet.rel = 'stylesheet';
-        }
-      }
-    }
-    const manageTransitions = (selector, allowTransitions) => {
-      const els = window.document.querySelectorAll(selector);
-      for (let i=0; i < els.length; i++) {
-        const el = els[i];
-        if (allowTransitions) {
-          el.classList.remove('notransition');
-        } else {
-          el.classList.add('notransition');
-        }
-      }
-    }
-    const isFileUrl = () => {
-      return window.location.protocol === 'file:';
-    }
-    const hasAlternateSentinel = () => {
-      let styleSentinel = getColorSchemeSentinel();
-      if (styleSentinel !== null) {
-        return styleSentinel === "alternate";
-      } else {
-        return false;
-      }
-    }
-    const setStyleSentinel = (alternate) => {
-      const value = alternate ? "alternate" : "default";
-      if (!isFileUrl()) {
-        window.localStorage.setItem("quarto-color-scheme", value);
-      } else {
-        localAlternateSentinel = value;
-      }
-    }
-    const getColorSchemeSentinel = () => {
-      if (!isFileUrl()) {
-        const storageValue = window.localStorage.getItem("quarto-color-scheme");
-        return storageValue != null ? storageValue : localAlternateSentinel;
-      } else {
-        return localAlternateSentinel;
-      }
-    }
-    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
-      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
-      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
-      let newTheme = '';
-      if(authorPrefersDark) {
-        newTheme = isAlternate ? baseTheme : alternateTheme;
-      } else {
-        newTheme = isAlternate ? alternateTheme : baseTheme;
-      }
-      const changeGiscusTheme = () => {
-        // From: https://github.com/giscus/giscus/issues/336
-        const sendMessage = (message) => {
-          const iframe = document.querySelector('iframe.giscus-frame');
-          if (!iframe) return;
-          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
-        }
-        sendMessage({
-          setConfig: {
-            theme: newTheme
-          }
-        });
-      }
-      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
-      if (isGiscussLoaded) {
-        changeGiscusTheme();
-      }
-    };
-    const authorPrefersDark = true;
-    const darkModeDefault = authorPrefersDark;
-    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
-    // Dark / light mode switch
-    window.quartoToggleColorScheme = () => {
-      // Read the current dark / light value
-      let toAlternate = !hasAlternateSentinel();
-      toggleColorMode(toAlternate);
-      setStyleSentinel(toAlternate);
-      toggleGiscusIfUsed(toAlternate, darkModeDefault);
-      window.dispatchEvent(new Event('resize'));
-    };
-    // Switch to dark mode if need be
-    if (hasAlternateSentinel()) {
-      toggleColorMode(true);
-    } else {
-      toggleColorMode(false);
-    }
-  </script>
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top quarto-banner">
@@ -328,7 +166,6 @@ window.Quarto = {
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
-  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
       </div> <!-- /container-fluid -->
     </nav>
@@ -342,7 +179,6 @@ window.Quarto = {
     <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(8)</span></div><div class="category" data-category="QUk=">AI <span class="quarto-category-count">(1)</span></div><div class="category" data-category="YW5hbHlzaXM=">analysis <span class="quarto-category-count">(3)</span></div><div class="category" data-category="YW5ub3VuY2VtZW50">announcement <span class="quarto-category-count">(2)</span></div><div class="category" data-category="Y29kZQ==">code <span class="quarto-category-count">(3)</span></div><div class="category" data-category="Y29zdA==">cost <span class="quarto-category-count">(3)</span></div><div class="category" data-category="ZGF0YSUyMGV4cGxvcmF0aW9u">data exploration <span class="quarto-category-count">(1)</span></div><div class="category" data-category="ZGlhYmV0ZXM=">diabetes <span class="quarto-category-count">(1)</span></div><div class="category" data-category="ZHJ1Z3M=">drugs <span class="quarto-category-count">(3)</span></div><div class="category" data-category="ZXhwbG9yYXRpb24=">exploration <span class="quarto-category-count">(3)</span></div><div class="category" data-category="Zm9yZWNhc3Rpbmc=">forecasting <span class="quarto-category-count">(1)</span></div><div class="category" data-category="ZnVuY3Rpb25z">functions <span class="quarto-category-count">(1)</span></div><div class="category" data-category="aG9zcGl0YWwlMjB1c2FnZQ==">hospital usage <span class="quarto-category-count">(1)</span></div><div class="category" data-category="am9pbnM=">joins <span class="quarto-category-count">(1)</span></div><div class="category" data-category="bGlmZSUyMHBhdGg=">life path <span class="quarto-category-count">(1)</span></div><div class="category" data-category="TWVudG9yJTIwbWVudGVl">Mentor mentee <span class="quarto-category-count">(1)</span></div><div class="category" data-category="bW9udGUlMjBjYXJsbyUyMHNpbXVsYXRpb24=">monte carlo simulation <span class="quarto-category-count">(1)</span></div><div class="category" data-category="TmFzc2ltJTIwVGFsZWI=">Nassim Taleb <span class="quarto-category-count">(1)</span></div><div class="category" data-category="ciUyMHNoaW55JTIwZGFzaGJvYXJk">r shiny dashboard <span class="quarto-category-count">(1)</span></div><div class="category" data-category="cmFuZG9tbmVzcw==">randomness <span class="quarto-category-count">(1)</span></div><div class="category" data-category="c3Vydml2YWwlMjBhbmFseXNpcw==">survival analysis <span class="quarto-category-count">(1)</span></div></div></div>
 <!-- main -->
 <main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
-
 
 
 
@@ -378,7 +214,7 @@ window.Quarto = {
     </div>
 </div>
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="aG9zcGl0YWwlMjB1c2FnZSUyQ3IlMjBzaGlueSUyMGRhc2hib2FyZA==" data-listing-date-sort="1758758400000" data-listing-file-modified-sort="1761212206665" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="20" data-listing-word-count-sort="3823">
+<div class="quarto-post image-right" data-index="0" data-categories="aG9zcGl0YWwlMjB1c2FnZSUyQ3IlMjBzaGlueSUyMGRhc2hib2FyZA==" data-listing-date-sort="1758758400000" data-listing-file-modified-sort="1761212486371" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="20" data-listing-word-count-sort="3823">
 <div class="thumbnail"><a href="./posts/2025-09-25-rshiny/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/2025-09-25-rshiny/thumbnail.jpg" class="thumbnail-image">
@@ -410,7 +246,7 @@ Henrik Vitus Bering Laursen
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-categories="Zm9yZWNhc3RpbmclMkNtb250ZSUyMGNhcmxvJTIwc2ltdWxhdGlvbiUyQ2xpZmUlMjBwYXRoJTJDcmFuZG9tbmVzcyUyQ05hc3NpbSUyMFRhbGViJTJDQUklMkNNZW50b3IlMjBtZW50ZWU=" data-listing-date-sort="1752105600000" data-listing-file-modified-sort="1761212206663" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3446">
+<div class="quarto-post image-right" data-index="1" data-categories="Zm9yZWNhc3RpbmclMkNtb250ZSUyMGNhcmxvJTIwc2ltdWxhdGlvbiUyQ2xpZmUlMjBwYXRoJTJDcmFuZG9tbmVzcyUyQ05hc3NpbSUyMFRhbGViJTJDQUklMkNNZW50b3IlMjBtZW50ZWU=" data-listing-date-sort="1752105600000" data-listing-file-modified-sort="1761212486369" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3446">
 <div class="thumbnail"><a href="./posts/2025-07-10-montecarlo/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/2025-07-10-montecarlo/thumbnail.jpg" class="thumbnail-image">
@@ -452,7 +288,7 @@ Henrik Vitus Bering Laursen
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="2" data-categories="ZGlhYmV0ZXMlMkNkYXRhJTIwZXhwbG9yYXRpb24lMkNqb2lucyUyQ3N1cnZpdmFsJTIwYW5hbHlzaXM=" data-listing-date-sort="1750118400000" data-listing-file-modified-sort="1761212206661" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="22" data-listing-word-count-sort="4388">
+<div class="quarto-post image-right" data-index="2" data-categories="ZGlhYmV0ZXMlMkNkYXRhJTIwZXhwbG9yYXRpb24lMkNqb2lucyUyQ3N1cnZpdmFsJTIwYW5hbHlzaXM=" data-listing-date-sort="1750118400000" data-listing-file-modified-sort="1761212486368" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="22" data-listing-word-count-sort="4388">
 <div class="thumbnail"><a href="./posts/2025-06-17-steno2/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/2025-06-17-steno2/thumbnail.jpg" class="thumbnail-image">
@@ -488,7 +324,7 @@ Henrik Vitus Bering Laursen
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="3" data-categories="YW5ub3VuY2VtZW50" data-listing-date-sort="1748649600000" data-listing-file-modified-sort="1761212206661" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="250">
+<div class="quarto-post image-right" data-index="3" data-categories="YW5ub3VuY2VtZW50" data-listing-date-sort="1748649600000" data-listing-file-modified-sort="1761212486367" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="250">
 <div class="thumbnail"><a href="./posts/2025-05-31-movingon/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -518,7 +354,7 @@ Henrik Vitus Bering Laursen
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-categories="YW5ub3VuY2VtZW50" data-listing-date-sort="1737244800000" data-listing-file-modified-sort="1761212206661" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="204">
+<div class="quarto-post image-right" data-index="4" data-categories="YW5ub3VuY2VtZW50" data-listing-date-sort="1737244800000" data-listing-file-modified-sort="1761212486367" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="204">
 <div class="thumbnail"><a href="./posts/2025-01-19-explanation/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -548,7 +384,7 @@ Henrik Vitus Bering Laursen
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="5" data-categories="Y29kZSUyQ2FuYWx5c2lzJTJDZXhwbG9yYXRpb24lMkNjb3N0JTJDZHJ1Z3M=" data-listing-date-sort="1727654400000" data-listing-file-modified-sort="1761212206659" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="21" data-listing-word-count-sort="4091">
+<div class="quarto-post image-right" data-index="5" data-categories="Y29kZSUyQ2FuYWx5c2lzJTJDZXhwbG9yYXRpb24lMkNjb3N0JTJDZHJ1Z3M=" data-listing-date-sort="1727654400000" data-listing-file-modified-sort="1761212486365" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="21" data-listing-word-count-sort="4091">
 <div class="thumbnail"><a href="./posts/2024-09-30-tot_ddd_use/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/2024-09-30-tot_ddd_use/thumbnail.jpg" class="thumbnail-image">
@@ -586,7 +422,7 @@ Henrik Vitus Bering Laursen
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-categories="Y29kZSUyQ2FuYWx5c2lzJTJDZXhwbG9yYXRpb24lMkNmdW5jdGlvbnMlMkNjb3N0JTJDZHJ1Z3M=" data-listing-date-sort="1726790400000" data-listing-file-modified-sort="1761212206657" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1285">
+<div class="quarto-post image-right" data-index="6" data-categories="Y29kZSUyQ2FuYWx5c2lzJTJDZXhwbG9yYXRpb24lMkNmdW5jdGlvbnMlMkNjb3N0JTJDZHJ1Z3M=" data-listing-date-sort="1726790400000" data-listing-file-modified-sort="1761212486364" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1285">
 <div class="thumbnail"><a href="./posts/2024-09-20-medstat-function/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/2024-09-20-medstat-function/thumbnail.jpg" class="thumbnail-image">
@@ -626,7 +462,7 @@ Henrik Vitus Bering Laursen
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="7" data-categories="Y29kZSUyQ2FuYWx5c2lzJTJDZXhwbG9yYXRpb24lMkNjb3N0JTJDZHJ1Z3M=" data-listing-date-sort="1726704000000" data-listing-file-modified-sort="1761212206656" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2007">
+<div class="quarto-post image-right" data-index="7" data-categories="Y29kZSUyQ2FuYWx5c2lzJTJDZXhwbG9yYXRpb24lMkNjb3N0JTJDZHJ1Z3M=" data-listing-date-sort="1726704000000" data-listing-file-modified-sort="1761212486362" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2007">
 <div class="thumbnail"><a href="./posts/2024-09-19-medstatexplore/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/2024-09-19-medstatexplore/thumbnail.jpg" class="thumbnail-image">
@@ -669,19 +505,6 @@ Henrik Vitus Bering Laursen
 </div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
-    // Ensure there is a toggle, if there isn't float one in the top right
-    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-      const a = window.document.createElement('a');
-      a.classList.add('top-right');
-      a.classList.add('quarto-color-scheme-toggle');
-      a.href = "";
-      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-      const i = window.document.createElement("i");
-      i.classList.add('bi');
-      a.appendChild(i);
-      window.document.body.appendChild(a);
-    }
-    setColorSchemeToggle(hasAlternateSentinel())
     const icon = "";
     const anchorJS = new window.AnchorJS();
     anchorJS.options = {

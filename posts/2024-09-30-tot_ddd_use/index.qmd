@@ -1,14 +1,14 @@
 ---
 title: "Evolution in DDD use of Diabetes Drugs over time"
 author: "Henrik Vitus Bering Laursen"
-date: "2024-09-30" 
-categories: 
+date: "2024-09-30"
+categories:
   - code
   - analysis
   - exploration
   - cost
   - drugs
-image: thumbnail.png
+image: thumbnail.jpg
 freeze: true
 ---
 
@@ -46,7 +46,7 @@ This leads to the following code necessary to download the data. Code is just fo
 
 ```{r}
 #| eval: false
-# URL of the .ashx file 
+# URL of the .ashx file
 url <- "https://www.esundhed.dk/-/media/Files/Publikationer/Emner/Laegemidler/Medicinpriser/2024/lmpriser_eSundhed_240916.ashx"
 
 # Define a path in my local datafolder, used as described in the first post about medstat data
@@ -84,26 +84,26 @@ Just as the post, I want to focus on drugs used for diabetes. So I keep only the
 
 ```{r}
 # Cleaning it in one set of operations
-df_ddd_A10 <- df_ddd |> 
-# Filter for just A10A and A10B, and keep just prp per ddd 
+df_ddd_A10 <- df_ddd |>
+# Filter for just A10A and A10B, and keep just prp per ddd
   filter(
-    str_detect(ATC,("^A10B")) | str_detect(ATC,("^A10A")), 
-    Indikator == "AUP_pr_DDD") |> 
+    str_detect(ATC,("^A10B")) | str_detect(ATC,("^A10A")),
+    Indikator == "AUP_pr_DDD") |>
   # Select variables
   select(ATC, Indholdsstof, Lægemiddel, starts_with("20")) |>
   # Pivot the data so that the variable columns that contain time are contained in one variable column
   pivot_longer(
     cols = starts_with("20"),
     names_to = "Tid",
-    values_to = "prpddd") |> 
+    values_to = "prpddd") |>
   mutate(
     Tid = ymd(Tid)) |>
   # group_by(tid) |>  DELETE??
   # mutate(
   #   hip_ddd = max(prpddd), # hip_ddd = maxpris per ddd
   #   lop_ddd = min(prpddd) # lop_ddd = minpris per ddd
-  # ) |> 
-  # ungroup() |> 
+  # ) |>
+  # ungroup() |>
   filter(
     !is.na(prpddd)
   )
@@ -129,13 +129,13 @@ This is basically a measure of how much it costs to treat a person with the medi
 This is exemplified in the code below.
 
 ```{r}
-df_ddd_test <- df_ddd |> 
+df_ddd_test <- df_ddd |>
   filter(Indikator == "AUP") |> # AUP = Pharmacy Retail Price
   pivot_longer(
     cols = starts_with("20"),
     names_to = "Tid",
     values_to = "prp"
-    ) |> 
+    ) |>
     summarise(
     highest_prp = max(prp, na.rm = TRUE),
     lowest_prp = min(prp, na.rm = TRUE)
@@ -171,22 +171,22 @@ library(scales)
 library(ggtext)
 library(ggrepel)
 
-hen_theme <- function () { 
-  theme_linedraw(base_size=11) %+replace%  
+hen_theme <- function () {
+  theme_linedraw(base_size=11) %+replace%
     theme(
       panel.background  = element_blank(),
-      plot.background = element_rect(fill = "white", color = NA), 
+      plot.background = element_rect(fill = "white", color = NA),
       legend.background = element_rect(fill = "white", color = NA),
       legend.key = element_rect(fill = "white", color = NA),
       axis.ticks = element_blank(),
-      panel.grid.major = element_line(color = "grey90", size = 0.3), 
+      panel.grid.major = element_line(color = "grey90", size = 0.3),
       panel.grid.minor = element_blank(),
       plot.title.position = "plot",
-      plot.title = element_text(size = 16, hjust = 0, vjust = 0.5, 
+      plot.title = element_text(size = 16, hjust = 0, vjust = 0.5,
                                 margin = margin(b = 0.2, unit = "cm")),
-      plot.subtitle = element_text(size = 10, hjust = 0, vjust = 0.5, 
+      plot.subtitle = element_text(size = 10, hjust = 0, vjust = 0.5,
                                    margin = margin(b = 0.4, unit = "cm")),
-      plot.caption = element_text(size = 7, hjust = 1, face = "italic", 
+      plot.caption = element_text(size = 7, hjust = 1, face = "italic",
                                   margin = margin(t = 0.1, unit = "cm")),
       axis.text.x = element_text(size = 13),
       axis.text.y = element_text(size = 13)
@@ -199,13 +199,13 @@ hen_theme <- function () {
 The "hen_theme" is then added to future plots, at the end.
 
 ```{r}
-# find most expensive 
-df_ddd_A10 |> 
-  group_by(atc) |> 
+# find most expensive
+df_ddd_A10 |>
+  group_by(atc) |>
   summarise(
     highest_prpddd = max(prpddd, na.rm = TRUE),
     lowest_prpddd = min(prpddd, na.rm = TRUE)
-  ) |>   
+  ) |>
   summarise(
     most_expensive_atc = atc[which.max(highest_prpddd)],
     most_expensive_value = max(highest_prpddd),
@@ -214,10 +214,10 @@ df_ddd_A10 |>
   )
 
 # plot
-hilo_ddd <- df_ddd_A10 |> 
-  filter(atc == "A10BX16" | atc == "A10BB12") |> 
+hilo_ddd <- df_ddd_A10 |>
+  filter(atc == "A10BX16" | atc == "A10BB12") |>
   select(compound,time,prpddd)
-  
+
 ggplot(hilo_ddd, mapping = aes(x=time,y=prpddd, colour = compound)) +
   geom_point() +
   labs(
@@ -226,7 +226,7 @@ ggplot(hilo_ddd, mapping = aes(x=time,y=prpddd, colour = compound)) +
     y = "Pharmacy Retail Price per DDD",
     x = "",
   ) +
-  hen_theme() + 
+  hen_theme() +
   theme(
     legend.title = element_blank(),
     legend.position = c(0.8,0.9),
@@ -240,12 +240,12 @@ Now, I wish to visualise how PRP per DDD changes over time. Below, I create the 
 
 ```{r}
 # Make a new var thats floored to months and find the min for each month
-df_ddd_A10_minmax <- df_ddd_A10 |> 
-  mutate(month = floor_date(time,"month")) |> 
-  group_by(month, atc, compound) |> 
+df_ddd_A10_minmax <- df_ddd_A10 |>
+  mutate(month = floor_date(time,"month")) |>
+  group_by(month, atc, compound) |>
   summarise(
-    a_min_prpddd = min(prpddd, na.rm = TRUE), # "a_" is to make it first in the facetwrap later 
-    b_max_prpddd = max(prpddd, na.rm = TRUE)) |> 
+    a_min_prpddd = min(prpddd, na.rm = TRUE), # "a_" is to make it first in the facetwrap later
+    b_max_prpddd = max(prpddd, na.rm = TRUE)) |>
   ungroup()
 
 head(df_ddd_A10_minmax)
@@ -256,7 +256,7 @@ And now for the grand plot I have planned for this post, which will be an overvi
 First, I limit the dataset to only encompass the classes I want to look at.
 
 ```{r}
-dfforplot <- df_ddd_A10_minmax |> 
+dfforplot <- df_ddd_A10_minmax |>
   filter(
     str_detect(atc,"^A10BA") |   # met
       str_detect(atc,"^A10BB") | # sul
@@ -264,7 +264,7 @@ dfforplot <- df_ddd_A10_minmax |>
       str_detect(atc,"^A10BJ") | # glp1
       str_detect(atc,"^A10BH") | # dpp4
       str_detect(atc,"^A10BX16") # tirzepatid, honoured guest
-    )  
+    )
 
 ```
 
@@ -349,8 +349,8 @@ colour_mapping <- c(
 ```
 
 ```{=html}
-<!-- 
-Maybe change line shapes, see ggplot index - 
+<!--
+Maybe change line shapes, see ggplot index -
 aes_linetype_size_shape {ggplot2} ..
 
 Then i make geom-lines for each atc group ? -->
@@ -368,7 +368,7 @@ testplot1 <- ggplot(dfforplot |> filter(a_min_prpddd<100), aes(x = month, y = a_
        x = "",
        y = "",
        colour = "Drug") +
-  hen_theme() 
+  hen_theme()
 
 testplot1
 ```
@@ -387,7 +387,7 @@ To achieve that, I will firstly make a variable with a label for each drug class
 The first part is relatively simply done using `case_when()` and knowledge of what classes the ATC codes represent.
 
 ```{r}
-dfforplot <- dfforplot |> 
+dfforplot <- dfforplot |>
   mutate(class = case_when(
     substr(atc, 1, 5) == "A10BA" ~ "Metformin",
     substr(atc, 1, 5) == "A10BB" ~ "Sulfonylureas",
@@ -421,20 +421,20 @@ sglt2_colours  <- colorRampPalette(c("yellow","#b8860b"))(4)
 tir_colours  <- colorRampPalette(c("#8b008b"))(1)
 colours_compounds <- c(met_colours,
                 su_colours,
-                dpp4_colours,  
+                dpp4_colours,
                 glp1_colours,
                 sglt2_colours,
                 tir_colours) # combine
 barplot(rep(1,20), col=colours_compounds, border = "white", axes = FALSE)
 ```
 
-For (2), I will focus on the three most sold compounds in the latest year and remove the rest to avoid cluttering the plot with information. 
+For (2), I will focus on the three most sold compounds in the latest year and remove the rest to avoid cluttering the plot with information.
 
 I use [Medstat](https://medstat.dk/) as a source, and what I look for is DDD sold in total across the entire healthcare sector, which is incredible easy to extract from the site. The amounts are from when I viewed the site in October 2024. Below, I store a vector of the most three most used compounds (less if class has less compounds).
 
 ```{r}
 kept_compounds <- c(
-  "Metformin", 
+  "Metformin",
   "Glipizid",
   "Gliclazid",
   "Glimepirid",
@@ -447,16 +447,16 @@ kept_compounds <- c(
   "Dapagliflozin",
   "Canagliflozin",
   "Empagliflozin",
-  "Tirzepatid"  
+  "Tirzepatid"
 )
 ```
 
 Now, lets make plots for the ones that are not outliers. In practice I will do that by just limiting the y axis.
 
 ```{r}
-dfforplot |> 
+dfforplot |>
   filter(a_min_prpddd<100
-         & compound %in% kept_compounds) |> 
+         & compound %in% kept_compounds) |>
   ggplot(aes(x = month, y = a_min_prpddd, colour = compound)) +
   geom_line() +
   scale_colour_manual(values = colours_compounds) +
@@ -466,7 +466,7 @@ dfforplot |>
        x = "",
        y = "",
        colour = "Drug") +
-  hen_theme() 
+  hen_theme()
 ```
 
 **Oops**, I messed up. The colours do not fit anymore. Will fit the colours to the new more limited amount of compounds.
@@ -480,7 +480,7 @@ sglt2_colours  <- colorRampPalette(c("yellow","#b8860b"))(3)
 tir_colours  <- colorRampPalette(c("#8b008b"))(1)
 colours_compounds <- c(met_colours,
                 su_colours,
-                dpp4_colours,  
+                dpp4_colours,
                 glp1_colours,
                 sglt2_colours,
                 tir_colours) # combine
@@ -489,9 +489,9 @@ barplot(rep(1,15), col=colours_compounds, border = "white", axes = FALSE)
 Now try again.
 
 ```{r}
-dfforplot |> 
+dfforplot |>
   filter(a_min_prpddd<100
-         & compound %in% kept_compounds) |> 
+         & compound %in% kept_compounds) |>
   ggplot(aes(x = month, y = a_min_prpddd, colour = compound)) +
   geom_line() +
   scale_colour_manual(values = colours_compounds) +
@@ -501,7 +501,7 @@ dfforplot |>
        x = "",
        y = "",
        colour = "Drug") +
-  hen_theme() 
+  hen_theme()
 ```
 
 Now that looks much better. Now let's make the final graph, using `facet_wrap()` to distinguish between the minimum and maximum PRP per DDD.
@@ -509,7 +509,7 @@ Now that looks much better. Now let's make the final graph, using `facet_wrap()`
 To use `facet_wrap()`, we pivot the dataset before plotting.
 
 ```{r}
-dfforplot_pivot <- dfforplot |> 
+dfforplot_pivot <- dfforplot |>
   pivot_longer(
     cols = ends_with("prpddd"),
     names_to = "ddd",
@@ -522,12 +522,12 @@ head(dfforplot_pivot)
 And then make the plot.
 
 ```{r}
-dfforplot_pivot |> 
-  filter(compound %in% kept_compounds) |> 
+dfforplot_pivot |>
+  filter(compound %in% kept_compounds) |>
   ggplot(aes(x = month, y = minmax, colour = compound)) +
   geom_line() +
   facet_wrap(
-    ~ddd, 
+    ~ddd,
     scales = "free",
     labeller = labeller(ddd =
                           c("a_min_prpddd" = "Minimum",
@@ -540,19 +540,19 @@ dfforplot_pivot |>
        x = "",
        y = "",
        colour = "Drug") +
-  hen_theme() 
+  hen_theme()
 ```
 
 And the final, more presentable plot.
 
 ```{r}
-dfforplot_pivot |> 
+dfforplot_pivot |>
   filter(minmax<100
-         & compound %in% kept_compounds) |> 
+         & compound %in% kept_compounds) |>
   ggplot(aes(x = month, y = minmax, colour = compound)) +
   geom_line() +
   facet_wrap(
-    ~ddd, 
+    ~ddd,
     scales = "free",
     labeller = labeller(ddd =
                           c("a_min_prpddd" = "Minimum",
@@ -567,7 +567,7 @@ dfforplot_pivot |>
     x = "",
     y = "",
     colour = "Drug") +
-  hen_theme() 
+  hen_theme()
 ```
 
 I also want to add information about the outliers on the plot.
@@ -616,13 +616,13 @@ df_ddd_A10 |> filter(str_detect(compound, "Semaglutid")) |> summarise(haps = max
 So that makes the final final plot:
 
 ```{r}
-dfforplot_pivot |> 
+dfforplot_pivot |>
   filter(minmax<100
-         & compound %in% kept_compounds) |> 
+         & compound %in% kept_compounds) |>
   ggplot(aes(x = month, y = minmax, colour = compound)) +
   geom_line() +
   facet_wrap(
-    ~ddd, 
+    ~ddd,
     scales = "free",
     labeller = labeller(ddd =
                           c("a_min_prpddd" = "Minimum",
@@ -637,7 +637,7 @@ dfforplot_pivot |>
     x = "",
     y = "",
     colour = "Drug") +
-  hen_theme() 
+  hen_theme()
 
-ggsave("thumbnail.png", plot = last_plot(), width = 6, height = 4) # saved as thumbnail
+ggsave("thumbnail.jpg", plot = last_plot(), width = 6, height = 4) # saved as thumbnail
 ```

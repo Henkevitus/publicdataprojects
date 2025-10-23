@@ -8,7 +8,7 @@ categories:
   - exploration
   - cost
   - drugs
-image: thumbnail.png
+image: thumbnail.jpg
  #testing while trying to incorporate blog into website
 draft: false
 ---
@@ -318,7 +318,7 @@ p2 <- ggplot(df_atc_2023_filtered, aes(x = agegroup, y = turnover1000k, fill = D
     )
 
 p1
-ggsave("thumbnail.png", plot = last_plot(), width = 6, height = 4) # p1 saved as thumbnail
+ggsave("thumbnail.jpg", plot = last_plot(), width = 6, height = 4) # p1 saved as thumbnail
 
 p2
 

@@ -20,7 +20,7 @@ image: thumbnail.jpg # make via: ggsave("thumbnail.jpg", plot = last_plot(), wid
 
 ## Purpose
 
-I wanted to walk through how to use `R shiny` and put in some Danish publicly available statistics.
+I wanted to walk through how to use `R shiny` and put in some publicly available Danish statistics as the basis for a dashboard.
 
 I want to do the following:
 

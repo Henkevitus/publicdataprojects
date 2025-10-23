@@ -27,9 +27,7 @@ website:
 
 format:
   html:
-    theme:
-      dark: solar
-      light: minty
+    theme: darkly
     toc: true
 
 # Optional: keep Quarto from wandering into non-website folders

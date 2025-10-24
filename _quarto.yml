@@ -15,13 +15,13 @@ project:
     # - posts/post10-rshiny/**
 
 website:
-  title: "Vitus Bering exploring the Danish Data seas"
+  title: "Vitus Bering exploring the Data seas"
   navbar:
     background: primary
     left:
       - href: index.qmd
         text: Home
-      - href: posts
+      - href: posts/index.qmd # changed 2025-10-24 from just "posts"
         text: Blog posts
       - about.qmd
 

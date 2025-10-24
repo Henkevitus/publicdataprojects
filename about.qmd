@@ -2,7 +2,7 @@
 title: "About"
 image: "images/profile.jpg"
 about:
-  template: jolla
+  template: trestles
   links:
     - icon: linkedin
       text: LinkedIn
@@ -23,6 +23,7 @@ Currently in testing phase!
 
 - [x] testing deployment: rerendering all posts to get thumbnails right
 - [x] testing deployment: test to see if i can do dark theme first, and only change about.qmd and _quarto.yml and then push changes - it should work
+- [ ] Add updated CV
 
 :::
 

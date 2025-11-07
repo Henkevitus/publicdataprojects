@@ -4,7 +4,7 @@
     "href": "about.html",
     "title": "About",
     "section": "",
-    "text": "This blog is dedicated to showcasing my skills as a data scientist with an understanding of health economics, epidemiology and medicine.\n\n\n\n\n\n\nCurrently in testing phase!\n\ntesting deployment: rerendering all posts to get thumbnails right\ntesting deployment: test to see if i can do dark theme first, and only change about.qmd and _quarto.yml and then push changes - it should work\nAdd updated CV\n\n\n\n\nQualifications:\n\nPh.D. in diabetes epidemiology and health economics\n\nStudied the use of antidiabetic drugs and their utilisation in Denmark, and economic model assumptions used in their comparisons in cost-effectiveness analyses using decision analytical models\nTwo observational studies\nPublished review of economic model assumptions when comparing newer medications for treating type 2 diabetes\nData sources: registry data from The Register of Pharmaceutical Sales and The National Patient Register\n\nWorked as a scientific assistant\n\nPublished review of PDSA frameworks as used in the real world\nother work\nAnother one\ntake links from CV"
+    "text": "This blog is dedicated to showcasing my skills as a data scientist with an understanding of health economics, epidemiology and medicine.\nQualifications:\n\nPh.D. in diabetes epidemiology and health economics\n\nStudied the use of antidiabetic drugs and their utilisation in Denmark, and economic model assumptions used in their comparisons in cost-effectiveness analyses using decision analytical models\nTwo observational studies\nPublished review of economic model assumptions when comparing newer medications for treating type 2 diabetes\nData sources: registry data from The Register of Pharmaceutical Sales and The National Patient Register\n\nWorked as a scientific assistant\n\nPublished review of PDSA frameworks as used in the real world\nother work\nAnother one\ntake links from CV"
   },
   {
     "objectID": "posts/2024-09-30-tot_ddd_use/index.html",
@@ -116,7 +116,7 @@
     "href": "index.html",
     "title": "Welcome",
     "section": "",
-    "text": "A short intro to your site. Use the navbar to reach the blog and about pages."
+    "text": "Website currently in testing phase!\n\n\n\nList of wants\n\ntesting deployment: rerendering all posts to get thumbnails right\ntesting deployment: test to see if i can do dark theme first, and only change about.qmd and _quarto.yml and then push changes - it should work\ntab with\n\nupdated CV\nDashboard (overview/listing of several?) - at minimum something something developments in danish medicine use or something"
   },
   {
     "objectID": "posts/2024-09-19-medstatexplore/index.html",

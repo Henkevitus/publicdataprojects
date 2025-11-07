@@ -17,16 +17,6 @@ format:
 
 This blog is dedicated to showcasing my skills as a data scientist with an understanding of health economics, epidemiology and medicine.
 
-::: {.callout}
-
-Currently in testing phase!
-
-- [x] testing deployment: rerendering all posts to get thumbnails right
-- [x] testing deployment: test to see if i can do dark theme first, and only change about.qmd and _quarto.yml and then push changes - it should work
-- [ ] Add updated CV
-
-:::
-
 **Qualifications**:
 
 - Ph.D. in diabetes epidemiology and health economics

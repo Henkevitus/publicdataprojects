@@ -1,4 +1,18 @@
 ---
 title: "Welcome"
 ---
-A short intro to your site. Use the navbar to reach the blog and about pages.
+
+::: {.callout}
+
+Website currently in testing phase!
+
+:::
+
+List of wants
+
+- [x] testing deployment: rerendering all posts to get thumbnails right
+- [x] testing deployment: test to see if i can do dark theme first, and only change about.qmd and _quarto.yml and then push changes - it should work
+- [ ] tab with
+  - [ ] updated CV
+  - [ ] Dashboard (overview/listing of several?) - at minimum something something developments in danish medicine use or something
+

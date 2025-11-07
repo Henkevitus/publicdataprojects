@@ -1,0 +1,10 @@
+---
+title: "Publications"
+title: Curriculum vitæ
+description: "Henrik Vitus Bering Laursen's CV"
+date: 2025-11-07
+title-block-banner: "002a65"
+published-title: CV last updated
+cv:
+    pdf: "documents/cv_netto.pdf"
+---

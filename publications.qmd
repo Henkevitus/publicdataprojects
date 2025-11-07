@@ -1,0 +1,42 @@
+---
+title: "Publications"
+author: "Henrik Vitus Bering Laursen"
+format:
+    html:
+        toc: true
+---
+
+## Mainly Epidemiology
+
+**2025 - DOI: 10.1101/2025.06.20.25329913**
+
+>1st Author. Using registry cohort from 10.1101/2025.06.20.25328883, we examined treatment regimen and time to insulin, by starting drug, and compared the findings with assumptions used in health economic models.
+
+**2025 - DOI: 10.1101/2025.06.20.25328883**
+
+>1st Author. Creating a nationwide registry cohort of Danish people with T2D on newer antidiabetic drugs (SGLT2, GLP1, DPP4), and following drug utilization and treatment patterns.
+
+**2023 - DOI: 10.1007/s40273-023-01268-5**
+
+>1st Author. Systematic review of 50 cost-effectiveness analyses using decision-analytical modelling. Methodological critique of state of the art decision-analytical models, uncovering novel insights.
+
+**2020 - DOI: 10.2174/1574886315666200819114629**
+
+>1st Author. Conducted everything from data extraction to making a publication ready manuscript, risk of diabetic ketoacidosis. The study highlights connection between SGLT2s and diabetic ketoacidosis.
+
+**2020 - DOI: 10.1111/dme.14251**
+
+>Setting up a case-control study using registry data. Learned a lot of basic data cleaning, wrangling, and statistical programming making for this paper
+
+**2020 - DOI: 10.1016/j.bone.2019.115083**
+
+>2nd Author. In less than a week I created a dataset for the purpose of examining hip fractures and quality checked it for publication-ready analyses
+
+**2019 - DOI: 10.1186/s12913-019-4482-6**
+
+>2nd Author. Systematic review of 120 Quality Improvement studies. A comparison of ideal versus real-world Plan-Do-Study-Act usage in quality improvement practice.
+
+## Systematic reviews
+
+## Mainly Health Economics
+

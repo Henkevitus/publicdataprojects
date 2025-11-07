@@ -15,4 +15,5 @@ List of wants
 - [ ] tab with
   - [ ] updated CV
   - [ ] Dashboard (overview/listing of several?) - at minimum something something developments in danish medicine use or something
+  - [ ] Publications
 

@@ -1,8 +1,7 @@
 ---
-title: "Publications"
-title: Curriculum vitæ
+title: "Curriculum vitæ"
 description: "Henrik Vitus Bering Laursen's CV"
-date: 2025-11-07
+date: "2025-11-07"
 title-block-banner: "002a65"
 published-title: CV last updated
 cv:

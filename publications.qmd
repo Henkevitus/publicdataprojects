@@ -8,9 +8,15 @@ format:
 
 ## Mainly Epidemiology
 
+### Title with DOI [text](link)
+
 **2025 - DOI: 10.1101/2025.06.20.25329913**
 
+Short description in a callout or block quote or other noticable thing
+
 >1st Author. Using registry cohort from 10.1101/2025.06.20.25328883, we examined treatment regimen and time to insulin, by starting drug, and compared the findings with assumptions used in health economic models.
+
+Highlighted graf or plot I was proud of from it.
 
 **2025 - DOI: 10.1101/2025.06.20.25328883**
 

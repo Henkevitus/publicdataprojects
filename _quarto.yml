@@ -12,6 +12,7 @@ website:
       - about.qmd # about me page
       - publications.qmd # list of my relevant publications
       - cv.qmd # pdf of my cv
+  #site-url: https://<user>.github.io/<repo>/
 
 format:
   html:

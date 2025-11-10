@@ -17,7 +17,7 @@ format:
 ::: {.callout-note collapse="true"}
 ## Highlight from article
 
-![Highlight from article](https://www.medrxiv.org/content/medrxiv/early/2025/06/21/2025.06.20.25329913/F2.large.jpg?width=800&height=600&carousel=1)
+![Figure 2: The plot for the Aalen-Johansen cumulative incidence function with 95% confidence intervals. Stratified by inclusion period. Truncated at 3 years for better comparability.](https://www.medrxiv.org/content/medrxiv/early/2025/06/21/2025.06.20.25329913/F2.large.jpg?width=800&height=600&carousel=1)
 
 :::
 
@@ -25,22 +25,33 @@ format:
 
 ### [Nationwide cohort of Danish people with type 2 diabetes - what are the treatment patterns?](https://doi.org/10.1101/2025.06.20.25328883)
 
-Title|Summary
-:---|:---
-*Trends in anti-hyperglycaemic drug usage among Danish type 2 diabetes patients on second-line treatment and beyond: A nationwide cohort study*|
-Creating a nationwide registry cohort of Danish people with T2D on newer antidiabetic drugs (SGLT2, GLP1, DPP4), and following drug utilization and treatment patterns.
+|Title|Summary|
+|:---|:---|
+|*Trends in anti-hyperglycaemic drug usage among Danish type 2 diabetes patients on second-line treatment and beyond: A nationwide cohort study*|Creating a nationwide registry cohort of Danish people with T2D on newer antidiabetic drugs (SGLT2, GLP1, DPP4), and following drug utilization and treatment patterns.|
 
 ::: {.callout-note collapse="true"}
 ## Highlight from article
 
-![Highlight from article](https://www.medrxiv.org/content/medrxiv/early/2025/06/21/2025.06.20.25328883/F3.large.jpg?width=800&height=600&carousel=1)
+![Figure 3: Depicted here are the proportions of each drug class at each treatment stage for the cohort, i.e. the first to the sixth introduced drug for each individual patient, over time. Omitted bars in 2012 are due to insufficient or lacking data. MET = metformin, SU = sulfonylurea, DPP4 = dipeptidyl peptidase-4 inhibitors, GLP1 = glucagon-like peptide-1 receptor agonists, SGLT2 = sodium glucose co-transporter-2 inhibitor, TZD = thiazolidinedions, AGI = alpha-glucosidase inhibitor, INS = insulin, METandDPP4 = metformin and DPP4 combination, OTHERS = all other anti-hyperglycaemic drugs.](https://www.medrxiv.org/content/medrxiv/early/2025/06/21/2025.06.20.25328883/F3.large.jpg?width=800&height=600&carousel=1)
 
 :::
 
+## []()
+
+|Title|Summary|
+|:---|:---|
+||Systematic review of 50 cost-effectiveness analyses using decision-analytical modelling. Methodological critique of state of the art decision-analytical models, uncovering novel insights.|
+
+::: {.callout-note collapse="true"}
+## Highlight from article
+
+![Figure 3: Depicted here are the proportions of each drug class at each treatment stage for the cohort, i.e. the first to the sixth introduced drug for each individual patient, over time. Omitted bars in 2012 are due to insufficient or lacking data. MET = metformin, SU = sulfonylurea, DPP4 = dipeptidyl peptidase-4 inhibitors, GLP1 = glucagon-like peptide-1 receptor agonists, SGLT2 = sodium glucose co-transporter-2 inhibitor, TZD = thiazolidinedions, AGI = alpha-glucosidase inhibitor, INS = insulin, METandDPP4 = metformin and DPP4 combination, OTHERS = all other anti-hyperglycaemic drugs.](https://www.medrxiv.org/content/medrxiv/early/2025/06/21/2025.06.20.25328883/F3.large.jpg?width=800&height=600&carousel=1)
+
+:::
 
 **2023 - DOI: 10.1007/s40273-023-01268-5**
 
->1st Author. Systematic review of 50 cost-effectiveness analyses using decision-analytical modelling. Methodological critique of state of the art decision-analytical models, uncovering novel insights.
+>1st Author.
 
 **2020 - DOI: 10.2174/1574886315666200819114629**
 

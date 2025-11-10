@@ -8,4 +8,4 @@ published-title: CV last updated
 #    pdf: "documents/cv_netto.pdf"
 ---
 
-![CV](docs/cv_netto.pdf)
+![CV](/docs/cv_netto.pdf)

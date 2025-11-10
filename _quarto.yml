@@ -18,7 +18,7 @@ format:
   html:
     theme: darkly
     toc: true
-
+    css: styles.css
 # Optional: keep Quarto from wandering into non-website folders
 exclude:
   - drafts/**

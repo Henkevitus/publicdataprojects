@@ -1,7 +1,92 @@
 ---
 title: "Welcome"
+format:
+  html:
+    css: styles.css
+    page-layout: full
 ---
 
+<div class="fullpage-mermaid">
+
+```{mermaid}
+%%| fig-label: YAY
+flowchart LR
+  A[Bachelor and Masters in <br/> Medicine with Industrial Specialisation]
+  B[Volunteer work]
+  C[Research assistant]
+  D[Data manager/Statistician work]
+  E[PhD]
+  F[Working with Health Data to improve <br/> Quality of Healthcare]
+
+  A --> B
+  A --> C
+  C --> D
+  D --> E
+
+  A --> F
+  B --> F
+  C --> F
+  D --> F
+  E --> F
+
+```
+
+</div>
+
+## Summary of wepbage
+
+Welcome to my webpage.
+
+This can be considered by portfolio and playground. The combination of R/Quarto/Github is a wonderfully easy and customisable thing.
+
+My journey from studying at university has lead me here.
+
+After a family-centered hiatus from working, I am picking up the torch again.
+
+My one goal right now is figuring out how I can coalesce all my skills for the benefit of the Danish healthcare system and patients.
+
+---
+
+## Who am I
+
+I'm a:
+
+- Husband and father
+- Data lover
+- People helper
+- Learner
+- Explorer of connections and correlations
+- Tester of theories versus the real world
+- Deep thinker and systematiser
+- Pragmatic solution enthusiast
+
+## AI
+
+I am also an early adopter of AI - and a firm believer that it is:
+
+- one of the most useful tools humanity has invented, hailed as "the great equalizer"
+- overused, overblown, and potentially limiting human thinking and flourishing
+
+As such, because I love transparency, although it probably hasn't yet reached the point where we will value output made by humans higher than output by itself, I will explicitly state when I use AI.
+
+As such, you have my word - as much as it is worth - that what is produced here is my own.
+
+I ofcourse employ the use of AI - less than I should, for learning and correction.
+
+But not for generating quick bites of beautifully cohorent but frustratingly nonsensical AI text or code.
+
+<!-- As you may have noticed, I also like:
+
+- Lists -->
+
+<!-- I’m a health economist and epidemiologist with a deep interest in how data can improve the quality and value of healthcare.
+My journey began in academic research, where I explored how real-world evidence and cost-effectiveness modeling can guide better decisions in chronic disease treatment. Over time, I became fascinated by the practical side — how health data are collected, structured, and transformed into insights that inform care.
+
+Today, my focus is on bridging science and implementation: ensuring that data are reliable, meaningful, and used to strengthen patient outcomes. I believe that transparent, reproducible analysis is essential for a healthcare system that learns and improves continuously.
+
+This site gathers projects, analyses, and reflections on how we can move from data to decisions — and from decisions to better care. -->
+
+<!--
 ::: {.callout}
 
 Website currently in testing phase!
@@ -16,4 +101,4 @@ List of wants
   - [ ] updated CV
   - [ ] Dashboard (overview/listing of several?) - at minimum something something developments in danish medicine use or something
   - [ ] Publications
-
+ -->

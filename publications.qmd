@@ -8,15 +8,21 @@ format:
 
 ## Mainly Epidemiology
 
-### Title with DOI [text](link)
+### [Critique of Health economic model assumptions using real-world data]([link](https://www.medrxiv.org/content/10.1101/2025.06.20.25329913v2))
 
-**2025 - DOI: 10.1101/2025.06.20.25329913**
+Title: *Health economic model assumptions of pharmaceutical treatment paths compared with real-world evidence for patients with type 2 diabetes: A nationwide cohort study*
 
 Short description in a callout or block quote or other noticable thing
 
 >1st Author. Using registry cohort from 10.1101/2025.06.20.25328883, we examined treatment regimen and time to insulin, by starting drug, and compared the findings with assumptions used in health economic models.
 
-Highlighted graf or plot I was proud of from it.
+::: {.callout-note collapse="true"}
+
+![Highlight from article](https://www.medrxiv.org/content/medrxiv/early/2025/06/21/2025.06.20.25329913/F2.large.jpg?width=800&height=600&carousel=1)
+
+:::
+
+---
 
 **2025 - DOI: 10.1101/2025.06.20.25328883**
 

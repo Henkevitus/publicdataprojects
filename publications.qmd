@@ -10,10 +10,9 @@ format:
 
 ### [Critique of Health economic model assumptions using real-world data](https://doi.org/10.1101/2025.06.20.25329913)
 
-Title|Summary
-:---|:---
-*Health economic model assumptions of pharmaceutical treatment paths compared with real-world evidence for patients with type 2 diabetes: A nationwide cohort study*|
-Using registry cohort from a [previous study](https://doi.org/10.1101/2025.06.20.25328883), we examined treatment regimen and time to insulin, by starting drug, and compared the findings with assumptions used in health economic models.
+|Title|Summary|
+|:---|:---|
+|*Health economic model assumptions of pharmaceutical treatment paths compared with real-world evidence for patients with type 2 diabetes: A nationwide cohort study*|Using registry cohort from a [previous study](https://doi.org/10.1101/2025.06.20.25328883), we examined treatment regimen and time to insulin, by starting drug, and compared the findings with assumptions used in health economic models.|
 
 ::: {.callout-note collapse="true"}
 ## Highlight from article

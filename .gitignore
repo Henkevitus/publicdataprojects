@@ -13,7 +13,7 @@ _site/
 # Formats
 *.html
 *.docx
-*.pdf
+#*.pdf Try to see if this fixes pdf upload issues
 #*.png dont ignore this format.. i use it for thumbnails
 *.jpeg
 *.pptx

@@ -6,6 +6,20 @@ format:
         toc: true
 ---
 
+Here you will find a list of my publications, most of which are as a first author.
+
+**Not included here are:**
+
+- Papers on which
+  - I was a supervisor
+  - I did not provide enough work to warrant showing it off
+- Mainly learning experiences such as student level papers, which included
+  - Report - Studying intrinsic and extrinsic motivation in relation to weight loss
+  - Health economic markov model - Human papilloma virus vaccination
+  - Quality improvement pilot initiative - finding quality indicators for a small clinical ward
+  - Cost-effectiveness analysis of Total knee alloplasty versus a specific exercise regimen
+- A host of abstracts for various conferences
+
 ## Mainly Epidemiology
 
 ### [Critique of Health economic model assumptions using real-world data](https://doi.org/10.1101/2025.06.20.25329913)

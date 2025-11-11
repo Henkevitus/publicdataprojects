@@ -42,7 +42,7 @@ Welcome to my webpage. This can be considered by portfolio and playground. After
 
 My journey from studying at university, to finishing a PhD, has lead me here. The combination of R/Quarto/Github is a wonderfully easy and customisable thing to test my skills and learn more.
 
-**My one goal right now is figuring out how I can coalesce all my skills for the benefit of the Danish healthcare system and patients.**
+**My one goal right now is figuring out how I can coalesce all my skills for the benefit of the Danish healthcare system, future colleagues, and patients.**
 
 ## Who am I
 
@@ -59,18 +59,26 @@ I'm a:
 
 ## AI
 
-I am also an early adopter of AI - and a firm believer that it is:
+As an early adopter of AI, I cannot just use AI without being highly critical of the output[^1].
 
-- one of the most useful tools humanity has invented, hailed as "the great equalizer"
-- overused, overblown, and potentially limiting human thinking and flourishing
+[^1]: You'll know this reference if you were one too
 
-As such, I will explicitly state when I use AI. Transparency, and being explicit in your assumptions and intentions is something i value highly.
+I am a firm believer that AI is:
 
-As such, you have my word - as much as it is worth - that what is produced here is my own.
+1. one of the most useful tools humanity has invented, hailed as "the great equalizer"
+2. overused, prone to bubble bursting soon, and potentially limiting human thinking and flourishing
 
-I ofcourse employ the use of AI - less than I should, for learning and correction.
+Both points can be possible at the same time.
 
-But not for generating quick bites of beautifully cohorent but frustratingly nonsensical AI text or code.
+As such, I will explicitly state when I use AI. Transparency, and being explicit in your assumptions and intentions is something i value highly. You have my word - as much as it is worth - that what is produced here is my own.
+
+I use AI for:
+
+- Quick brainstorming of anything
+- Teaching the structure of code and why and how it works
+  - This is faster and much better formulated than documentation usually is
+
+And not for generating quick bites of beautifully cohorent but frustratingly nonsensical AI text or code.
 
 <!--
 

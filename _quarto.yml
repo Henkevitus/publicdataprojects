@@ -1,7 +1,7 @@
 project:
   type: website
   output-dir: _site
-  # Optional: keep Quarto from wandering into non-website folders
+  # force inclusion of some files descipte ignore rules
   resources:
     - docs/cv_netto.pdf
 
@@ -23,12 +23,13 @@ format:
     toc: true
     css: styles.css
 
-  exclude:
-    - drafts/**
-    - data/**
-    - scripts/**
-    - playground/**
-    - apps/**
-    - blog_archive/**
-    - renv/**
-    - .forme/**
+# Reduce "boot-time" by telling Quarto to stay out of some folders?
+exclude:
+  - drafts/**
+  - data/**
+  - scripts/**
+  - playground/**
+  - apps/**
+  - blog_archive/**
+  - renv/**
+  - .forme/**

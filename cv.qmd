@@ -8,5 +8,5 @@ published-title: CV last updated
 #    pdf: "documents/cv_netto.pdf"
 ---
 
-<iframe src="docs/cv.pdf" width="100%" height="800px" style="border:none;"></iframe>
+<iframe src="docs/cv_netto.pdf" width="100%" height="800px" style="border:none;"></iframe>
 

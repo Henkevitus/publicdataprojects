@@ -65,8 +65,13 @@ As an early adopter of AI, I cannot just use AI without being highly critical of
 
 I am a firm believer that AI is:
 
-1. one of the most useful tools humanity has invented, hailed as "the great equalizer"
-2. overused, prone to bubble bursting soon, and potentially limiting human thinking and flourishing
+1. underused
+   - one of the most useful tools humanity has invented, hailed as "the great equalizer"
+   - most people I have worked with are just catching up to what I used it for 2 years ago
+2. overused
+   - prone to bubble bursting soon
+   - thoughtlessly used for almost everything
+   - potentially limiting human thinking and flourishing
 
 Both points can be possible at the same time.
 

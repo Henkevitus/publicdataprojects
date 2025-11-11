@@ -9,5 +9,3 @@ published-title: CV last updated
 ---
 
 ![CV](/docs/cv_netto.pdf)
-
-<p><embed src="/docs/cv_netto.pdf" style="width:100.0%" /></p>

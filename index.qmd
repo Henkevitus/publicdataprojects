@@ -4,6 +4,9 @@ format:
   html:
     css: styles.css
     page-layout: full
+    toc: false
+    mermaid:
+      theme: forest
 ---
 
 <div class="fullpage-mermaid">

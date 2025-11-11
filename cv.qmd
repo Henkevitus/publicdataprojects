@@ -8,4 +8,6 @@ published-title: CV last updated
 #    pdf: "documents/cv_netto.pdf"
 ---
 
-![CV](docs/cv_netto.pdf)
+<!-- ![CV](/docs/cv_netto.pdf) -->
+
+<p><embed src="/docs/cv_netto.pdf" style="width:100.0%" /></p>

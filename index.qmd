@@ -15,26 +15,23 @@ format:
 %%| fig-label: YAY
 flowchart TB
   A[Studying Medicine with Industrial Specialisation]
-  A2[Study of Medicine]
-  A3[Study of Healthcare systems, health economics, quality improvement]
-  B[Volunteer work]
+  A2[Study of <br/>Medicine]
+  A3[Study of <br/>Healthcare systems <br/> Health economics <br/>Quality improvement]
+  %%B[Volunteer work]
   C[Research assistant]
-  D[Data analyst/science work]
-  E[PhD]
+  D[Data analyst/science work<br/><i/>R, Stata, Excel, SAS<b>]
+  E[PhD in<br/><i/>Diabetes Epidemiology and Health Economics<b>]
   F[Working with Health Data <br/>to improve Quality of Healthcare]
 
-  A --> B
   A --> A2
   A --> A3
   A2 --> C
   A3 --> C
-  A2 --> D
-  A3 --> D
   C --> D
   D --> E
 
   E --> F
-  B --> F
+  %%B --> F
 
 ```
 

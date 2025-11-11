@@ -13,24 +13,28 @@ format:
 
 ```{mermaid}
 %%| fig-label: YAY
-flowchart LR
-  A[Bachelor and Masters in <br/> Medicine with Industrial Specialisation]
+flowchart TB
+  A[Studying Medicine with Industrial Specialisation]
+  A2[Study of Medicine]
+  A3[Study of Healthcare systems, health economics, quality improvement]
   B[Volunteer work]
   C[Research assistant]
-  D[Data manager/Statistician work]
+  D[Data analyst/science work]
   E[PhD]
-  F[Working with Health Data to improve <br/> Quality of Healthcare]
+  F[Working with Health Data <br/>to improve Quality of Healthcare]
 
   A --> B
-  A --> C
+  A --> A2
+  A --> A3
+  A2 --> C
+  A3 --> C
+  A2 --> D
+  A3 --> D
   C --> D
   D --> E
 
-  A --> F
-  B --> F
-  C --> F
-  D --> F
   E --> F
+  B --> F
 
 ```
 

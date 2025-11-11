@@ -12,9 +12,9 @@ website:
     left:
       - href: posts/index.qmd # blog posts
         text: Blog
-      - about.qmd # about me page
       - publications.qmd # list of my relevant publications
       - cv.qmd # pdf of my cv
+      - about.qmd # about me page
   #site-url: https://<user>.github.io/<repo>/
 
 format:

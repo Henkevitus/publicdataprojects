@@ -123,7 +123,7 @@
     "href": "index.html",
     "title": "Welcome",
     "section": "",
-    "text": "flowchart LR\n  A[Bachelor and Masters in &lt;br/&gt; Medicine with Industrial Specialisation]\n  B[Volunteer work]\n  C[Research assistant]\n  D[Data manager/Statistician work]\n  E[PhD]\n  F[Working with Health Data to improve &lt;br/&gt; Quality of Healthcare]\n\n  A --&gt; B\n  A --&gt; C\n  C --&gt; D\n  D --&gt; E\n\n  A --&gt; F\n  B --&gt; F\n  C --&gt; F\n  D --&gt; F\n  E --&gt; F"
+    "text": "flowchart TB\n  A[Studying Medicine with Industrial Specialisation]\n  A2[Study of Medicine]\n  A3[Study of Healthcare systems, health economics, quality improvement]\n  B[Volunteer work]\n  C[Research assistant]\n  D[Data analyst/science work]\n  E[PhD]\n  F[Working with Health Data &lt;br/&gt;to improve Quality of Healthcare]\n\n  A --&gt; B\n  A --&gt; A2\n  A --&gt; A3\n  A2 --&gt; C\n  A3 --&gt; C\n  A2 --&gt; D\n  A3 --&gt; D\n  C --&gt; D\n  D --&gt; E\n\n  E --&gt; F\n  B --&gt; F"
   },
   {
     "objectID": "index.html#summary-of-wepbage",

@@ -152,24 +152,28 @@ ul.task-list li input[type="checkbox"] {
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">flowchart LR
-  A[Bachelor and Masters in &lt;br/&gt; Medicine with Industrial Specialisation]
+<pre class="mermaid mermaid-js">flowchart TB
+  A[Studying Medicine with Industrial Specialisation]
+  A2[Study of Medicine]
+  A3[Study of Healthcare systems, health economics, quality improvement]
   B[Volunteer work]
   C[Research assistant]
-  D[Data manager/Statistician work]
+  D[Data analyst/science work]
   E[PhD]
-  F[Working with Health Data to improve &lt;br/&gt; Quality of Healthcare]
+  F[Working with Health Data &lt;br/&gt;to improve Quality of Healthcare]
 
   A --&gt; B
-  A --&gt; C
+  A --&gt; A2
+  A --&gt; A3
+  A2 --&gt; C
+  A3 --&gt; C
+  A2 --&gt; D
+  A3 --&gt; D
   C --&gt; D
   D --&gt; E
 
-  A --&gt; F
-  B --&gt; F
-  C --&gt; F
-  D --&gt; F
   E --&gt; F
+  B --&gt; F
 
 </pre>
 </div>

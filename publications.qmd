@@ -73,3 +73,69 @@ format:
 
 ## Mainly Health Economics
 
+<!-- Health economic model assumptions of pharmaceutical treatment paths compared with real-world evidence for patients with type 2 diabetes: A nationwide cohort study
+2025-06-20 | Preprint
+DOI: 10.1101/2025.06.20.25329913
+Contributors: Henrik Vitus Bering Laursen; Flemming Witt Udsen; Morten Hasselstrøm Jensen; Peter Vestergaard; Søren Paaske Johnsen
+Show more detail
+Source
+:
+Crossref
+Trends in anti-hyperglycaemic drug usage among Danish type 2 diabetes patients on second-line treatment and beyond: A nationwide cohort study
+2025-06-20 | Preprint
+DOI: 10.1101/2025.06.20.25328883
+Contributors: Henrik Vitus Bering Laursen; Flemming Witt Udsen; Morten Hasselstrøm Jensen; Peter Vestergaard; Søren Paaske Johnsen
+Show more detail
+Source
+:
+Crossref
+A Systematic Review of Cost-Effectiveness Studies of Newer Non-Insulin Antidiabetic Drugs: Trends in Decision-Analytical Models for Modelling of Type 2 Diabetes Mellitus
+PharmacoEconomics
+2023-11 | Journal article
+DOI: 10.1007/s40273-023-01268-5
+Contributors: Henrik Vitus Bering Laursen; Emmelie Ploug Jørgensen; Peter Vestergaard; Lars Holger Ehlers
+Show more detail
+Source
+:
+Crossref
+Sodium Glucose Cotransporter-2 Inhibitor Treatment and the Risk of Diabetic Ketoacidosis in Denmark: A Retrospective Cohort Study of Five Years of Use
+Current Drug Safety
+2021-03-12 | Journal article
+DOI: 10.2174/1574886315666200819114629
+Part of ISSN: 1574-8863
+Contributors: Henrik V.B. Laursen; Johan B. Røikjer; Jakob Dal; Morten Hasselstrøm Jensen
+Show more detail
+Source
+:
+Henrik Vitus Bering Laursen
+Twenty years with diabetes and amputations: a retrospective population‐based cohort study
+Diabetic Medicine
+2020-12 | Journal article
+DOI: 10.1111/dme.14251
+Part of ISSN: 0742-3071
+Part of ISSN: 1464-5491
+Contributors: J. Røikjer; M. H. Jensen; P. Vestergaard; A. M. Sørensen; H. V. B. Laursen; N. Ejskjær
+Show more detail
+Source
+:
+Henrik Vitus Bering Laursen
+Age at hip fracture and life expectancy in Denmark – Secular trends over two decades
+Bone
+2020-01 | Journal article
+DOI: 10.1016/j.bone.2019.115083
+Part of ISSN: 8756-3282
+Contributors: Bo Abrahamsen; Henrik V.B. Laursen; Michael K. Skjødt; Morten H. Jensen; Peter Vestergaard
+Show more detail
+Source
+:
+Henrik Vitus Bering Laursen
+Can quality improvement improve the quality of care? A systematic review of reported effects and methodological rigor in plan-do-study-act projects
+BMC Health Services Research
+2019-12 | Journal article
+DOI: 10.1186/s12913-019-4482-6
+Part of ISSN: 1472-6963
+Contributors: Søren Valgreen Knudsen; Henrik Vitus Bering Laursen; Søren Paaske Johnsen; Paul Daniel Bartels; Lars Holger Ehlers; Jan Mainz
+Show more detail
+Source
+:
+Henrik Vitus Bering Laursen  -->

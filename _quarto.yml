@@ -19,6 +19,7 @@ format:
     theme: darkly
     toc: true
     css: styles.css
+
 # Optional: keep Quarto from wandering into non-website folders
 exclude:
   - drafts/**
@@ -29,3 +30,6 @@ exclude:
   - blog_archive/**
   - renv/**
   - .forme/**
+
+resources:
+  - docs/cv.pdf

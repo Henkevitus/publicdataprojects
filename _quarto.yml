@@ -32,4 +32,4 @@ exclude:
   - .forme/**
 
 resources:
-  - docs/cv.pdf
+  - docs/cv_netto.pdf

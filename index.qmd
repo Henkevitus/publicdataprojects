@@ -18,8 +18,10 @@ flowchart TB
   A3[Study of <br/>Healthcare systems <br/> Health economics <br/>Quality improvement]
   %%B[Volunteer work]
   C[Research assistant]
-  D[Data analyst/science work<br/><i/>R, Stata, Excel, SAS<b>]
-  E[PhD in<br/><i/>Diabetes Epidemiology and Health Economics<b>]
+  D[PhD in<br/><i/>Diabetes Epidemiology and Health Economics<b>]
+  E1[Data analyst/science work<br/><i/>R, Stata, Excel, SAS<b>]
+  E2[Extensive experience with Systematic Reviewing]
+  E3[Data Visualisation <br/>Theoretical assumption testing with real-world data]
   F[Uncovering insights using Health Data to <br/> - Learn and understand how to translate data into action <br/> - Improve Quality of Healthcare ]
 
   A --> A2
@@ -27,9 +29,13 @@ flowchart TB
   A2 --> C
   A3 --> C
   C --> D
-  D --> E
+  D --> E1
+  D --> E2
+  D --> E3
 
-  E --> F
+  E1 --> F
+  E2 --> F
+  E3 --> F
   %%B --> F
 
 ```

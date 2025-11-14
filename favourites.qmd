@@ -1,0 +1,17 @@
+---
+title: "Favourite things about Quarto"
+format:
+  html:
+    toc: TRUE
+---
+
+This will be a page dedicated to my favourite things about Quarto, and some examples on:
+
+- how I use them
+- would like to use them
+
+::: {.callout-caution}
+
+Under construction!
+
+:::

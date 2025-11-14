@@ -8,7 +8,7 @@ format:
     #  theme: forest
 ---
 
-<div class="fullpage-mermaid">
+<!-- <div class="fullpage-mermaid"> -->
 
 ```{mermaid}
 %%| fig-label: YAY
@@ -34,7 +34,7 @@ flowchart TB
 
 ```
 
-</div>
+<!-- </div> -->
 
 ## Summary of wepbage
 

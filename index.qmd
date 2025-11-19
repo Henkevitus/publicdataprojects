@@ -86,7 +86,7 @@ As such, I will explicitly state when I use AI. Transparency, and being explicit
 I use AI for:
 
 - Quick brainstorming of anything
-- Teaching the structure of code and why and how it works
+- Learning how code works under the hood and why it works
   - This is faster and much better formulated than documentation usually is
 
 And not for generating quick bites of beautifully cohorent but frustratingly nonsensical AI text or code.

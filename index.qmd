@@ -8,6 +8,13 @@ format:
     #  theme: forest
 ---
 
+<!-- TODO for me
+
+- [ ] Finish ADAM post
+- [ ] Parameterised Quarto reports in R
+
+-->
+
 <!-- <div class="fullpage-mermaid"> -->
 
 ```{mermaid}
@@ -54,7 +61,7 @@ My journey from studying at university, to finishing a PhD, has lead me here. Th
 
 I'm a:
 
-- Husband and father
+- Father and husband
 - Data lover
 - People helper
 - Learner
@@ -65,31 +72,32 @@ I'm a:
 
 ## AI
 
-As an early adopter of AI, I cannot just use AI without being highly critical of the output[^1].
+You might wonder why I have a section on AI here. The reason is simple:
 
-[^1]: You'll know this reference if you were one too
+- If you don't use it, you will fall behind
+- If you use it thoughtlessly, you will produce garbage
 
-I am a firm believer that AI is:
+I am a firm believer that current AI use is contrasted in two concomitantly existing extremes:
 
-1. underused
-   - one of the most useful tools humanity has invented, hailed as "the great equalizer"
-   - most people I have worked with are just catching up to what I used it for 2 years ago
-2. overused
-   - prone to bubble bursting soon
+1. Underused
+   - one of the most useful tools humanity has invented, hailed as "the great equalizer" for good reason
+   - most people I have worked with are just catching up and using it for stuff I used it for 2 years ago
+2. Overused
+   - prone to a bubble bursting soon
    - thoughtlessly used for almost everything
    - potentially limiting human thinking and flourishing
 
-Both points can be possible at the same time.
+**As such, I will explicitly state when I use AI.**
 
-As such, I will explicitly state when I use AI. Transparency, and being explicit in your assumptions and intentions is something i value highly. You have my word - as much as it is worth - that what is produced here is my own.
+You have my word - as much as it is worth - that what is produced here is my own, unless AI is explicitly mentioned.
 
-I use AI for:
+Transparency, and being explicit in your assumptions and intentions is something I value highly.
 
-- Quick brainstorming of anything
-- Learning how code works under the hood and why it works
-  - This is faster and much better formulated than documentation usually is
+**I use AI for:**
 
-And not for generating quick bites of beautifully cohorent but frustratingly nonsensical AI text or code.
+- Quick brainstorming
+- Providing a quick backbone of code on which I can build
+- Learning how and why code works, under the hood (faster than, but not replacing, looking up documentation)
 
 <!--
 

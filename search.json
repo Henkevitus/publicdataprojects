@@ -116,21 +116,14 @@
     "href": "index.html#who-am-i",
     "title": "Welcome",
     "section": "Who am I",
-    "text": "Who am I\nI’m a:\n\nHusband and father\nData lover\nPeople helper\nLearner\nExplorer of connections and correlations\nTester of theories versus the real world\nDeep thinker and systematiser\nPragmatic solution enthusiast"
+    "text": "Who am I\nI’m a:\n\nFather and husband\nData lover\nPeople helper\nLearner\nExplorer of connections and correlations\nTester of theories versus the real world\nDeep thinker and systematiser\nPragmatic solution enthusiast"
   },
   {
     "objectID": "index.html#ai",
     "href": "index.html#ai",
     "title": "Welcome",
     "section": "AI",
-    "text": "AI\nAs an early adopter of AI, I cannot just use AI without being highly critical of the output1.\nI am a firm believer that AI is:\n\nunderused\n\none of the most useful tools humanity has invented, hailed as “the great equalizer”\nmost people I have worked with are just catching up to what I used it for 2 years ago\n\noverused\n\nprone to bubble bursting soon\nthoughtlessly used for almost everything\npotentially limiting human thinking and flourishing\n\n\nBoth points can be possible at the same time.\nAs such, I will explicitly state when I use AI. Transparency, and being explicit in your assumptions and intentions is something i value highly. You have my word - as much as it is worth - that what is produced here is my own.\nI use AI for:\n\nQuick brainstorming of anything\nLearning how code works under the hood and why it works\n\nThis is faster and much better formulated than documentation usually is\n\n\nAnd not for generating quick bites of beautifully cohorent but frustratingly nonsensical AI text or code."
-  },
-  {
-    "objectID": "index.html#footnotes",
-    "href": "index.html#footnotes",
-    "title": "Welcome",
-    "section": "Footnotes",
-    "text": "Footnotes\n\n\nYou’ll know this reference if you were one too↩︎"
+    "text": "AI\nYou might wonder why I have a section on AI here. The reason is simple:\n\nIf you don’t use it, you will fall behind\nIf you use it thoughtlessly, you will produce garbage\n\nI am a firm believer that current AI use is contrasted in two concomitantly existing extremes:\n\nUnderused\n\none of the most useful tools humanity has invented, hailed as “the great equalizer” for good reason\nmost people I have worked with are just catching up and using it for stuff I used it for 2 years ago\n\nOverused\n\nprone to a bubble bursting soon\nthoughtlessly used for almost everything\npotentially limiting human thinking and flourishing\n\n\nAs such, I will explicitly state when I use AI.\nYou have my word - as much as it is worth - that what is produced here is my own, unless AI is explicitly mentioned.\nTransparency, and being explicit in your assumptions and intentions is something I value highly.\nI use AI for:\n\nQuick brainstorming\nProviding a quick backbone of code on which I can build\nLearning how and why code works, under the hood (faster than, but not replacing, looking up documentation)"
   },
   {
     "objectID": "posts/2024-09-20-medstat-function/index.html",

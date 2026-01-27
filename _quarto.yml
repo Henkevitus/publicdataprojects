@@ -13,7 +13,7 @@ website:
       - href: posts/index.qmd # blog posts
         text: Blog
       - publications.qmd # list of my relevant publications
-      - cv.qmd # pdf of my cv
+      #- cv.qmd # pdf of my cv
       - favourites.qmd # pdf of my cv
       - about.qmd # about me page
   #site-url: https://<user>.github.io/<repo>/

@@ -1,0 +1,414 @@
+---
+  title: "Extract, transform, load"
+author: "Henrik Vitus Bering Laursen"
+date: "2026-03-09"
+categories:
+  - 
+  - analysis
+  - functions
+format:
+  html:
+  toc: true
+number-sections: true
+fig-width: 8
+fig-height: 6
+code-fold: true
+code-summary: "Show the code"
+draft: true
+image: thumbnail.jpg # make via: ggsave("thumbnail.jpg", plot = last_plot(), width = 6, height = 4)
+---
+
+TODO:
+
+- "EDIT:" are sections i have tagged for editing
+- [ ] Go through all steps
+- [ ] Make Refactor section if appropriate
+- [ ] Check all writing
+- [ ] publish
+
+
+## Purpose
+
+It's been a while! 
+
+I took some time to really focus on job searching, and since that haven't paid off and I don't want to lose my programming skills, I'm going to do some more posts and set aside and hour each day at least to work on this.
+
+For now, I have the following planned:
+
+- Extract, transform, & load (ETL) workflow example (**this blog post**)
+- Overview of Statistics Denmark data that is available, and some exploratory analysis
+- Finish a post about ADAM datasets I had laying around
+
+So apparently there is a name for a more structured version of a lot of the work with data that I have taught myself (with a few splashes of outside help) since 2019. 
+
+**It's Extract, Transform, Load (ETL)**. 
+
+So I thought that this post should be a process of me **learning from the aggregate experiences of R coders everywhere, through the power of AI**, how to do this.
+
+I could definitely learn something from it. In my work experience I have been a programming wizard compared to some, and a small child hammering a screw to others.
+
+### So, what is ETL?
+
+It is taking data (regardless of their messyness) and doing the following:
+
+- put them in a place where they can easily be retrieved to measure their problems
+- clean them up
+- prove they are cleaned up 
+- store them in a place where they can be used
+- provide a description of the problems in the data.
+
+I have most frequently worked with the data types below, so I want to recreate some of it in a messy state here, and go through the ETL process.
+
+- Hospital admission & costs
+- Diagnosis
+- Laboratory results
+- Demographic and socioeconomic 
+- Causes of death
+
+## The process
+
+### Packages and generating some data
+
+First I need make sure I have the necessary packages to do this, and to generate some messy data to work with.
+
+```{r}
+#| label: packages
+#| echo: false
+#| output: false
+
+# List the packages
+packages <- c(
+  "readr", "dplyr", "stringr", "lubridate", "janitor",
+  "arrow", "digest", "logger", "jsonlite", "purrr", "tibble", "here"
+)
+
+# Load the packages
+lapply(packages, function(pkg){
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
+})
+
+```
+
+Now let's generate the following data for patients:
+
+- Characteristics
+- Visit
+- Lab results
+
+These will be placed in the `raw` folder of this post, but we also need folders for the `staging` and `warehouse` data, which will be the prepped, cleaned, and stored in `parquet` format (which I haven't done before and am very excited about trying), and ready-to-export data, respectively.
+
+```{r}
+#| label: generate data
+#| echo: false
+
+library(readr)
+library(dplyr)
+set.seed(1)
+
+# set the path for data
+datapath <- c(paste0(here(), "/posts/2026-03-09-etl/"))
+
+# create directory for the data
+dir.create(paste0(datapath, "data/raw"), recursive = TRUE, showWarnings = FALSE)
+dir.create(paste0(datapath, "data/staging"), recursive = TRUE, showWarnings = FALSE)
+dir.create(paste0(datapath, "data/warehouse"), recursive = TRUE, showWarnings = FALSE)
+
+patients <- tibble(
+  patient_id = sample(c(paste0("P", 1:50), "P10", "P10 "), 80, TRUE),
+  sex = sample(c("M", "F", "male", "female", "Unknown", ""), 80, TRUE),
+  dob = sample(c("1980-01-01", "01/02/1975", "1970-13-01", "", NA), 80, TRUE),
+  region = sample(c("Nordjylland", "Midtjylland", "Syddanmark", "Sjælland", "Hovedstaden", "??"), 80, TRUE)
+)
+
+visits <- tibble(
+  patient_id = sample(c(paste0("P", 1:50), "P999"), 200, TRUE),
+  visit_date = sample(c("2025-01-01", "01/02/2025", "2025-02-30", "", NA), 200, TRUE),
+  clinic_code = sample(c("AAH", "AUH", "OUH", "RH", "UNK", ""), 200, TRUE),
+  visit_type = sample(c("outpatient", "inpatient", "ER", "OPD", "IPD"), 200, TRUE)
+)
+
+labs <- tibble(
+  patient_id = sample(c(paste0("P", 1:50), "P888"), 400, TRUE),
+  sample_date = sample(c("2025-01-05", "05/01/2025", "", NA), 400, TRUE),
+  test = sample(c("hba1c", "HbA1c", "creatinine", "eGFR"), 400, TRUE),
+  value = rnorm(400, 50, 20),
+  unit = sample(c("mmol/mol", "%", "umol/L", "mL/min/1.73m2", ""), 400, TRUE)
+)
+
+write_csv(patients, "data/raw/patients.csv")
+write_csv(visits,   "data/raw/visits.csv")
+write_csv(labs,     "data/raw/labs.csv")
+
+```
+
+### Helpers
+
+Some helper functions will be beneficial to make the data cleaning easier.
+
+```{r}
+#| label: helpers
+#| echo: false
+#| output: false
+
+# run id to use in the quarantining
+init_logger <- function(run_id, log_dir = "logs") {
+  dir.create(log_dir, showWarnings = FALSE, recursive = TRUE)
+  log_appender(appender_tee(file.path(log_dir, paste0("etl_", run_id, ".log"))))
+  log_layout(layout_glue_colors)
+  log_threshold(INFO)
+}
+
+# transforming patient id into a unique value
+hash_id <- function(x) {
+  vapply(as.character(x), digest, FUN.VALUE = character(1), algo = "xxhash64")
+}
+
+# parsing some examples of wrong dates
+  # this function can be updated as one finds more types of wrong dates that need to be parsed
+parse_date_safe <- function(x) {
+  suppressWarnings(
+    as.Date(parse_date_time(x, orders = c("Y-m-d", "d/m/Y", "d-m-Y")))
+  )
+}
+
+# basic function to give a message if a certain condition is not met
+assert <- function(condition, msg) {
+  if (!isTRUE(condition)) stop(msg, call. = FALSE)
+}
+
+# to write a report to a list with different items defined by report_list
+write_quality_report <- function(path, report_list) {
+  dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
+  writeLines(toJSON(report_list, pretty = TRUE, auto_unbox = TRUE), path)
+}
+
+# write a reason and a stage for a quarantine when working with a dataset
+make_quarantine <- function(df, reason, stage, run_id) {
+  df %>%
+    mutate(
+      quarantine_reason = reason,
+      quarantine_stage = stage,
+      run_id = run_id,
+      quarantine_time_utc = format(Sys.time(), tz = "UTC")
+    )
+}
+
+# binds rows of quarantined reports 
+bind_quarantine <- function(...) {
+  qs <- list(...)
+  qs <- qs[lengths(qs) > 0]
+  if (length(qs) == 0) {
+    tibble()
+  } else {
+    bind_rows(qs)
+  }
+}
+
+```
+
+
+```{r}
+#| label: helpers
+#| echo: false
+#| output: false
+
+# Load some helpers
+source("helpers.R")
+
+transform_to_warehouse <- function(staging_dir = "data/staging", run_id) {
+  patients_raw <- read_parquet(file.path(staging_dir, "patients.parquet"))
+  visits_raw   <- read_parquet(file.path(staging_dir, "visits.parquet"))
+  labs_raw     <- read_parquet(file.path(staging_dir, "labs.parquet"))
+  
+  # ---------------------------
+  # PATIENTS
+  # ---------------------------
+  patients_std <- patients_raw %>%
+    mutate(
+      patient_id_raw = patient_id,
+      sex_raw = sex,
+      dob_raw = dob,
+      region_raw = region,
+      patient_id = str_to_upper(str_trim(patient_id)),
+      sex = str_to_lower(str_trim(sex)),
+      sex = case_when(
+        sex %in% c("m", "male") ~ "M",
+        sex %in% c("f", "female") ~ "F",
+        TRUE ~ NA_character_
+      ),
+      dob = parse_date_safe(dob),
+      region = str_trim(region),
+      region = case_when(
+        region %in% c("Nordjylland", "Midtjylland", "Syddanmark", "Sjælland", "Hovedstaden") ~ region,
+        TRUE ~ NA_character_
+      )
+    )
+  
+  q_pat_missing_id <- patients_std %>%
+    filter(is.na(patient_id) | patient_id == "") %>%
+    make_quarantine(
+      reason = "Missing or blank patient_id",
+      stage = "transform_patients",
+      run_id = run_id
+    )
+  
+  patients_ok <- patients_std %>%
+    filter(!(is.na(patient_id) | patient_id == ""))
+  
+  # duplicate rows beyond chosen canonical row go to quarantine
+  patients_ranked <- patients_ok %>%
+    mutate(completeness = rowSums(!is.na(across(c(sex, dob, region))))) %>%
+    arrange(patient_id, desc(completeness)) %>%
+    group_by(patient_id) %>%
+    mutate(row_rank_within_patient = row_number()) %>%
+    ungroup()
+  
+  q_pat_duplicate <- patients_ranked %>%
+    filter(row_rank_within_patient > 1) %>%
+    make_quarantine(
+      reason = "Duplicate patient row not chosen as canonical record",
+      stage = "transform_patients",
+      run_id = run_id
+    )
+  
+  dim_patient <- patients_ranked %>%
+    filter(row_rank_within_patient == 1) %>%
+    select(patient_id, sex, dob, region) %>%
+    mutate(patient_sk = hash_id(patient_id)) %>%
+    relocate(patient_sk, .before = patient_id)
+  
+  quarantine_patient <- bind_quarantine(q_pat_missing_id, q_pat_duplicate)
+  
+  # ---------------------------
+  # VISITS
+  # ---------------------------
+  visits_std <- visits_raw %>%
+    mutate(
+      patient_id_raw = patient_id,
+      visit_date_raw = visit_date,
+      clinic_code_raw = clinic_code,
+      visit_type_raw = visit_type,
+      patient_id = str_to_upper(str_trim(patient_id)),
+      visit_date = parse_date_safe(visit_date),
+      clinic_code = str_to_upper(str_trim(clinic_code)),
+      clinic_code = if_else(clinic_code %in% c("AAH", "AUH", "OUH", "RH"), clinic_code, NA_character_),
+      visit_type = str_to_lower(str_trim(visit_type)),
+      visit_type = case_when(
+        visit_type %in% c("outpatient", "opd") ~ "outpatient",
+        visit_type %in% c("inpatient", "ipd") ~ "inpatient",
+        visit_type %in% c("er") ~ "er",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  q_visit_missing_id <- visits_std %>%
+    filter(is.na(patient_id) | patient_id == "") %>%
+    make_quarantine(
+      reason = "Missing or blank patient_id",
+      stage = "transform_visits",
+      run_id = run_id
+    )
+  
+  q_visit_missing_date <- visits_std %>%
+    filter(!(is.na(patient_id) | patient_id == "")) %>%
+    filter(is.na(visit_date)) %>%
+    make_quarantine(
+      reason = "Missing or invalid visit_date",
+      stage = "transform_visits",
+      run_id = run_id
+    )
+  
+  visits_ok <- visits_std %>%
+    filter(!(is.na(patient_id) | patient_id == "")) %>%
+    filter(!is.na(visit_date)) %>%
+    mutate(patient_sk = hash_id(patient_id)) %>%
+    select(patient_sk, patient_id, visit_date, clinic_code, visit_type)
+  
+  quarantine_visit <- bind_quarantine(q_visit_missing_id, q_visit_missing_date)
+  
+  # ---------------------------
+  # LABS
+  # ---------------------------
+  labs_std <- labs_raw %>%
+    mutate(
+      patient_id_raw = patient_id,
+      sample_date_raw = sample_date,
+      test_raw = test,
+      unit_raw = unit,
+      patient_id = str_to_upper(str_trim(patient_id)),
+      sample_date = parse_date_safe(sample_date),
+      test = str_to_lower(str_trim(test)),
+      test = case_when(
+        test %in% c("hba1c", "hb a1c", "hb_a1c") ~ "hba1c",
+        test %in% c("creatinine") ~ "creatinine",
+        test %in% c("egfr") ~ "egfr",
+        TRUE ~ NA_character_
+      ),
+      unit = str_trim(unit)
+    )
+  
+  q_lab_missing_id <- labs_std %>%
+    filter(is.na(patient_id) | patient_id == "") %>%
+    make_quarantine(
+      reason = "Missing or blank patient_id",
+      stage = "transform_labs",
+      run_id = run_id
+    )
+  
+  q_lab_missing_date <- labs_std %>%
+    filter(!(is.na(patient_id) | patient_id == "")) %>%
+    filter(is.na(sample_date)) %>%
+    make_quarantine(
+      reason = "Missing or invalid sample_date",
+      stage = "transform_labs",
+      run_id = run_id
+    )
+  
+  q_lab_unknown_test <- labs_std %>%
+    filter(!(is.na(patient_id) | patient_id == "")) %>%
+    filter(!is.na(sample_date)) %>%
+    filter(is.na(test)) %>%
+    make_quarantine(
+      reason = "Unknown or unmapped lab test",
+      stage = "transform_labs",
+      run_id = run_id
+    )
+  
+  labs_ok <- labs_std %>%
+    filter(!(is.na(patient_id) | patient_id == "")) %>%
+    filter(!is.na(sample_date)) %>%
+    filter(!is.na(test)) %>%
+    mutate(patient_sk = hash_id(patient_id)) %>%
+    select(patient_sk, patient_id, sample_date, test, value, unit)
+  
+  quarantine_lab <- bind_quarantine(q_lab_missing_id, q_lab_missing_date, q_lab_unknown_test)
+  
+  list(
+    dim_patient = dim_patient,
+    fact_visit = visits_ok,
+    fact_lab = labs_ok,
+    quarantine_patient = quarantine_patient,
+    quarantine_visit = quarantine_visit,
+    quarantine_lab = quarantine_lab
+  )
+}
+
+```
+
+
+
+
+## Summary / cleaned up / refactored 
+
+```{r}
+#| label: Summary chunk
+#| echo: true
+#| output: false
+```
+
+
+
+

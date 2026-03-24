@@ -10,9 +10,11 @@ format:
 
 <!-- TODO for me
 
+- [ ] ETL post
+- [ ] Overview of DST data and digging in to some of it
 - [ ] Finish ADAM post
+- [ ] A/B testing post
 - [ ] Parameterised Quarto reports in R
-- [ ] Do a blog post on how ridiculous AI is at making testable R chunks (see playground\swimplot.R, but start on your own and take time of how long it takes to create 5 different tests i make up on the spot).
 
 -->
 
@@ -50,7 +52,7 @@ flowchart TB
 
 <!-- </div> -->
 
-## Summary of wepbage
+## Summary of webpage
 
 Welcome to my webpage. This can be considered by portfolio and playground. After a family-centered hiatus from working, I am picking up the torch again.
 

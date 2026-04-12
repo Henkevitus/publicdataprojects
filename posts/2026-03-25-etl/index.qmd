@@ -1102,6 +1102,7 @@ print(curated_checked$fact_lab, n = 15)
 **What the new quality report shows**
 **What the new data shows - haven't checked whether the ranges make sense but again, it feels forced to check whether randomly simulated ranges are ok. But if this was a real study I prepped data for, I would probably check with the protocol or clinicians I am working with for whether these ranges made sense.**
 
+
 #### Quarantine datasets 
 #### What happened
 
@@ -1111,6 +1112,7 @@ print(curated_checked$fact_lab, n = 15)
 - Summarising all of it in this summary section
 - Visualising the raw and curated warehouse output via some plots
 - Doing a final refactor if necessary? I don't think so with this post
+- Remember the code.R file in the blogs folder - use it to help the refactor
 - Doing a final summary of the fact that AI made this entire thing in minutes, maybe all the code that it wrote that made all of this work, was written in a matter of 30 minutes total, at most. 
   - what this means for me and how i learned it and how much i learned here
   - what this means for data analysis

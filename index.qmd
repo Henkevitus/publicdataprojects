@@ -32,7 +32,7 @@ flowchart TB
   E1[Data analyst/science work<br/><i/>R, Stata, Excel, SAS<b>]
   E2[Extensive experience with Systematic Reviewing]
   E3[Data Visualisation <br/>Theoretical assumption testing with real-world data]
-  F[Uncovering insights using Health Data to <br/> - Learn and understand how to translate data into action <br/> - Improve Quality of Healthcare ]
+  F[Uncovering insights using Health Data to <br/> - Translate data into action <br/> - Improve Quality of Healthcare]
 
   A --> A2
   A --> A3
@@ -64,14 +64,14 @@ My journey from studying at university, to finishing a PhD, has lead me here. Th
 
 I'm a:
 
-- Father and husband
 - Data lover
-- People helper
 - Learner
+- Pragmatic solution enthusiast
 - Explorer of connections and correlations
 - Tester of theories versus the real world
 - Deep thinker and systematiser
-- Pragmatic solution enthusiast
+- Father and husband
+- People helper
 
 ## AI
 

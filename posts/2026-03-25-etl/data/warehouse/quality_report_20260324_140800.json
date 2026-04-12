@@ -1,0 +1,47 @@
+{
+  "extract": {
+    "patients_n": 80,
+    "visits_n": 200,
+    "labs_n": 400
+  },
+  "raw": {
+    "patients": {
+      "n": 80,
+      "missing_patient_id": 0,
+      "duplicate_patient_id_rows": 43
+    },
+    "visits": {
+      "n": 200,
+      "missing_patient_id": 0,
+      "missing_visit_date": 84,
+      "unknown_clinic_code": 70
+    },
+    "labs": {
+      "n": 400,
+      "missing_patient_id": 0,
+      "missing_sample_date": 193,
+      "weird_units": 101
+    }
+  },
+  "curated": {
+    "dim_patient": {
+      "n": 37,
+      "patient_id_unique": 37,
+      "patient_sk_unique": 37,
+      "dup_patient_id": 0,
+      "dup_patient_sk": 0
+    },
+    "referential_integrity": {
+      "visits_missing_dim": 29,
+      "labs_missing_dim": 47
+    },
+    "plausibility": {
+      "hba1c_out_of_range": 10
+    }
+  },
+  "quarantine_counts": {
+    "patient": 43,
+    "visit": 146,
+    "lab": 250
+  }
+}

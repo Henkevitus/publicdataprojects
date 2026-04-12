@@ -20,7 +20,7 @@ website:
 
 format:
   html:
-    theme: darkly
+    theme: slate
     toc: true
     css: styles.css
 

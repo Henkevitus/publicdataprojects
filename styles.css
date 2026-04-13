@@ -1,26 +1,17 @@
 /* css styles */
 
 /* Mermaid */
-/* :root {
-  --mermaid-bg-color: #{$mermaid-bg-color};
-  --mermaid-edge-color: #{$mermaid-edge-color};
-  --mermaid-node-fg-color: #{$mermaid-node-fg-color};
-  --mermaid-fg-color: #{$mermaid-fg-color};
-  --mermaid-fg-color--lighter: #{$mermaid-fg-color--lighter};
-  --mermaid-fg-color--lightest: #{$mermaid-fg-color--lightest};
-  --mermaid-font-family: #{$mermaid-font-family};
-  --mermaid-label-bg-color: #{$mermaid-label-bg-color};
-  --mermaid-label-fg-color: #{$mermaid-label-fg-color};
-  --mermaid-node-bg-color: #{$mermaid-node-bg-color};
-  --mermaid-node-fg-color: #{$mermaid-node-fg-color};
-} */
 
-/* white text for when the mermaid is in dark theme
+/* 
+white text for when the mermaid is in dark theme
     :root {
         --mermaid-label-fg-color: #f0f0f0;
-    }*/
+    }
+        
+*/
 
-/* fullpage mermaid
+/* 
+fullpage mermaid
 .fullpage-mermaid {
   width: 100vw;
   height: 100vh;
@@ -35,4 +26,6 @@
 .fullpage-mermaid svg {
   width: 100%;
   height: 100%;
-}  */
+}  
+  
+*/

@@ -1067,9 +1067,9 @@ With the code change below, I think I am satisfied with the fix.
 ```{r}
 #| label: fix-raw-to-curated-3
 #| echo: false
-#| output: true
+#| output: false
 
-hba1c_bad <- fact_lab_ok |>
+hba1c_bad <- curated_checked$fact_lab |>
   filter(test == "hba1c") |>
   filter(
     (unit == "mmol/mol" & (value < 10 | value > 200)) |

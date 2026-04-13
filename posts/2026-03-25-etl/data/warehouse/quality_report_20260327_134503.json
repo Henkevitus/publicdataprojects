@@ -33,15 +33,15 @@
     },
     "referential_integrity": {
       "visits_missing_dim": 143,
-      "labs_missing_dim": 106
+      "labs_missing_dim": 354
     },
     "plausibility": {
-      "hba1c_out_of_range": 145
+      "hba1c_out_of_range": 127
     }
   },
   "quarantine_counts": {
     "patient": 393,
     "visit": 1344,
-    "lab": 2879
+    "lab": 2550
   }
 }

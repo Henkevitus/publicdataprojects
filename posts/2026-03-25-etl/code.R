@@ -1,3 +1,8 @@
+# - go through the quality report
+# - checkout some of the curated datasets
+# - look at some of the quarantine datasets
+# - conclude what ocurred in this simulated dataset, in the ETL process
+
 # chunk-generate-data -----
 packages <- c(
   "readr",

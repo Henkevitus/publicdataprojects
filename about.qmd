@@ -23,8 +23,8 @@ This blog is dedicated to showcasing my skills as a data scientist with an under
 
 Studied the use of antidiabetic drugs and their utilisation in Denmark, and economic model assumptions used in their comparisons in cost-effectiveness analyses using decision analytical models
 
-- Two observational studies
-- [Published review](https://doi.org/10.1007/s40273-023-01268-5) of economic model assumptions when comparing newer medications for treating type 2 diabetes
+- Three observational studies
+- Published review in PharmacoEconomics of economic model assumptions when comparing newer medications for treating type 2 diabetes
 - Data sources: registry data from [The Register of Pharmaceutical Sales](https://english.sundhedsdatastyrelsen.dk/health-data-and-registers/national-health-registers#) and [The National Patient Register](https://english.sundhedsdatastyrelsen.dk/health-data-and-registers/national-health-registers#)
 
 **Worked as a scientific assistant**

@@ -1,9 +1,6 @@
 project:
   type: website
   output-dir: _site
-  # force inclusion of some files descipte ignore rules
-  resources:
-    - docs/cv_netto.pdf
 
 website:
   title: "Vitus Bering exploring the Data seas"
@@ -20,7 +17,7 @@ website:
 
 format:
   html:
-    theme: slate
+    theme: zephyr # remember to change it in _metadata.yml in posts
     toc: true
     css: styles.css
 

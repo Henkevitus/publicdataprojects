@@ -17,7 +17,7 @@ website:
 
 format:
   html:
-    theme: zephyr # remember to change it in _metadata.yml in posts
+    theme: simplex # remember to change it in _metadata.yml in posts
     toc: true
     css: styles.css
 

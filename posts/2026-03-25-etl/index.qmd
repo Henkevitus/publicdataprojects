@@ -1099,8 +1099,18 @@ read_lines(file.path(warehouse_dir, "quality_report_20260327_134503.json")) |>
 print(curated_checked$fact_lab, n = 15)
 ```
 
-**What the new quality report shows**
-**What the new data shows - haven't checked whether the ranges make sense but again, it feels forced to check whether randomly simulated ranges are ok. But if this was a real study I prepped data for, I would probably check with the protocol or clinicians I am working with for whether these ranges made sense.**
+**Validated and checked data**
+
+
+
+**Ranges of the lab values**
+
+Haven't checked whether the ranges themselves make sense. But again, it feels forced to check whether randomly simulated ranges are ok. But if this was a real study I prepped data for, I could:
+
+- check with the protocol or clinicians I am working with for whether these ranges made sense
+- Set up a function that checks whether the `value` is within expected ranges of the `test` and `unit` it has
+- Go through them manually with a list of expected ranges
+
 
 
 #### Quarantine datasets 

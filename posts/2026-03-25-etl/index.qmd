@@ -1102,15 +1102,15 @@ counts <- tibble(
   )
 )
 
-plot_df <- counts |> 
+plot_df <- counts |>
   pivot_longer(
     cols = c(before, after),
     names_to = "stage",
     values_to = "n"
-    ) |> 
+  ) |>
   mutate(
     stage = factor(stage, levels = c("before", "after")),
-    dataset = factor(dataset, levels = c("patients","visits", "labs"))
+    dataset = factor(dataset, levels = c("patients", "visits", "labs"))
   )
 
 ggplot(plot_df, aes(x = stage, y = n, group = dataset)) +
@@ -1122,16 +1122,16 @@ ggplot(plot_df, aes(x = stage, y = n, group = dataset)) +
     hjust = -0.4,
     size = 5,
     show.legend = FALSE
-  ) + 
+  ) +
   expand_limits(x = 2.2) +
   labs(
     title = "ETL row counts: before and after curation",
     x = NULL,
     y = "Number of rows"
-  ) + theme_minimal(base_size = 16)
+  ) +
+  theme_minimal(base_size = 16)
 
-
-ggsave("thumbnail.jpg", plot = last_plot()
+ggsave("thumbnail.jpg", plot = last_plot())
 ```
 
  <!-- footnotes -->

@@ -1049,7 +1049,7 @@ print(curated_checked$fact_lab, n = 15)
 
 So, after the data has been curated and checked, we end up with the following deltas:
 
-- patients: `{r} nrow(patients)` to `{r} nrow(curated$dim_patients)` fewer patients
+- patients: `{r} nrow(patients)` to `{r} nrow(curated$dim_patient)` fewer patients
 - labs: `{r} nrow(labs)` to `{r} nrow(curated$fact_lab)` fewer lab observations
 - visits: `{r} nrow(visits)` to `{r} nrow(curated$fact_visit)` fewer visit observations
 

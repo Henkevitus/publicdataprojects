@@ -5005,7 +5005,7 @@ vertical-align: -.125em;
 # ℹ 1,921 more rows</code></pre>
 </div>
 </div>
-<p>Now, as far as I remember, HbA1c is measured in either mmol/mol, or % [^haemoglobin][^hba1c]. Not “mL/min/1.73m2”, which to the experienced reader sounds like an eGFR measurement. Creatinine is measured in a bunch of different ways [^creatinine], among the µmol/L.</p>
+<p>Now, as far as I remember, HbA1c is measured in either mmol/mol, or % <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. Not “mL/min/1.73m2”, which to the experienced reader sounds like an eGFR measurement. Creatinine is measured in a bunch of different ways <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>, among the µmol/L.</p>
 <p>The <span class="citation" data-cites="chunk-generate-data">@chunk-generate-data</span> chunk generated several lab measurements:</p>
 <ul>
 <li>HbA1c</li>
@@ -5320,7 +5320,7 @@ vertical-align: -.125em;
 <p><strong>Validated data</strong></p>
 <p>So, after the data has been curated and checked, we end up with the following deltas:</p>
 <ul>
-<li>patients: 800 to NULL fewer patients</li>
+<li>patients: 800 to 407 fewer patients</li>
 <li>labs: 4000 to 1931 fewer lab observations</li>
 <li>visits: 2000 to 799 fewer visit observations</li>
 </ul>
@@ -5411,7 +5411,6 @@ vertical-align: -.125em;
 <pre><code>Saving 8 x 6 in image</code></pre>
 </div>
 </div>
-<p><!-- footnotes --> [^warehouse]: Transform to warehouse is just as it sounds: turning the data into something which we can retrieve from a “warehouse”. We know whats there and how it was put there, and it can easily be extracted [^haemoglobin]: % of haemoglobin A1c in the red blood cells that has glucose attached [^hba1c]: <a href="hba1c reference">https://www.hba1cnet.com/hba1c-calculator/</a> [^creatinine]: <a href="creatinine reference">https://unitslab.com/node/44</a> [^hba1c-limit]: https://www.healthline.com/diabetesmine/highest-diabetes-a1c-in-history#How-high-can-an-A1C-result-go</p>
 </section>
 <section id="refactored" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="refactored"><span class="header-section-number">4</span> Refactored</h2>
@@ -6013,11 +6012,20 @@ load_warehouse(
 
 log_info(&quot;ETL done, run_id={run_id}&quot;)
 </code></pre>
+<p><!-- footnotes --></p>
 
 
 </section>
 
-</main> <!-- /main -->
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>% of haemoglobin A1c in the red blood cells that has glucose attached<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a href="hba1c reference">https://www.hba1cnet.com/hba1c-calculator/</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="creatinine reference">https://unitslab.com/node/44</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

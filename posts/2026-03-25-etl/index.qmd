@@ -1,7 +1,7 @@
 ---
 title: "ETL, and calling it"
 author: "Henrik Vitus Bering Laursen"
-date: "2026-03-25"
+date: "2026-05-06"
 categories:
   - etl
   - analysis
@@ -1739,8 +1739,6 @@ log_info("ETL done, run_id={run_id}")
 
  <!-- footnotes -->
  
-[^warehouse]: Transform to warehouse is just as it sounds: turning the data into something which we can retrieve from a "warehouse". We know whats there and how it was put there, and it can easily be extracted
 [^haemoglobin]: % of haemoglobin A1c in the red blood cells that has glucose attached
 [^hba1c]: [https://www.hba1cnet.com/hba1c-calculator/](hba1c reference)
 [^creatinine]: [https://unitslab.com/node/44](creatinine reference)
-[^hba1c-limit]: https://www.healthline.com/diabetesmine/highest-diabetes-a1c-in-history#How-high-can-an-A1C-result-go

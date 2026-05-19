@@ -1,0 +1,852 @@
+---
+title: "Statbank API access and interesting observations"
+author: "Henrik Vitus Bering Laursen"
+date: "2026-05-19"
+categories:
+  - api
+  - statbank
+  - dst
+  - descriptive statistics
+  - war
+format:
+  html:
+    toc: true
+    number-sections: true
+    fig-width: 8
+    fig-height: 6
+    code-fold: true
+    code-summary: "Show the code"
+draft: true
+image: thumbnail.jpg 
+---
+
+## DELETE AFTER DRAFT - contents 
+
+Først skal jeg have en purpose section hvor jeg beskriver hvad jeg vil.
+
+**OG ET LØFTE OM AT DER KOMMER FLERE POSTS OG DE ER KORTERE. BEGRÆNS DIG NU FORHELVEDE!!!**
+
+**Mit sprog skal være direkte og til sagen. Ikke så meget snak til mig selv. Det skal være til et publikum af ledere, klinikere eller datamanagere eller analytikere der vil have beviser for hvad jeg kan.**
+
+Dernæst skal det være...
+
+- Packages and httr2. {#sec-packages}
+  - And why i choose to use httr2. Will probably use dst package at the end.. 
+- Access to statbank API {#sec-api}
+- Meta data and describing its contents {#sec-meta}
+- Quick overview of what i chose {#sec-chosen-table}
+- ONE super quick analysis on ONE table {#sec-analysis}
+- Wrapping up and refactor {#sec-refactor}
+
+### TODO
+
+- [ ] check om echo skal være false eller true. kun output hvor relevant.
+
+## Purpose
+
+I want to explore data from Statistics Denmark. 
+
+These can be accessed through their:
+
+1. [Statistik bank tables - i.e. loggin in and making tables to export](https://www.statistikbanken.dk/statbank5a/default.asp?w=3153) 
+2. [Statistik bank API - allowing tailored access, getting overviews and extracting tables programmatically](https://www.dst.dk/da/Statistik/hjaelp-til-statistikbanken/api)
+
+I have always used the table way. I did not know the API existed. Although the changelog shows evidence that it existed since 2014. There also seems to be a package, last updated in 2022, called `danstat`.
+
+What I want to explore is:
+
+1. What is there?
+2. How it is structured?
+3. What can I show that is interesting from a single table?
+
+### Access {#sec-api}
+
+The [`httr2`](https://httr2.r-lib.org/) package can be used to access the API and export. I will load that along with `jsonlite` to convert from JSON to an R object, and ofcourse `dplyr` for data manipulation.
+
+```{r}
+#| label: get statbank overview
+#| echo: false
+#| output: false
+
+library(httr2)
+library(jsonlite)
+library(dplyr)
+
+```
+
+Now, I want to get an overview of what I can get my hands on via this API. It seems the following access points are available:
+
+- https://api.statbank.dk/v1/subjects
+  - Here it seems you can search within a subject and get data related to that
+- https://api.statbank.dk/v1/tables
+  - Here is an overview of the different tables
+- https://api.statbank.dk/v1/tableinfo
+  - Here is metadata on the tables
+- https://api.statbank.dk/v1/data
+  - This is where you get the actual data from the tables
+
+Let's look at each of these, in turn.
+
+#### Subjects {#sec-access-subjects}
+
+```{r}
+#| label: subjects
+#| echo: false
+#| output: true
+
+resp_subjects <- request("https://api.statbank.dk/v1/subjects") |>
+  req_perform()
+
+# Parse JSON
+subjects <- resp_body_json(resp_subjects, check_type = FALSE)
+
+# Glimpse structure
+glimpse(subjects)
+```
+
+Ok so there are 10 different subjects, one about Statistics Denmark. 
+
+```{r}
+#| label: subjects-list
+#| echo: false
+#| output: true
+
+# Get names
+test <- sapply(subjects, `[[`, "description")
+
+```
+
+The `purr` package provides a more human-readable way of extracting it. May as well add the id.
+
+```{r}
+#| label: subjects-list-2
+#| echo: false
+#| output: true
+
+library(purrr)
+
+test <- tibble(
+  id = map_chr(subjects, "id"),
+  description = map_chr(subjects, "description")
+)
+```
+
+So, instead of: "apply the `[[` extractor on this data frame, looking for the string 'description', and simplify into a vector", it's more like: "make a dataframe that contains the contents on this map (the dataframe), specifically the characters in the 'id' column and 'description' column".
+
+Who knows, for some the latter might be less simple, but at least it is more visual.
+
+#### Tables {#sec-access-tables}
+
+```{r}
+#| label: tables overview
+#| echo: false
+#| output: true
+
+# Request table overview
+resp_tables <- request("https://api.statbank.dk/v1/tables") |>
+  req_body_json(list(lang = "en")) |>
+  req_perform()
+
+# Parse JSON
+dst_tables <- resp_body_json(resp_tables, check_type = FALSE)
+
+# Convert to dataframe and glimpse structure
+dst_tables_df <- bind_rows(dst_tables)
+glimpse(dst_tables_df)
+```
+
+There are 8 columns and 9145 rows. 
+
+Also, there seems to be a lot of duplicate tables. Could it be something with different variables within the `variables` column?
+
+```{r}
+#| label: duplicate-tables
+#| echo: false
+#| output: true
+
+test <- tibble(unlist(dst_tables_df[8]))
+print(test, n = 15)
+
+test2 <- dst_tables_df |> slice(1) |> select(variables) |> unlist()
+```
+
+It seems that each row that seems like a duplicate for e.g. the table with the id `FOLK1A`, is duplicate in all but the character variable hidden in the list in the `variables` column.
+
+That seems weird, to keep only one character hidden in a list in the `variables` colum. But since it has probably been possible to access this in this way since 2014 there must be a purpose to it.
+
+Let's see how many unique tables there are.
+
+```{r}
+#| label: unique-tables
+#| echo: false
+#| output: true
+
+distinct(dst_tables_df, id) |> count()
+
+```
+
+That is a LOT of unique tables, and that is just the active ones. Some are variations of a theme, like `BEFOLK1`, `FOLK1A`, and `FOLK1AM`, which are the population the first day of the year, month, and quarter.
+
+**For now, I want to look at [FOLK1C](https://www.statbank.dk/FOLK1C).
+
+#### Tableinfo {#sec-access-meta}
+
+What does `https://api.statbank.dk/v1/tableinfo` actually tell us?
+
+```{r}
+#| label: table-info
+#| echo: false
+#| output: true
+
+# Request
+resp_meta <- request("https://api.statbank.dk/v1/tableinfo") |>
+  req_body_json(list(table = "folk1c", lang = "en")) |> # always need to pick a specific table
+  req_perform()
+
+# Parse JSON
+meta <- resp_body_json(resp_meta, check_type = FALSE)
+
+# Remove the contact part of the list - seems inappropriate to put this info here.
+meta$contacts <- NULL
+
+# Convert to dataframe and glimpse structure
+glimpse(meta)
+
+```
+
+It is a list of 10 lists, where the last list is a list of variables, each containing lists.
+
+What is inside that variable list? Since it's lists upon lists, `map_dfr` can help us go through each element in the `variables` list and make dataframes/tibbles.
+
+```{r}
+#| label: one-meta
+#| echo: false
+#| output: true
+
+# Pick one thing to look at
+values_by_variable <- map(meta$variables, function(var) {
+  map_dfr(var$values, function(val) {
+    tibble(
+      value_id = val$id,
+      value_text = val$text
+    )
+  })
+})
+
+names(values_by_variable) <- map_chr(meta$variables, "id")
+values_by_variable
+```
+
+That's quite neat to get information about tables like that. Now for what the data url has in store.
+
+#### Data {#sec-access-data}
+
+```{r}
+#| label: data-tables
+#| echo: false
+#| output: true
+
+# Request
+resp_data <- request("https://api.statbank.dk/v1/data") |>
+  req_body_json(list(
+    table = "folk1c",
+    format = "JSONSTAT",
+    variables = list(
+      list(
+        code = "IELAND",
+        values = list("0000")
+      ),
+      list(
+        code = "Tid",
+        values = list("*K*")
+      )
+    )
+  )) |> # always need to pick a specific table
+  req_perform()
+
+# Parse JSON
+data <- resp_body_json(resp_data, check_type = FALSE)
+# Convert to dataframe and glimpse structure
+glimpse(data)
+
+```
+
+Thought that I could just use `format = "JSON"`, but after fiddling with [the console](https://api.statbank.dk/console#data) for a bit, I learned that it accepts "JSONSTAT". 
+
+Additionally, I learned how to interact with it by: 
+
+- Going to the console
+- Choose a table
+- Identify the variables and their values
+- Put the variables and their values that I want in the `variables` part of the `req_body_json()` function
+- Get the output I want
+
+Variables are accessed through a list, then I have to make a list for each variable that I want to include, and a list with a text string the API can understand to get the values from that variable.
+
+Maybe I should just get CSV format. I would still have to do the whole thing from above but at least I wouldn't have to deal with all the metadata. `readr` good for reading csv's.
+
+```{r}
+#| label: data-tables-get-csv
+#| echo: false
+#| output: true
+
+library(readr)
+library(tidyr)
+
+# Request
+resp_data <- request("https://api.statbank.dk/v1/data") |>
+  req_body_json(list(
+    table = "folk1c",
+    format = "CSV",
+    variables = list(
+      list(
+        code = "IELAND",
+        values = list("0000")
+      ),
+      list(
+        code = "Tid",
+        values = list("*K*")
+      )
+    )
+  )) |> # always need to pick a specific table
+  req_perform()
+
+# Parse JSON
+data <- resp_body_string(resp_data) |>
+  read_csv() |>
+  tidyr::separate(
+    col = `IELAND;TID;INDHOLD`,
+    into = c("IELAND", "TID", "INDHOLD"),
+    sep = ";"
+  )
+
+# Convert to dataframe and glimpse structure
+glimpse(data)
+
+```
+
+Great! I think I have enough to know what to do to get a basic data extraction from the DST API and make a simple graph based on it.
+
+### Brief analysis {#sec-analysis}
+
+What I want to now is to:
+
+- Take the FOLK1C table
+- Fokus on the amount of people in Denmark of different countries (`IELAND`) ^[IE probably stands for immigration/emmigration and land is ofcourse country]
+  - Germany
+  - France
+  - USA
+  - Russia
+  - Ukraine
+- Create a line diagram for as long a time period as can fit neatly on a table
+- Look a the changes in the population from those countries over time
+
+**For that**, first I have to get the country codes from the meta data, then make a big request for the data, and then make the analysis and do the analysis.
+
+#### Meta for the table
+
+Just in case I want to make changes to the variables, I make a function to quickly extract the information I want from the Meta data.
+
+```{r}
+#| label: meta-for-table
+#| echo: false
+#| output: true
+
+get_values_by_id <- function(meta, variable_id) {
+  variable_ids <- map_chr(meta$variables, "id")
+  variable <- meta$variables[[which(variable_ids == variable_id)]]
+
+  tibble(
+    variable_id = variable$id,
+    variable_text = variable$text,
+    value_id = map_chr(variable$values, "id"),
+    value_text = map_chr(variable$values, "text")
+  )
+}
+
+```
+
+Then I can simply use `stringr` to get the right countries. Maybe I should have just used the `package::function()` thing before, and not load so many different packages for just one or two functions each. Nope. I will probably use it a lot since a lot of columns are characters.
+
+```{r}
+#| label: meta-for-table-extract-countries
+#| echo: false
+#| output: true
+
+library(stringr)
+
+# Countries
+countries <- get_values_by_id(meta, "IELAND") |>
+  filter(str_detect(
+    value_text,
+    "Germany|France|USA|Ukraine|Russia"
+  ))
+countries
+
+```
+
+
+#### Requesting the table
+
+This will be a big chunk, because of the lists within lists structure in the request.
+
+```{r}
+#| label: requesting-data-table
+#| echo: false
+#| output: true
+
+resp <- request("https://api.statbank.dk/v1/data") |>
+  req_body_json(
+    list(
+      table = "folk1c",
+      format = "CSV",
+      lang = "en",
+      variables = list(
+        list(
+          code = "OMRÅDE",
+          values = list("000") # All Denmark
+        ),
+        list(
+          code = "KØN",
+          values = list("*") # Men, Women
+        ),
+        list(
+          code = "ALDER",
+          values = list("*") # All age categories, including total
+        ),
+        list(
+          code = "IELAND",
+          values = list(
+            "5700", # Russia
+            "5704", # Ukraine
+            "5390", # United states
+            "5180", # Germany
+            "5130" # France
+          )
+        ),
+        list(
+          code = "Tid",
+          values = list("*")
+        )
+      )
+    ),
+    auto_unbox = TRUE
+  ) |>
+  req_perform()
+
+# extract the CSV
+folk1c_raw <- resp_body_string(resp) |> read_csv()
+
+# get column names for separation
+folk1c_raw_col <- names(folk1c_raw)
+
+# Clean and print
+folk1c <- folk1c_raw |>
+  tidyr::separate(
+    col = folk1c_raw_col,
+    into = c("OMRÅDE", "KØN", "ALDER", "IELAND", "TID", "INDHOLD"),
+    sep = ";"
+  ) |>
+  janitor::clean_names() |> 
+  select(-omrade) |>
+  rename(
+    value = indhold,
+    sex = kon,
+    age = alder,
+    time = tid) 
+
+folk1c
+
+```
+
+That was a biggie. But extremely satisfying to have done it - without AI help I might add. Also, no need for this as its only value is "All Denmark".
+
+#### Graph and Analysis
+
+Now for the graph. 
+
+To specify the graph further, I want to just, or at least first, look at:
+
+- Changes in population count for the different countries
+- All ages
+- From earliest time to latest
+
+But first, the time variable needs to be reformatted. It seems to be formatted such that it can be turned into an ordered factor. yyyyq1..2..3..4. 
+
+But may as well attempt to make another variable that corresponds to the first day in the month of each quarter.
+
+```{r}
+#| label: time-reformat
+#| echo: false
+#| output: true
+
+# Turn into ordered factor
+folk1c$timef <- as.ordered(folk1c$time)
+
+# Make a separate numeric time variable
+folk1c <- folk1c |>
+  mutate(
+    year = as.integer(str_extract(time, "\\d{4}")),
+    quarter = as.integer(str_extract(time, "(?<=Q)\\d")),
+    year_quarter_num = year + (quarter - 1) / 4,
+    time_smoq = lubridate::ymd(paste0(year, "-", (quarter - 1) * 3 + 1, "-01")) # smoq = start month of quarter
+  )
+
+```
+  
+And then a plot to test it out.
+
+```{r}
+#| label: graph-1
+#| echo: false
+#| output: true
+
+library(ggplot2)
+
+# plot attempt 1
+plot1 <- ggplot(folk1c, aes(time_smoq, value, color = ieland)) +
+  geom_line()
+
+```
+
+Well.. That's not what I expected. And maybe that is because `value` is still a character.. And age category and sex should be factors or else I might get issues in the future.
+
+```{r}
+#| label: graph-2
+#| echo: false
+#| output: true
+
+folk1c <- folk1c |> 
+  mutate(
+    value = as.integer(value),
+    age_order = case_when(
+      str_detect(age, "total") ~ -1, # so total is before the other categories
+      TRUE ~ as.numeric(str_extract(age, "\\d+"))
+    ),
+    age = forcats::fct_reorder(age, age_order, .fun = min, .na_rm = TRUE)) 
+levels(folk1c$age)
+
+# plot attempt 2
+plot2 <- ggplot(folk1c, aes(time_smoq, value, color = ieland)) +
+  geom_line()
+
+```
+
+Still not what I expected. Since I am completely not thinking this through and forgetting about all the different variables the dataset has that I am not using. 
+
+```{r}
+#| label: graph-total
+#| echo: false
+#| output: true
+
+folk1c_total <- folk1c |>
+  filter(age == "Age, total", sex == "Total")
+
+ggplot(folk1c_total, aes(time_smoq, value, color = ieland)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Population by country of origin",
+    subtitle = "Total age group and total sex",
+    x = NULL,
+    y = "Population",
+    color = "Country of origin"
+  ) +
+    scale_x_date(
+    date_breaks = "1 year",
+    date_labels = "%Y"
+  ) +
+  theme_minimal()
+
+```
+
+This could also be perfect for a `facet_grid()`. And since there are so many age categories, probably divide them into two.
+
+There are 21 different age categories, so could start with filtering the first 11, and then the next 10. And split up the sexes.
+
+```{r}
+#| label: graph-facet-grid
+#| echo: false
+#| output: true
+
+# filter age groups
+folk1c_young <- folk1c |>
+  filter(
+    str_detect(age, "^0|^5|^10$|^15|^20|^25|^30|^35|^40|^45|^50"),
+    sex != "Total"
+    )
+folk1c_old <- folk1c |>
+  filter(
+    str_detect(age, "^55|^60|^65|^70|^75|^80|^90|^95|^100"),
+    sex != "Total"
+    )
+
+# facet_wrap_young
+ggplot(folk1c_young, aes(time_smoq, value, color = ieland)) +
+  geom_line(linewidth = 1) +
+  facet_grid(sex ~ age, scales = "free_y") +
+  labs(
+    title = "Population by country of origin",
+    subtitle = "Youngish age group and total sex",
+    x = NULL,
+    y = "Population",
+    color = "Country of origin"
+  ) +
+  theme_minimal()
+
+# facet_wrap_old
+
+ggplot(folk1c_old, aes(time_smoq, value, color = ieland)) +
+  geom_line(linewidth = 1) +
+  facet_grid(sex ~ age, scales = "free_y") +
+  labs(
+    title = "Population by country of origin",
+    subtitle = "Oldish age group and total sex",
+    x = NULL,
+    y = "Population",
+    color = "Country of origin"
+  )  +
+  theme_minimal()
+
+```
+
+We **COULD** also separate age groups into three categories, so the plot isnt so crowded. Let's do that, with a different approach: keeping the folk1c, but make a variable that can be used to filter the age groups within the dataset.
+
+```{r}
+#| label: graph-three-age-categories-plots
+#| echo: false
+#| output: true
+
+folk1c <- folk1c |>
+  mutate(
+    age_order = as.numeric(str_extract(age, "\\d+")),
+    age_group_3 = case_when(
+      str_detect(age, regex("total|all ages|i alt", ignore_case = TRUE)) ~ "Total",
+      age_order < 30 ~ "Young",
+      age_order < 65 ~ "Adult",
+      age_order >= 65 ~ "Older",
+      TRUE ~ NA_character_
+    ),
+    age_group_3 = factor(
+      age_group_3,
+      levels = c("Young", "Adult", "Older", "Total"),
+      ordered = TRUE
+    )
+  )
+
+# function for plots
+threeagecat_plot <- function(
+  tac_data, # tac = threeagecat
+  tac_category = "Young", 
+  tac_sex_group = c("Men", "Women"),
+  tac_subtitle = NULL,
+  tac_caption = "Brown and red line are dates of Russian invasion of Ukraine, Source: https://www.statbank.dk/FOLK1C",
+  tac_x_title = NULL,
+  tac_y_title = NULL,
+  tac_lab_color = NULL
+  ) {
+  ggplot(tac_data |> 
+    filter(
+      age_group_3 == tac_category,
+      sex == tac_sex_group
+    ), aes(time_smoq, value, color = ieland)) +
+  geom_line(linewidth = 0.6) +
+  geom_vline(
+    xintercept = as.Date("2014-02-27"),
+    linetype = "dashed",
+    linewidth = 0.4,
+    color = "brown") + 
+  geom_vline(
+    xintercept = as.Date("2022-02-24"),
+    linetype = "dashed",
+    linewidth = 0.4,
+    color = "red")+
+  facet_grid(sex ~ age, scales = "fixed") +
+  labs(
+    title = "Population by country of origin",
+    subtitle = tac_subtitle,
+    caption = tac_caption,
+    x = tac_x_title,
+    y = tac_y_title,
+    color = tac_lab_color
+  )  +
+    theme_minimal() 
+}
+
+# plots
+threeagecat_plot(
+  folk1c, # tac = threeagecat
+  tac_category = "Young", 
+  tac_subtitle = NULL,
+  tac_x_title = NULL,
+  tac_y_title = NULL,
+  tac_lab_color = NULL
+)
+
+ggsave(paste0(here::here(),"/posts/2026-05-10-statbank-api/", "thumbnail.jpg"), plot = last_plot(), dpi = 300, width = 6, height = 4, scale = 2) # save this plot as thumbnail
+
+threeagecat_plot(
+  folk1c, # tac = threeagecat
+  tac_category = "Adult", 
+  tac_subtitle = NULL,
+  tac_x_title = NULL,
+  tac_y_title = NULL,
+  tac_lab_color = NULL
+)
+
+threeagecat_plot(
+  folk1c, # tac = threeagecat
+  tac_category = "Older", 
+  tac_subtitle = NULL,
+  tac_x_title = NULL,
+  tac_y_title = NULL,
+  tac_lab_color = NULL
+)
+
+
+```
+
+Wonderful. You may have noticed that the countries I chose were not at random. I chose Germany, France, and USA as a sort of baseline comparator. Countries not directly involved in the "special operations" that Russia has carried out towards Ukraine.
+
+A lot can be interpreted from the graphs.
+
+I will limit my interpretation to the plot also used in the thumbnail, for the age groups 0 to 29 years. I will assume that the increase in population is due to migration.
+
+**Interpretation of most trends at-a-glance**:
+
+- There is an obvious increase in migration of Ukranians for most age groups and both sexes around the 2022 Russia-Ukraine war
+- There is a clear difference between the sexes
+  - More boys/men migrate to Denmark among the younger age categories
+  - More girls/women migrate to Denmark among the 25-29 age category
+  - In the 20-29 age range, more women migrate "right" after the war, while men stay, except for the 20-24 age range which has the same incredibly large spike near 2026 as the 15-19 year range
+- The Russian migration to Denmark is steady and low, but is either consistently increasing (5-19 range), or increasing and then decreasing at the start of 2022 (0-4), or decreasing and then increasing a little around 2022 (20-29)
+- The German, French, and USA migration is also affected by the 2022 Russia-Ukraine war
+  - Mainly marked by an a slight increasing trend
+  - A very strange signal for the women aged 20-24, where the migration drops significantly before 2021, and picks up after 2022.
+
+**My overall interpretation**:
+
+- Migration increases to Denmark during the Russia-Ukraine war
+- The young men at the age of conscription or military service migrate less to Denmark, around the time they are needed, except for the 15-24 year olds towards 2026
+- More boys of non-military-service age migrate to Denmark than girls
+
+This is probably due to families wanting to send both their sons and daughters away from the possibility of serving in a war. Because they want to protect their loved ones, or because they do not believe the war can be won? Because their are not needed due to drones being the differentiator in battle at the moment?
+
+Who knows - probably a military analyst.
+
+For now, I will just leave it at this, and find more interesting data from Statistics Denmark in the future.
+
+
+### Refactor {#sec-refactor}
+
+```
+# Packages ---------------------------------------------------------------
+library(httr2)
+library(readr)
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(forcats)
+library(ggplot2)
+library(janitor)
+
+# Get FOLK1C from StatBank API ------------------------------------------
+resp <- request("https://api.statbank.dk/v1/data") |>
+  req_body_json(
+    list(
+      table = "FOLK1C",
+      format = "CSV",
+      lang = "en",
+      timeOrder = "Ascending",
+      variables = list(
+        list(code = "OMRÅDE", values = list("000")), # All Denmark
+        list(code = "KØN", values = list("*")),      # Total, Men, Women
+        list(code = "ALDER", values = list("*")),    # All age groups
+        list(
+          code = "IELAND",
+          values = list(
+            "5700", # Russia
+            "5704", # Ukraine
+            "5390", # United States
+            "5180", # Germany
+            "5130"  # France
+          )
+        ),
+        list(code = "Tid", values = list(">=2008K1<=2026K2"))
+      )
+    ),
+    auto_unbox = TRUE
+  ) |>
+  req_perform()
+
+# Parse and clean --------------------------------------------------------
+folk1c <- resp_body_string(resp) |>
+  read_delim(delim = ";", show_col_types = FALSE) |>
+  clean_names() |>
+  rename(
+    sex = kon,
+    age = alder,
+    time = tid
+  ) |>
+  select(-omrade) |>
+  mutate(
+    value = as.integer(indhold),
+    year = as.integer(str_extract(time, "\\d{4}")),
+    quarter = as.integer(str_extract(time, "(?<=Q)\\d")),
+    time_smoq = ymd(paste0(year, "-", (quarter - 1) * 3 + 1, "-01")),
+    age_order = case_when(
+      str_detect(age, regex("total", ignore_case = TRUE)) ~ -1,
+      TRUE ~ as.numeric(str_extract(age, "\\d+"))
+    ),
+    age = fct_reorder(age, age_order, .fun = min, .na_rm = TRUE),
+    age_group_3 = case_when(
+      str_detect(age, regex("total", ignore_case = TRUE)) ~ "Total",
+      age_order < 30 ~ "Young",
+      age_order < 65 ~ "Adult",
+      age_order >= 65 ~ "Older",
+      TRUE ~ NA_character_
+    ),
+    age_group_3 = factor(
+      age_group_3,
+      levels = c("Young", "Adult", "Older", "Total"),
+      ordered = TRUE
+    )
+  ) |>
+  select(-indhold)
+
+# Plot function ----------------------------------------------------------
+plot_folk1c <- function(
+  data,
+  age_category = "Young",
+  sex_group = c("Men", "Women"),
+  subtitle = NULL
+) {
+  data |>
+    filter(
+      age_group_3 == age_category,
+      sex %in% sex_group
+    ) |>
+    ggplot(aes(time_smoq, value, color = ieland)) +
+    geom_line(linewidth = 0.6) +
+    geom_vline(xintercept = as.Date("2014-02-27"), linetype = "dashed", color = "brown") +
+    geom_vline(xintercept = as.Date("2022-02-24"), linetype = "dashed", color = "red") +
+    facet_wrap(vars(sex, age), nrow = 6, scales = "free_y") +
+    scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+    labs(
+      title = "Population in Denmark by country of origin",
+      subtitle = subtitle,
+      caption = "Source: Statistics Denmark, StatBank table FOLK1C. Dashed lines mark Russia's 2014 and 2022 invasions of Ukraine.",
+      x = NULL,
+      y = "Population",
+      color = "Country of origin"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+}
+
+# Example plots ----------------------------------------------------------
+plot_folk1c(folk1c, age_category = "Young")
+plot_folk1c(folk1c, age_category = "Adult")
+plot_folk1c(folk1c, age_category = "Older")
+```

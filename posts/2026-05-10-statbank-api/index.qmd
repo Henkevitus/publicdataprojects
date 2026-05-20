@@ -12,35 +12,13 @@ format:
   html:
     toc: true
     number-sections: true
-    fig-width: 8
+    fig-width: 10 # some really wide graphs here
     fig-height: 6
     code-fold: true
     code-summary: "Show the code"
-draft: true
+draft: false
 image: thumbnail.jpg 
 ---
-
-## DELETE AFTER DRAFT - contents 
-
-Først skal jeg have en purpose section hvor jeg beskriver hvad jeg vil.
-
-**OG ET LØFTE OM AT DER KOMMER FLERE POSTS OG DE ER KORTERE. BEGRÆNS DIG NU FORHELVEDE!!!**
-
-**Mit sprog skal være direkte og til sagen. Ikke så meget snak til mig selv. Det skal være til et publikum af ledere, klinikere eller datamanagere eller analytikere der vil have beviser for hvad jeg kan.**
-
-Dernæst skal det være...
-
-- Packages and httr2. {#sec-packages}
-  - And why i choose to use httr2. Will probably use dst package at the end.. 
-- Access to statbank API {#sec-api}
-- Meta data and describing its contents {#sec-meta}
-- Quick overview of what i chose {#sec-chosen-table}
-- ONE super quick analysis on ONE table {#sec-analysis}
-- Wrapping up and refactor {#sec-refactor}
-
-### TODO
-
-- [ ] check om echo skal være false eller true. kun output hvor relevant.
 
 ## Purpose
 
@@ -61,7 +39,7 @@ What I want to explore is:
 
 ### Access {#sec-api}
 
-The [`httr2`](https://httr2.r-lib.org/) package can be used to access the API and export. I will load that along with `jsonlite` to convert from JSON to an R object, and ofcourse `dplyr` for data manipulation.
+The [`httr2`](https://httr2.r-lib.org/) package can be used to access the API and export. I will load that along with [`jsonlite`](https://cran.r-project.org/web/packages/jsonlite/index.html) to convert from JSON to an R object, and ofcourse [`dplyr`](https://cran.r-project.org/web/packages/dplyr/index.html) for data manipulation.
 
 ```{r}
 #| label: get statbank overview
@@ -79,11 +57,11 @@ Now, I want to get an overview of what I can get my hands on via this API. It se
 - https://api.statbank.dk/v1/subjects
   - Here it seems you can search within a subject and get data related to that
 - https://api.statbank.dk/v1/tables
-  - Here is an overview of the different tables
+  - Overview of the different tables
 - https://api.statbank.dk/v1/tableinfo
-  - Here is metadata on the tables
+  - Metadata on the tables
 - https://api.statbank.dk/v1/data
-  - This is where you get the actual data from the tables
+  - Here you get the actual data from the tables
 
 Let's look at each of these, in turn.
 
@@ -91,7 +69,7 @@ Let's look at each of these, in turn.
 
 ```{r}
 #| label: subjects
-#| echo: false
+#| echo: true
 #| output: true
 
 resp_subjects <- request("https://api.statbank.dk/v1/subjects") |>
@@ -108,27 +86,35 @@ Ok so there are 10 different subjects, one about Statistics Denmark.
 
 ```{r}
 #| label: subjects-list
-#| echo: false
+#| echo: true
 #| output: true
 
 # Get names
-test <- sapply(subjects, `[[`, "description")
-
+sapply(subjects, `[[`, "description")
 ```
 
 The `purr` package provides a more human-readable way of extracting it. May as well add the id.
 
 ```{r}
-#| label: subjects-list-2
+#| label: purr
 #| echo: false
-#| output: true
+#| output: false
 
 library(purrr)
 
-test <- tibble(
+```
+
+```{r}
+#| label: subjects-list-2
+#| echo: true
+#| output: true
+
+
+tibble(
   id = map_chr(subjects, "id"),
   description = map_chr(subjects, "description")
 )
+
 ```
 
 So, instead of: "apply the `[[` extractor on this data frame, looking for the string 'description', and simplify into a vector", it's more like: "make a dataframe that contains the contents on this map (the dataframe), specifically the characters in the 'id' column and 'description' column".
@@ -137,9 +123,11 @@ Who knows, for some the latter might be less simple, but at least it is more vis
 
 #### Tables {#sec-access-tables}
 
+How many tables does the tables api link have?
+
 ```{r}
 #| label: tables overview
-#| echo: false
+#| echo: true
 #| output: true
 
 # Request table overview
@@ -155,13 +143,11 @@ dst_tables_df <- bind_rows(dst_tables)
 glimpse(dst_tables_df)
 ```
 
-There are 8 columns and 9145 rows. 
-
-Also, there seems to be a lot of duplicate tables. Could it be something with different variables within the `variables` column?
+There are 8 columns and 9145 rows and there seem to be a lot of duplicate tables. Could it be something with different variables within the `variables` column?
 
 ```{r}
 #| label: duplicate-tables
-#| echo: false
+#| echo: true
 #| output: true
 
 test <- tibble(unlist(dst_tables_df[8]))
@@ -170,7 +156,7 @@ print(test, n = 15)
 test2 <- dst_tables_df |> slice(1) |> select(variables) |> unlist()
 ```
 
-It seems that each row that seems like a duplicate for e.g. the table with the id `FOLK1A`, is duplicate in all but the character variable hidden in the list in the `variables` column.
+It seems that each row that seems like a duplicate for e.g. the table with the id `FOLK1A`, is duplicated in all variables except for the character variable in the list in the `variables` column.
 
 That seems weird, to keep only one character hidden in a list in the `variables` colum. But since it has probably been possible to access this in this way since 2014 there must be a purpose to it.
 
@@ -178,7 +164,7 @@ Let's see how many unique tables there are.
 
 ```{r}
 #| label: unique-tables
-#| echo: false
+#| echo: true
 #| output: true
 
 distinct(dst_tables_df, id) |> count()
@@ -187,15 +173,15 @@ distinct(dst_tables_df, id) |> count()
 
 That is a LOT of unique tables, and that is just the active ones. Some are variations of a theme, like `BEFOLK1`, `FOLK1A`, and `FOLK1AM`, which are the population the first day of the year, month, and quarter.
 
-**For now, I want to look at [FOLK1C](https://www.statbank.dk/FOLK1C).
+**For now, I want to look at [FOLK1C](https://www.statbank.dk/FOLK1C).**
 
 #### Tableinfo {#sec-access-meta}
 
-What does `https://api.statbank.dk/v1/tableinfo` actually tell us?
+What does [`tableinfo`](https://api.statbank.dk/v1/tableinfo) actually tell us?
 
 ```{r}
 #| label: table-info
-#| echo: false
+#| echo: true
 #| output: true
 
 # Request
@@ -220,7 +206,7 @@ What is inside that variable list? Since it's lists upon lists, `map_dfr` can he
 
 ```{r}
 #| label: one-meta
-#| echo: false
+#| echo: true
 #| output: true
 
 # Pick one thing to look at
@@ -241,9 +227,25 @@ That's quite neat to get information about tables like that. Now for what the da
 
 #### Data {#sec-access-data}
 
+What data can be found in the [`data access`](https://api.statbank.dk/v1/data) url? 
+
+Following the list logic, I will attempt to make a request that matches how it is structured in the output that R makes from JSON. That is, lists upon lists. 
+
+I thought that I could just use `format = "JSON"`, but after fiddling with [the console](https://api.statbank.dk/console#data) for a bit, I learned that it accepts "JSONSTAT". 
+
+Additionally, I learned how to interact with it by: 
+
+- Choosing a table
+- Identifying its variables and their values
+- Put the variables and their values that I want in the `variables` part of the `req_body_json()` function
+- Get the output I want
+
+Variables are accessed through a list, then I have to make a list for each variable that I want to include, and a list with a regular expression text string the API can understand to get the values from that variable.
+
+
 ```{r}
 #| label: data-tables
-#| echo: false
+#| echo: true
 #| output: true
 
 # Request
@@ -271,27 +273,22 @@ glimpse(data)
 
 ```
 
-Thought that I could just use `format = "JSON"`, but after fiddling with [the console](https://api.statbank.dk/console#data) for a bit, I learned that it accepts "JSONSTAT". 
-
-Additionally, I learned how to interact with it by: 
-
-- Going to the console
-- Choose a table
-- Identify the variables and their values
-- Put the variables and their values that I want in the `variables` part of the `req_body_json()` function
-- Get the output I want
-
-Variables are accessed through a list, then I have to make a list for each variable that I want to include, and a list with a text string the API can understand to get the values from that variable.
-
-Maybe I should just get CSV format. I would still have to do the whole thing from above but at least I wouldn't have to deal with all the metadata. `readr` good for reading csv's.
+Maybe I should just get CSV format. CSV can be heavier than JSON, but that wont matter much for these data sizes. I would still have to do the whole thing from above but at least I wouldn't have to deal with all the metadata. `readr` good for reading csv's.
 
 ```{r}
-#| label: data-tables-get-csv
+#| label: library-chunk-x
 #| echo: false
-#| output: true
+#| output: false
 
 library(readr)
 library(tidyr)
+
+```
+
+```{r}
+#| label: data-tables-get-csv
+#| echo: true
+#| output: true
 
 # Request
 resp_data <- request("https://api.statbank.dk/v1/data") |>
@@ -339,7 +336,7 @@ What I want to now is to:
   - Russia
   - Ukraine
 - Create a line diagram for as long a time period as can fit neatly on a table
-- Look a the changes in the population from those countries over time
+- Look at the changes in the population from those countries over time
 
 **For that**, first I have to get the country codes from the meta data, then make a big request for the data, and then make the analysis and do the analysis.
 
@@ -349,7 +346,7 @@ Just in case I want to make changes to the variables, I make a function to quick
 
 ```{r}
 #| label: meta-for-table
-#| echo: false
+#| echo: true
 #| output: true
 
 get_values_by_id <- function(meta, variable_id) {
@@ -369,11 +366,18 @@ get_values_by_id <- function(meta, variable_id) {
 Then I can simply use `stringr` to get the right countries. Maybe I should have just used the `package::function()` thing before, and not load so many different packages for just one or two functions each. Nope. I will probably use it a lot since a lot of columns are characters.
 
 ```{r}
+#| label: library-stringr
+#| echo: false
+#| output: false
+
+library(stringr)
+
+```
+
+```{r}
 #| label: meta-for-table-extract-countries
 #| echo: false
 #| output: true
-
-library(stringr)
 
 # Countries
 countries <- get_values_by_id(meta, "IELAND") |>
@@ -392,7 +396,7 @@ This will be a big chunk, because of the lists within lists structure in the req
 
 ```{r}
 #| label: requesting-data-table
-#| echo: false
+#| echo: true
 #| output: true
 
 resp <- request("https://api.statbank.dk/v1/data") |>
@@ -459,7 +463,7 @@ folk1c
 
 ```
 
-That was a biggie. But extremely satisfying to have done it - without AI help I might add. Also, no need for this as its only value is "All Denmark".
+That was a biggie. But extremely satisfying to have done it - without AI help I might add. Also, no need for the "OMRÅDE" variable as its only value is "All Denmark".
 
 #### Graph and Analysis
 
@@ -477,7 +481,7 @@ But may as well attempt to make another variable that corresponds to the first d
 
 ```{r}
 #| label: time-reformat
-#| echo: false
+#| echo: true
 #| output: true
 
 # Turn into ordered factor
@@ -497,23 +501,30 @@ folk1c <- folk1c |>
 And then a plot to test it out.
 
 ```{r}
-#| label: graph-1
+#| label: library-ggplot2
 #| echo: false
-#| output: true
+#| output: false
 
 library(ggplot2)
+
+```
+
+```{r}
+#| label: graph-1
+#| echo: true
+#| output: true
 
 # plot attempt 1
 plot1 <- ggplot(folk1c, aes(time_smoq, value, color = ieland)) +
   geom_line()
-
+plot1
 ```
 
 Well.. That's not what I expected. And maybe that is because `value` is still a character.. And age category and sex should be factors or else I might get issues in the future.
 
 ```{r}
 #| label: graph-2
-#| echo: false
+#| echo: true
 #| output: true
 
 folk1c <- folk1c |> 
@@ -529,14 +540,14 @@ levels(folk1c$age)
 # plot attempt 2
 plot2 <- ggplot(folk1c, aes(time_smoq, value, color = ieland)) +
   geom_line()
-
+plot2
 ```
 
 Still not what I expected. Since I am completely not thinking this through and forgetting about all the different variables the dataset has that I am not using. 
 
 ```{r}
 #| label: graph-total
-#| echo: false
+#| echo: true
 #| output: true
 
 folk1c_total <- folk1c |>
@@ -565,7 +576,7 @@ There are 21 different age categories, so could start with filtering the first 1
 
 ```{r}
 #| label: graph-facet-grid
-#| echo: false
+#| echo: true
 #| output: true
 
 # filter age groups
@@ -669,7 +680,10 @@ threeagecat_plot <- function(
     y = tac_y_title,
     color = tac_lab_color
   )  +
-    theme_minimal() 
+    theme_minimal() +  
+  theme(
+axis.text.x = element_text(angle = 45, hjust = 1)
+) 
 }
 
 # plots
@@ -725,16 +739,15 @@ I will limit my interpretation to the plot also used in the thumbnail, for the a
 
 **My overall interpretation**:
 
-- Migration increases to Denmark during the Russia-Ukraine war
-- The young men at the age of conscription or military service migrate less to Denmark, around the time they are needed, except for the 15-24 year olds towards 2026
-- More boys of non-military-service age migrate to Denmark than girls
+- Migration from Ukraine increases to Denmark during the Russia-Ukraine war
+- The young ukranian men at the age of conscription or military service migrate less to Denmark, around the time they are needed, except for the 15-24 year olds towards 2026
+- More ukranian boys of non-military-service age migrate to Denmark than girls
 
-This is probably due to families wanting to send both their sons and daughters away from the possibility of serving in a war. Because they want to protect their loved ones, or because they do not believe the war can be won? Because their are not needed due to drones being the differentiator in battle at the moment?
+This is probably due to families wanting to send both their sons and daughters away from the possibility of serving in a war. Because they want to protect their loved ones, or because they do not believe the war can be won? Because they are not needed due to drones being the differentiator in battle at the moment? It would surprise me that more boys migrate, except for the fact that they are more likely to be recruited to the military. But if Ukraine is lacking boys to fight - will they recruit more girls?
 
 Who knows - probably a military analyst.
 
 For now, I will just leave it at this, and find more interesting data from Statistics Denmark in the future.
-
 
 ### Refactor {#sec-refactor}
 

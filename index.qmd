@@ -36,8 +36,7 @@ flowchart TB
   F[Uncovering insights using Health Data to <br/> - Translate data into action <br/> - Improve Quality of Healthcare]
 
   A --> A2
-  A --> A3
-  A2 --> C
+  A2 --> A3
   A3 --> C
   C --> D
   D --> E1

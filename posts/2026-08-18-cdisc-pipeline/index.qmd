@@ -1,0 +1,449 @@
+---
+title: 'Raw EDC data to ADaM dataset pipeline'
+author: 'Henrik Vitus Bering Laursen'
+date: 'yyyy-mm-dd'
+categories:
+  - cdisc
+  - raw data
+  - clinical trial pipeline
+  - pharmaverse
+format:
+  html:
+    toc: true
+    number-sections: true
+    fig-width: 8
+    fig-height: 6
+    code-fold: true
+    code-summary: 'Show the code'
+draft: false
+# image: thumbnail.jpg # make via: ggsave('thumbnail.jpg', plot = last_plot(), width = 6, height = 4)
+---
+
+<!-- MAKE SURE THIS IS DATED BACK WHEN I ACTUALLY MADE THE THING -->
+
+## Purpose
+
+I wanted to try out the pharmaverse packages to get some hands-on experience with working with the different datasets available in the [`pharmaverse`](https://pharmaverse.org/) packages. 
+
+Because I: 
+
+- Want a job within working with clinical trial data
+- Like working with transforming raw data to analysis-ready datasets
+- Like working in R
+- Am curious about how much of my health registry skills and intuition transfers to the pharmaceutical clinical trial data pipeline
+
+## Setup
+
+### Packages
+
+Now, it would be foolish to not use AI to aid, so I have asked Claude to make a guide on how to work with this CDISC pipeline.
+
+It provided a 9 page document that I am using for support in terms of the overall structure. It is better than starting blind, but probably not as good as reaching out to people working with it. 
+
+I expect much of it to be useful, but I know that some won't be, and leaning on it completely will not teach me anything.
+
+The packages it suggests I use are below:
+
+```{r}
+#| label: setup-packages
+#| echo: true
+#| output: false
+
+# Install the packages
+install.packages(c(
+  "sdtm.oak", # raw EDC to SDTM
+  "admiral", # SDTM to ADaM
+  "metacore", # specification objects
+  "metatools", # validation against specification
+  "xportr", # submission-format export
+  "pharmaverseraw", # raw EDC test data
+  "pharmaversesdtm", # SDTM test data
+  "pharmaverseadam", # ADaM test data
+  "dplyr",
+  "tibble",
+  "haven",
+  "labelled"
+))
+
+# Load packages I will defintely use
+
+library(dplyr)
+library(haven)
+library(tibble)
+library(labelled)
+library(ggplot2)
+
+```
+
+I am of the habit to just load the entire `tidyverse` package, but I will just load what is necessary, as the 10+ packages of `tidyverse` may not be. Must also practice avoiding unessary redundancies.
+
+## The Data
+
+### Raw Data
+
+Before I do anything else, I REALLY want to see what the raw data looks like.
+
+```{r}
+#| label: data-raw
+#| echo: true
+#| output: true
+
+# Load library of raw data
+library(pharmaverseraw)
+
+# Datasets available
+head(ae_raw) #adverse events
+head(dm_raw) #demographics
+head(ec_raw) #exposure as collected
+#head(ds_raw) #subject disposition
+#head(vs_raw) #vital signs
+
+```
+
+List of datasets were found by trail: https://pharmaverse.github.io/pharmaverseraw/ -> https://github.com/pharmaverse/pharmaverseraw/tree/main/data.
+
+Info about them can be found via typing `?pharmaverse::[insert name of dataset]` in the console.
+
+At first glance:
+
+- This is VERY similar to health registry data
+- Relatively intuitive variable names
+
+I really like to know some basic stuff about datasets that is usually not capture in the functions that I use frequently. I want to make a function that quickly gives me an overview of counts of rows, columns, and whether dataset is multiple patients per row or not.
+
+```{r}
+
+#| label: data-raw-inspect
+#| echo: true
+#| output: true
+
+inspect_basic <- function(data, id_var = "PATNUM") {
+  d <- dim(data)
+  cat(d[1], "rows,", d[2], "columns\n")
+
+  if (id_var %in% names(data)) {
+    n_pat <- length(unique(data[[id_var]]))
+    if (d[1] > n_pat) {
+      # if more rows than unique patient IDs
+      cat("MULTIPLE rows per patient (", n_pat, "patients )\n")
+    } else {
+      cat("One row per patient (", n_pat, "patients )\n")
+    }
+  } else {
+    cat(id_var, "not found in this dataset\n")
+  }
+}
+
+inspect_basic(ae_raw)
+inspect_basic(dm_raw)
+```
+
+As suspected, adverse events are multiple rows while demographics are single rows per patient. It's the same in health registry data.
+
+### Study Data Tabulation Model (SDTM) Data
+
+SDTM data is raw data transformed into the SDTM model. As far as I understand, that means basically means taking the data from sites and making them fit in prespecified boxes according to the SDTM model paper and SDTM implementation guide.
+
+Part of that is making all the data fit into a limited set of domains.
+
+Let's look at some SDTM data from the `pharmaversesdtm` package with the better method of writing `help(package = "pharmaversesdtm")` in the console. I see that this package has a lot of datasets, so let's load individual ones instead of the entire library, and stay in my wheel-house: the metabolic datasets.
+
+```{r}
+#| label: data-sdtm-inspect
+#| echo: true
+#| output: true
+
+# Load from library
+dm_metabolic <- pharmaversesdtm::dm_metabolic
+vs_metabolic <- pharmaversesdtm::vs_metabolic
+qs_metabolic <- pharmaversesdtm::qs_metabolic
+lb_metabolic <- pharmaversesdtm::lb_metabolic
+
+# looking at the datasets
+glimpse(dm_metabolic)
+head(dm_metabolic)
+glimpse(vs_metabolic)
+head(vs_metabolic)
+glimpse(qs_metabolic)
+head(qs_metabolic)
+glimpse(lb_metabolic)
+head(lb_metabolic)
+
+# Distinct subjects (dm_metabolic shows 5, but just checking another one)
+n_distinct(vs_metabolic$USUBJID)
+```
+
+Unless you have an enourmous screen, you're probably better off using the `View()` function, rather than `head()`. It just translates poorly to a blogpost, so I almost always use `head()`.
+
+Each of the datasets have some variables without any prefix, and then the remaining have a prefix. This prefix corresponds to the domain, which also has its own variable.
+
+I feel like there is a lot of redundancy. Why not just keep the variables without the prefix, and whenever the variables are drawn from the dataset to make the ADaM data, add the prefix in the join?
+
+Is it a leftover from a limitation of using SAS? Or an older version of SAS?
+
+Is it just "How it is", and slow to change due to the nature of having controlled terminology and fixed models?
+
+Perhaps it is because often one needs to open a SDTM dataset with a certain domain and then quickly isolate the variables with the domain prefix?
+
+
+### ADaM Data
+
+Let's look at ADaM data. The basic things I know is that ADSL is subject level dataset with one row per person, and most of the information in columns for each patient. 
+
+This is very similar to how I made datasets in my registry data research. You can't have a single dataset with ALL information though, there would be too many empty or missing values. 
+
+You would need a Basic Data Structure dataset, which as I understand is: One row per subject per parameter per analysis timepoint..  Or visit.. That probably means that it should be relatively clean with few repetitions and unecessary columns. 
+
+```{r}
+#| label: data-adam
+#| echo: true
+#| output: true
+
+adsl <- pharmaverseadam::adsl
+advs_metabolic <- pharmaverseadam::advs_metabolic
+
+glimpse(adsl)
+glimpse(advs_metabolic)
+
+```
+
+After viewing the data I must say: **That is A LOT of extra columns and values i.e. redundancies.**
+
+It is as if they want to be able to perform all analyses on any ADaM dataset, since it seems the demographics data from `adsl` is also in the `advs_metabolic` dataset.
+
+
+
+<!-- 
+### sdtm.oak - from raw to SDTM
+
+#### identifiers 
+#### CT 
+#### build domain
+#### Break something 
+
+### Specifications
+
+#### Load
+#### Explore
+#### Subset & inspect
+#### Look more at metadata
+-->
+
+## SDTM to ADaM
+
+Now I want to look at what it takes to move from SDTM to ADaM.
+
+Without a statistical analysis plan, a study, a supervisor/manager to give me the overall details and other stuff to about when doing this, I will try to just choose the bare minimum.
+
+I would certainly want to make:
+
+- ADSL (Analysis Dataset Subject Level)
+- One BDS (Basic Data Structure) dataset
+
+Staying with the `_metabolic` SDTM datasets. The package I will be using is [`admiral`](https://pharmaverse.github.io/admiral/cran-release/). 
+
+First, I check out the documentation for the datasets `dm_metabolic` and `vs_metabolic` by typing `?pharmaversesdtm::[insert dataset]` in console.
+
+I just want the following:
+
+- Basic demographic characteristics in the ADSL
+- Changes in Blood Pressure from baseline to last day of treatment
+
+To get there, I need to "derive" data from the SDTM data to make the ADaM datasets. So let us look at the different derive functions, which according to the [`package documentation`](https://pharmaverse.github.io/admiral/cran-release/) is quite modular, so it can be mixed and matched according to needs.
+
+And `help(package = "admiral")` in console provides an overview of which function does what. 
+
+### ADSL
+
+I want to first try one function, making a variable for the start of the treatment.
+
+```{r}
+#| label: sdtmtoadam-adsl
+#| echo: true
+#| output: true
+
+library(admiral)
+
+# Let's first test one function
+adsl <- dm_metabolic |>
+  derive_vars_dt(dtc = RFXSTDTC, new_vars_prefix = "TRTS")
+
+adsl |> select(RFXSTDTC, TRTSDT)
+
+```
+
+Wonderful. It does what it says it does.
+
+Now let us do some more: 
+
+- Start and end date of treatment
+- Duration of treatment
+- Flag for whether the patient is in the safety or intention-to-treat population
+- Age group
+
+```{r}
+#| label: sdtmtoadam-adsl
+#| echo: true
+#| output: true
+
+adsl <- dm_metabolic |>
+  derive_vars_dt(dtc = RFXSTDTC, new_vars_prefix = "TRTS") |>
+  derive_vars_dt(dtc = RFXENDTC, new_vars_prefix = "TRTE") |>
+  derive_var_trtdurd() |>
+  mutate(
+    SAFFL = if_else(!is.na(TRTSDT), "Y", "N"),
+    ITTFL = if_else(!is.na(ARMCD), "Y", "N"),
+    AGEGR1 = case_when(
+      AGE < 65 ~ "<65",
+      AGE >= 65 ~ "65+",
+    )
+  ) |>
+  select(
+    STUDYID,
+    USUBJID,
+    SUBJID,
+    SITEID,
+    AGE,
+    AGEGR1,
+    SEX,
+    RACE,
+    ARM,
+    ACTARM,
+    ARMCD,
+    TRTSDT,
+    TRTEDT,
+    TRTDURD,
+    SAFFL,
+    ITTFL
+  )
+
+adsl
+```
+
+### BDS
+
+I am having a hard time figuring out intuitively understanding what is up and down in these variables, since they have such short names. They make perfect sense once you know the codes, but could perhaps be improved by extending the names beyond the 8 character limit that AI keeps telling me it has because of reasons related to SAS export variable name limitations (8 characters).
+
+For example, when looking for blood pressure, I find it under `VSORRES`. Which is ofcourse, Vital Signs, ORiginal RESult. But I just see "VEE SORRESS". Hmm. Need to update my intuition..
+
+After looking through `vs_metabolic` with `View()`, I also find that they measure blood pressure in three different ways.
+
+```{r}
+#| label: sdtmtoadam-bds1
+#| echo: true
+#| output: true
+
+vs_metabolic |> select(VSTPT) |> distinct()
+```
+
+So let's make that BDS, where blood pressure is grouped by VSTPT.
+
+I am of course using AI to explain some of this, since I cannot claim to have worked with CDISC data models applied to clinical trial data. 
+
+Using AI helps explain how these concepts are linked. But sometimes, it just throws code at me that I cannot claim to understand the reasoning behind.
+
+At least.. To begin with. Looking through the long pipe below, I believe I managed to understand most of it.
+
+```{r}
+#| label: sdtmtoadam-bds2
+#| echo: true
+#| output: true
+
+advs_sbp <- vs_metabolic |>
+  # Take subject-level variables from ADSL
+  derive_vars_merged(
+    dataset_add = adsl,
+    new_vars = exprs(TRTSDT, TRTEDT, ARM, ACTARM, SAFFL, AGEGR1, SEX),
+    by_vars = exprs(STUDYID, USUBJID)
+  ) |>
+  # Analysis date and study day relative to first dose
+  derive_vars_dt(dtc = VSDTC, new_vars_prefix = "A") |>
+  derive_vars_dy(reference_date = TRTSDT, source_vars = exprs(ADT)) |>
+  # Parameter, value, visit and timepoint variables
+  mutate(
+    PARAMCD = VSTESTCD,
+    PARAM = paste0(VSTEST, " (", VSSTRESU, ")"),
+    AVAL = VSSTRESN,
+    AVISIT = VISIT,
+    AVISITN = VISITNUM,
+    ATPT = VSTPT,
+    ATPTN = VSTPTNUM
+  ) |>
+  filter(!is.na(AVAL)) |>
+  # Baseline flag (Y/blank): last non-missing record on or before first dose
+  restrict_derivation(
+    derivation = derive_var_extreme_flag,
+    args = params(
+      by_vars = exprs(STUDYID, USUBJID, PARAMCD, ATPTN),
+      order = exprs(ADT, AVISITN),
+      new_var = ABLFL,
+      mode = "last"
+    ),
+    filter = !is.na(AVAL) & ADT <= TRTSDT
+  ) |>
+  # Baseline value copied to every record in the by-group
+  derive_var_base(
+    by_vars = exprs(STUDYID, USUBJID, PARAMCD, ATPTN),
+    source_var = AVAL,
+    new_var = BASE
+  ) |>
+  # Change and percent change from baseline
+  derive_var_chg() |>
+  derive_var_pchg() |>
+  # Analysis flag (Y/blank): one record per subject/parameter/visit/timepoint
+  derive_var_extreme_flag(
+    by_vars = exprs(STUDYID, USUBJID, PARAMCD, AVISITN, ATPTN),
+    order = exprs(ADT),
+    new_var = ANL01FL,
+    mode = "last"
+  ) |>
+  select(
+    STUDYID,
+    USUBJID,
+    ARM,
+    ACTARM,
+    SAFFL,
+    AGEGR1,
+    SEX,
+    PARAMCD,
+    PARAM,
+    AVISIT,
+    AVISITN,
+    ATPT,
+    ATPTN,
+    ADT,
+    ADY,
+    AVAL,
+    BASE,
+    CHG,
+    PCHG,
+    ABLFL,
+    ANL01FL
+  ) |>
+  # Limit to Systolic blood pressure
+  filter(PARAMCD == "SYSBP")
+
+# all obs from first patient
+print(advs_sbp, n = 41)
+```
+
+What I end up with is a dataset in order of visits, with screenings first, then baseline, and then all the following visits. 
+
+I am still not fully understanding all the different flags - but I suspect a lot of light bulbs will turn on more easily now that I have had my hands on it.
+
+### Template
+
+Just a quick note on templates: Can be found in the admiral package help, under `use_ad_template`.
+
+It has templates on how to create the following ADaM datasets: "ADAB", "ADAE", "ADCM", "ADEG", "ADEX", "ADLB", "ADLBHY", "ADMH", "ADPC", "ADPP", "ADPPK", "ADSL", "ADVS".
+
+Very instructive to follow those as well.
+
+### Quick analysis of SYSBP
+
+Lav en hurtig analyse.
+
+Prøv evt. at validere noget. 
+
+## Closing thoughts
+## Refactor

@@ -10,11 +10,9 @@ format:
 
 <!-- TODO for me
 
-- [ ] Overview of DST data and digging in to some of it
-- [ ] fix names on site so blog isnt "index"
+- [ ] Finish SDTM to ADAM post
+- [ ] More DST 
 - [ ] statistlca process control chart post
-- [ ] Finish ADAM post
-- [ ] A/B testing post
 - [ ] Parameterised Quarto reports in R
 
 -->

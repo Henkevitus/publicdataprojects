@@ -62,20 +62,20 @@ The packages it suggests I use are below:
 #| output: false
 
 # Install the packages
-install.packages(c(
-  "sdtm.oak", # raw EDC to SDTM
-  "admiral", # SDTM to ADaM
-  "pharmaverseraw", # raw EDC test data
-  "pharmaversesdtm", # SDTM test data
-  "pharmaverseadam", # ADaM test data
-  "metacore", # specification objects - in case i want to expand on it later
-  "metatools", # validation against specification - in case i want to expand on it later
-  "xportr", # submission-format export - in case i want to expand on it later
-  "dplyr",
-  "tibble",
-  "haven",
-  "labelled"
-))
+#install.packages(c(
+#  "sdtm.oak", # raw EDC to SDTM
+#  "admiral", # SDTM to ADaM
+#  "pharmaverseraw", # raw EDC test data
+#  "pharmaversesdtm", # SDTM test data
+#  "pharmaverseadam", # ADaM test data
+#  "metacore", # specification objects - in case i want to expand on it later
+#  "metatools", # validation against specification - in case i want to expand on it later
+#  "xportr", # submission-format export - in case i want to expand on it later
+#  "dplyr",
+#  "tibble",
+#  "haven",
+#  "labelled"
+#))
 
 # Load packages I will defintely use
 

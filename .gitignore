@@ -24,3 +24,10 @@ _site/
 /.quarto/
 
 **/*.quarto_ipynb
+
+# Local R package library (renv is not used in this project)
+renv/
+
+# Leftovers from rendering single files outside the website project
+/index_files/
+/posts_files/

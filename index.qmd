@@ -10,10 +10,17 @@ format:
 
 <!-- TODO for me
 
-- [ ] Finish SDTM to ADAM post
-- [ ] More DST 
-- [ ] statistlca process control chart post
-- [ ] Parameterised Quarto reports in R
+**NOW WITH MONTHS BECAUES I NEED DEADLINES**
+--- INSERT THIS INTO MOST RECENT POST I AM WORKING ON ---
+
+- NOVEMBER
+  - [ ] A) Finish SDTM to ADAM post
+  - [ ] B0) Medstat data - update and expand on first medstat post, diabetes drugs by product if possible
+  - [ ] B) More DST - Draw data on... men, women, and education
+- DECEMBER
+  - [ ] C) Parameterised Quarto reports in R, with typst (learn from job-application cv)
+  - [ ] D) R shiny dashboard using
+  - [ ] E) statistical process control chart post 
 
 -->
 

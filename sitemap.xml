@@ -1,75 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/about.html</loc>
-    <lastmod>2026-11-13T13:45:34.978Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/scratchpad.html</loc>
-    <lastmod>2026-11-13T13:45:36.279Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/cv.html</loc>
-    <lastmod>2026-11-13T13:45:34.978Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-07-10-montecarlo/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.991Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2026-08-18-cdisc-pipeline/index.html</loc>
-    <lastmod>2026-11-13T13:45:35.004Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-09-25-rshiny/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.993Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-19-medstatexplore/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.986Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-06-17-steno2/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.990Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-01-19-explanation/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.990Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/favourites.html</loc>
-    <lastmod>2026-11-13T13:45:34.979Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-05-31-movingon/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.990Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-30-tot_ddd_use/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.988Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-20-medstat-function/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.987Z</lastmod>
+    <loc>https://Henkevitus.github.io/publicdataprojects/index.html</loc>
+    <lastmod>2026-11-09T08:49:31.002Z</lastmod>
   </url>
   <url>
     <loc>https://Henkevitus.github.io/publicdataprojects/posts/2026-05-10-statbank-api/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.998Z</lastmod>
+    <lastmod>2026-10-28T13:09:08.014Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-09-25-rshiny/index.html</loc>
+    <lastmod>2026-10-27T14:32:30.601Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-07-10-montecarlo/index.html</loc>
+    <lastmod>2026-10-27T14:32:30.599Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-05-31-movingon/index.html</loc>
+    <lastmod>2026-10-27T14:32:30.598Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-30-tot_ddd_use/index.html</loc>
+    <lastmod>2026-10-27T14:32:30.596Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-19-medstatexplore/index.html</loc>
+    <lastmod>2026-10-27T14:32:30.595Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/cv.html</loc>
+    <lastmod>2026-10-27T14:32:30.589Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/about.html</loc>
+    <lastmod>2026-10-27T14:32:30.589Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/favourites.html</loc>
+    <lastmod>2026-10-27T14:32:30.589Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2024-09-20-medstat-function/index.html</loc>
+    <lastmod>2026-10-27T14:32:30.595Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-01-19-explanation/index.html</loc>
+    <lastmod>2026-10-27T14:32:30.598Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Henkevitus.github.io/publicdataprojects/posts/2025-06-17-steno2/index.html</loc>
+    <lastmod>2026-10-27T14:32:30.598Z</lastmod>
   </url>
   <url>
     <loc>https://Henkevitus.github.io/publicdataprojects/posts/2026-03-25-etl/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.996Z</lastmod>
+    <lastmod>2026-10-27T14:32:30.605Z</lastmod>
   </url>
   <url>
     <loc>https://Henkevitus.github.io/publicdataprojects/posts/index.html</loc>
-    <lastmod>2026-11-13T13:45:35.004Z</lastmod>
+    <lastmod>2026-10-27T14:32:30.611Z</lastmod>
   </url>
   <url>
     <loc>https://Henkevitus.github.io/publicdataprojects/publications.html</loc>
-    <lastmod>2026-11-13T13:45:35.006Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Henkevitus.github.io/publicdataprojects/index.html</loc>
-    <lastmod>2026-11-13T13:45:34.982Z</lastmod>
+    <lastmod>2026-10-27T14:32:30.613Z</lastmod>
   </url>
 </urlset>

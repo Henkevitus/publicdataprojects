@@ -25,7 +25,7 @@ draft: true
 --- INSERT THIS INTO MOST RECENT POST I AM WORKING ON ---
 
 - NOVEMBER
-  - [ ] A) Finish SDTM to ADAM post
+  - [X] A) Finish SDTM to ADAM post
   - [ ] B0) Medstat data - update and expand on first medstat post, diabetes drugs by product if possible
   - [ ] B) More DST - Draw data on... men, women, and education
 - DECEMBER

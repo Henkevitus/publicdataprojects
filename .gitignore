@@ -31,3 +31,13 @@ renv/
 # Leftovers from rendering single files outside the website project
 /index_files/
 /posts_files/
+
+# Kept locally, not in the public repo
+playground/
+scripts/testing_R_in_vsc.r
+docs/
+
+# The ETL post writes a new quality report each time its code runs.
+# Only this one is read by the post.
+posts/2026-03-25-etl/data/warehouse/quality_report_*.json
+!posts/2026-03-25-etl/data/warehouse/quality_report_20260327_134503.json
